@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
-import { useNavigate } from "react-router"
+import { useNavigate, Link } from "react-router"
 import { HiOutlineUser } from "react-icons/hi2"
 import { logout } from "../store/authSlice"
 
@@ -45,6 +45,9 @@ function UserMenu() {
       {isOpen && (
         <div className="user-menu__dropdown">
           <p className="user-menu__email">{user?.email}</p>
+          <Link to="/profile" className="profile-link">
+            Edit Profile
+          </Link>
           <button className="btn-logout" onClick={handleLogout}>
             Logout
           </button>
