@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { useNavigate, Link } from "react-router"
 import { HiOutlineUser } from "react-icons/hi2"
@@ -14,22 +13,9 @@ function NumResults() {
 }
 
 function UserMenu() {
-  const [isOpen, setIsOpen] = useState(false)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const user = useSelector(state => state.auth.user)
-  const menuRef = useRef(null)
-
-  // close dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setIsOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   function handleLogout() {
     dispatch(logout())
@@ -37,14 +23,14 @@ function UserMenu() {
   }
 
   return (
-    <div className="user-menu" ref={menuRef}>
+    <div className="user-menu">
       <NumResults />
-      <div className="user-menu__trigger" onClick={() => setIsOpen(o => !o)}>
-        <HiOutlineUser />
-      </div>
-      {isOpen && (
+      <div className="user-menu__container">
+        <div className="user-menu__trigger">
+          <HiOutlineUser />
+        </div>
         <div className="user-menu__dropdown">
-          <p className="user-menu__email">{user?.email}</p>
+          <p className="user-menu__email">Hello, {user?.name}</p>
           <Link to="/profile" className="profile-link">
             Edit Profile
           </Link>
@@ -52,7 +38,7 @@ function UserMenu() {
             Logout
           </button>
         </div>
-      )}
+      </div>
     </div>
   )
 }

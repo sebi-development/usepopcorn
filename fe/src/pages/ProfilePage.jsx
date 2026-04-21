@@ -1,5 +1,10 @@
 import { Form, useLoaderData, useActionData } from "react-router"
 import { HiOutlineUser } from "react-icons/hi2"
+import { useEffect } from "react"
+import toast from 'react-hot-toast'
+
+import store from '../store'
+import { login } from '../store/authSlice'
 
 export async function profileLoader() {
   const token = localStorage.getItem('token')
@@ -30,12 +35,24 @@ export async function profileAction({ request }) {
   const data = await res.json()
 
   if (!res.ok) return { error: data.error }
+
+  // Update local username
+  store.dispatch(login({
+    user: data.user,
+    token: localStorage.getItem('token')
+  }))
+
   return { success: true }
 }
 
 function ProfilePage() {
   const user = useLoaderData()
   const actionData = useActionData()
+
+  useEffect(function () {
+    if (actionData?.success) toast.success('Profile updated!')
+    if (actionData?.error) toast.error(actionData.error)
+  }, [actionData])
 
   return (
     <main className="main">
@@ -44,13 +61,6 @@ function ProfilePage() {
           <HiOutlineUser className="profile-icon" />
           <h2>Edit Profile</h2>
         </div>
-
-        {actionData?.error && (
-          <p className="error">{actionData.error}</p>
-        )}
-        {actionData?.success && (
-          <p className="success">Profile updated!</p>
-        )}
 
         <Form method="post">
           <div className="form-group">

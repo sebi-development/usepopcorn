@@ -3,13 +3,15 @@ import useKey from "../hooks/useKey"
 import { useDispatch, useSelector } from "react-redux"
 import { setQuery } from '../store/uiSlice'
 import UserMenu from "../components/UserMenu"
+import { Link } from "react-router"
+
 
 function Logo() {
   return (
-    <div className="logo">
+    <Link className="logo">
       <span role="img">🍿</span>
       <h1>usePopcorn</h1>
-    </div>
+    </Link>
   )
 }
 

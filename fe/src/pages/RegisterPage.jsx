@@ -13,6 +13,7 @@ export default function RegisterPage() {
     e.preventDefault()
 
     const email = e.target.email.value
+    const name = e.target.username.value
     const password = e.target.password.value
     const confirmPassword = e.target.passwordConfirm.value
 
@@ -25,7 +26,7 @@ export default function RegisterPage() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, name })
       })
       const data = await res.json()
       dispatch(login({ user: data.user, token: data.token }))
@@ -42,6 +43,7 @@ export default function RegisterPage() {
 
         <Form onSubmit={handleSubmit} externalError={formError}>
           <Form.Input name="email" type="email" label="Email" />
+          <Form.Input name="username" type="text" label="Username" />
           <Form.Input name="password" type="password" label="Password" />
           <Form.Input name="passwordConfirm" type="password" label="Confirm Password" />
           <Form.Error />
