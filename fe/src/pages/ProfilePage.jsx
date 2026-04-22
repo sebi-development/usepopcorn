@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 
 import store from '../store'
 import { login } from '../store/authSlice'
+import ErrorBadge from "../components/ErrorBadge"
 
 export async function profileLoader() {
   const token = localStorage.getItem('token')
@@ -51,7 +52,6 @@ function ProfilePage() {
 
   useEffect(function () {
     if (actionData?.success) toast.success('Profile updated!')
-    if (actionData?.error) toast.error(actionData.error)
   }, [actionData])
 
   return (
@@ -61,6 +61,8 @@ function ProfilePage() {
           <HiOutlineUser className="profile-icon" />
           <h2>Edit Profile</h2>
         </div>
+
+        {actionData?.error && <ErrorBadge message={actionData.error} />}
 
         <Form method="post">
           <div className="form-group">
@@ -92,6 +94,7 @@ function ProfilePage() {
           <button type="submit" className="btn-auth">
             Save Changes
           </button>
+
         </Form>
       </div>
     </main>

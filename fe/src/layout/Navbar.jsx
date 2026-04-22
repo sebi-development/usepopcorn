@@ -6,9 +6,9 @@ import UserMenu from "../components/UserMenu"
 import { Link } from "react-router"
 
 
-function Logo() {
+function Logo({ onClick }) {
   return (
-    <Link className="logo">
+    <Link className="logo" onClick={onClick} >
       <span role="img">🍿</span>
       <h1>usePopcorn</h1>
     </Link>
@@ -42,10 +42,11 @@ function Search() {
 
 export default function Navbar() {
   const token = useSelector(state => state.auth.token)
+  const dispatch = useDispatch()
 
   return (
     <nav className="nav-bar">
-      <Logo />
+      <Logo onClick={() => dispatch(setQuery(''))} />
       {token && <Search />}
       {token && <UserMenu />}
     </nav>

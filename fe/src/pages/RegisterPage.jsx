@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useDispatch } from 'react-redux'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router'
 import { login } from '../store/authSlice'
 import Form from '../components/Form'
+import ErrorBadge from '../components/ErrorBadge'
 
 export default function RegisterPage() {
   const dispatch = useDispatch()
@@ -11,6 +12,7 @@ export default function RegisterPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    setFormError('')
 
     const email = e.target.email.value
     const name = e.target.username.value
@@ -29,6 +31,12 @@ export default function RegisterPage() {
         body: JSON.stringify({ email, password, name })
       })
       const data = await res.json()
+
+      if (!res.ok) {
+        setFormError(data.error)
+        return
+      }
+
       dispatch(login({ user: data.user, token: data.token }))
       navigate('/', { replace: true })
     } catch (error) {
@@ -37,16 +45,17 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="main .main-auth ">
+    <main className="main main-auth ">
       <div className="auth-box">
         <h2 className="auth-title">Join us and dive into world of cinema</h2>
 
-        <Form onSubmit={handleSubmit} externalError={formError}>
+        {formError && <ErrorBadge message={formError} />}
+
+        <Form onSubmit={handleSubmit}>
           <Form.Input name="email" type="email" label="Email" />
           <Form.Input name="username" type="text" label="Username" />
           <Form.Input name="password" type="password" label="Password" />
           <Form.Input name="passwordConfirm" type="password" label="Confirm Password" />
-          <Form.Error />
           <Form.Button>Sign up</Form.Button>
         </Form>
 
