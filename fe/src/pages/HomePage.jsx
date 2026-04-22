@@ -6,10 +6,11 @@ import WatchedList from "../features/watched/WatchedList"
 import MovieDetails from "../features/movies/MovieDetails"
 import Box from '../components/Box'
 import Loader from '../components/Loader'
-import ErrorMessage from '../components/ErrorMessage'
 import { useDispatch, useSelector } from "react-redux";
 import { setSelected } from "../store/uiSlice";
 import { fetchWatched, fetchAddWatched, fetchDeleteWatched } from "../store/watchedSlice"
+import ErrorBadge from "../components/ErrorBadge";
+
 function HomePage() {
   // GLOBAL STATE
   const watched = useSelector(state => state.watched.watched)
@@ -48,7 +49,7 @@ function HomePage() {
           {!isLoading && !error && (
             <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
           )}
-          {error && <ErrorMessage message={error} />}
+          {error && <ErrorBadge message={error} />}
         </Box>
 
         <Box>
