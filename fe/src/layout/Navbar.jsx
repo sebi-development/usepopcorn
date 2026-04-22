@@ -1,15 +1,17 @@
 import { useRef } from "react"
 import useKey from "../hooks/useKey"
 import { useDispatch, useSelector } from "react-redux"
-
 import { setQuery } from '../store/uiSlice'
+import UserMenu from "../components/UserMenu"
+import { Link } from "react-router"
+
 
 function Logo() {
   return (
-    <div className="logo">
+    <Link className="logo">
       <span role="img">🍿</span>
       <h1>usePopcorn</h1>
-    </div>
+    </Link>
   )
 }
 
@@ -38,22 +40,14 @@ function Search() {
 }
 
 
-function NumResults() {
-  const moviesCount = useSelector(state => state.ui.moviesCount)
-  return (
-    <p className="num-results">
-      Found <strong> {moviesCount} </strong> results
-    </p>
-  )
-}
-
 export default function Navbar() {
+  const token = useSelector(state => state.auth.token)
 
   return (
     <nav className="nav-bar">
       <Logo />
-      <Search />
-      <NumResults />
+      {token && <Search />}
+      {token && <UserMenu />}
     </nav>
   )
 }

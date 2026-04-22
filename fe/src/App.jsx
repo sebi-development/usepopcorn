@@ -2,6 +2,12 @@ import { createBrowserRouter, RouterProvider } from "react-router"
 
 import HomePage from './pages/HomePage'
 import MainLayout from './layout/MainLayout'
+import ProtectedRoute from './layout/ProtectedRoute'
+import LoginPage from "./pages/LoginPage"
+import RegisterPage from "./pages/RegisterPage"
+import ProfilePage from "./pages/ProfilePage"
+
+import { profileAction, profileLoader } from "./pages/ProfilePage"
 
 const router = createBrowserRouter([
   {
@@ -9,7 +15,22 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <HomePage />,
+        element: (
+          <ProtectedRoute>
+            <HomePage />
+          </ProtectedRoute>
+        )
+      },
+      { path: '/login', element: <LoginPage /> },
+      { path: '/register', element: <RegisterPage /> },
+      {
+        path: '/profile', element: (
+          <ProtectedRoute>
+            <ProfilePage />
+          </ProtectedRoute>
+        ),
+        loader: profileLoader,
+        action: profileAction
       }
     ]
   }

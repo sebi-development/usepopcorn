@@ -1,4 +1,28 @@
-import { createSlice } from "@reduxjs/toolkit"
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
+import { addWatchedMovie, deleteWatchedMovie, getWatchedMovies } from "../utils/api"
+
+// ASYNC THUNKS
+
+export const fetchWatched = createAsyncThunk(
+  'watched/fetchWatched',
+  async () => {
+    return await getWatchedMovies()
+  }
+)
+
+export const fetchAddWatched = createAsyncThunk(
+  'watched/fetchAddWatched',
+  async (movie) => {
+    return await addWatchedMovie(movie)
+  }
+)
+
+export const fetchDeleteWatched = createAsyncThunk(
+  'watched/fetchDeleteWatched',
+  async (imdbID) => {
+    return await deleteWatchedMovie(imdbID)
+  }
+)
 
 const initialState = {
   watched: [],
@@ -30,8 +54,20 @@ const watchedSlice = createSlice({
       state.watched = state.watched.filter(m => m.imdbID !== action.payload)
 
     }
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchWatched.fulfilled, (state, action) => {
+      state.watched = action.payload
+    })
+    builder.addCase(fetchAddWatched.fulfilled, (state, action) => {
+      state.watched.push(action.payload)
+    })
+    builder.addCase(fetchDeleteWatched.fulfilled, (state, action) => {
+      state.watched = state.watched.filter(m => m.imdbID !== action.payload.imdbID)
+    })
   }
 })
+
 
 export const { setWatched, upsertMovie, addMovie, removeMovie } = watchedSlice.actions
 export default watchedSlice.reducer

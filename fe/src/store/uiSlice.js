@@ -19,7 +19,7 @@ const uiSlice = createSlice({
     },
     setMoviesCount(state, action) {
       // payload === moviesLength
-      state.movieCount = action.payload
+      state.moviesCount = action.payload
     }
   }
 })

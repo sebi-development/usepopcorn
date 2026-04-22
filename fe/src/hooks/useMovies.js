@@ -48,14 +48,12 @@ export default function useMovies(query, callback) {
 
     }
 
-
     if (query.length < 2) {
       setMovies([])
       setError('')
       dispatch(setMoviesCount(0))
       return
     }
-
 
     fetchMovies()
 
