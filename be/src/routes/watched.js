@@ -116,6 +116,40 @@ router.patch('/:imdbID', async (req, res, next) => {
   }
 });
 
+router.put('/:imdbID', async (req, res, next) => {
+  const { userRating } = req.body;
+
+  if (userRating === undefined) {
+    return res.status(400).json({ error: 'Missing user rating' });
+  }
+
+  const userRatingNumber = Number(userRating);
+
+  if (Number.isNaN(userRatingNumber) || userRatingNumber < 1 || userRatingNumber > 10) {
+    return res.status(400).json({ error: 'Invalid user rating' });
+  }
+
+  try {
+    const watchedMovie = await prisma.watchedMovie.update({
+      where: {
+        userId_imdbID: {
+          userId: req.user.userId,
+          imdbID: req.params.imdbID,
+        },
+      },
+      data: { userRating: userRatingNumber },
+    });
+
+    res.status(200).json(serializeWatchedMovie(watchedMovie));
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return res.status(404).json({ error: 'Movie not found' });
+    }
+
+    next(error);
+  }
+});
+
 router.delete('/:imdbID', async (req, res, next) => {
   try {
     await prisma.watchedMovie.delete({

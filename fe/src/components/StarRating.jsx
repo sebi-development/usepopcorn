@@ -12,7 +12,16 @@ const starContainerStyle = {
   display: 'flex',
 }
 
-export default function StarRating({ maxRating = 5, color = '#fcc419', size = 36, className = '', messages = [], defaultRating = 0, onSetRating = null, }) {
+export default function StarRating({
+  maxRating = 5,
+  color = '#fcc419',
+  size = 36,
+  className = '',
+  messages = [],
+  defaultRating = 0,
+  onSetRating = null,
+  showText = true,
+}) {
   const [rating, setRating] = useState(defaultRating)
   const [tempRating, setTempRating] = useState(0)
 
@@ -44,7 +53,9 @@ export default function StarRating({ maxRating = 5, color = '#fcc419', size = 36
           />
         ))}
       </div>
-      <p style={textStyle}> {messages.length === maxRating ? messages[tempRating ? tempRating - 1 : rating - 1] : tempRating || rating || ' '} </p>
+      {showText && (
+        <p style={textStyle}> {messages.length === maxRating ? messages[tempRating ? tempRating - 1 : rating - 1] : tempRating || rating || ' '} </p>
+      )}
     </div>
   );
 };

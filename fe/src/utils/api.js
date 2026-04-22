@@ -38,3 +38,10 @@ export function deleteWatchedMovie(imdbID) {
     method: 'DELETE',
   })
 }
+
+export function updateWatchedMovieRating(imdbID, userRating) {
+  return request(`/watched/${imdbID}`, {
+    method: 'PUT',
+    body: JSON.stringify({ userRating }),
+  })
+}

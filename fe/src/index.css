@@ -371,6 +371,42 @@ body {
   background-color: var(--color-red-dark);
 }
 
+.btn-edit {
+  position: absolute;
+  right: 5rem;
+  height: 1.8rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--color-primary);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-edit:hover {
+  background-color: var(--color-primary-light);
+}
+
+.watched-rating-editor {
+  grid-column: 2 / -1;
+  margin-top: 1.2rem;
+}
+
+.list .watched-rating-editor {
+  gap: 0;
+}
+
+.list .watched-rating-stars,
+.list .watched-rating-stars div {
+  gap: 0;
+}
+
 
 /* ============================================================
    FEEDBACK — Loader & Error

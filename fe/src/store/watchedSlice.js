@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
-import { addWatchedMovie, deleteWatchedMovie, getWatchedMovies } from "../utils/api"
+import { addWatchedMovie, deleteWatchedMovie, getWatchedMovies, updateWatchedMovieRating } from "../utils/api"
 
 // ASYNC THUNKS
 
@@ -21,6 +21,13 @@ export const fetchDeleteWatched = createAsyncThunk(
   'watched/fetchDeleteWatched',
   async (imdbID) => {
     return await deleteWatchedMovie(imdbID)
+  }
+)
+
+export const fetchUpdateWatchedRating = createAsyncThunk(
+  'watched/fetchUpdateWatchedRating',
+  async ({ imdbID, userRating }) => {
+    return await updateWatchedMovieRating(imdbID, userRating)
   }
 )
 
@@ -64,6 +71,13 @@ const watchedSlice = createSlice({
     })
     builder.addCase(fetchDeleteWatched.fulfilled, (state, action) => {
       state.watched = state.watched.filter(m => m.imdbID !== action.payload.imdbID)
+    })
+    builder.addCase(fetchUpdateWatchedRating.fulfilled, (state, action) => {
+      const index = state.watched.findIndex(m => m.imdbID === action.payload.imdbID)
+
+      if (index === -1) return
+
+      state.watched[index] = action.payload
     })
   }
 })

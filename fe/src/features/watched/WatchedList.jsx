@@ -1,12 +1,18 @@
+import { useState } from 'react'
 import { handleNotFoundImg, average } from '../../utils/utils.js'
-import { HiOutlineStar, HiOutlineClock, HiHashtag } from "react-icons/hi2"
+import { HiOutlineStar, HiOutlineClock, HiHashtag, HiPencil } from "react-icons/hi2"
 import { LiaImdb } from "react-icons/lia"
+import StarRating from '../../components/StarRating.jsx'
 
-export default function WatchedList({ watched, onDeleteWatched }) {
+export default function WatchedList({ watched, onDeleteWatched, onUpdateWatchedRating }) {
   return (
     <>
       <WatchedSummary watched={watched} />
-      <WatchedMovieList watched={watched} onDeleteWatched={onDeleteWatched} />
+      <WatchedMovieList
+        watched={watched}
+        onDeleteWatched={onDeleteWatched}
+        onUpdateWatchedRating={onUpdateWatchedRating}
+      />
     </>
   )
 }
@@ -42,22 +48,34 @@ function WatchedSummary({ watched }) {
   )
 }
 
-function WatchedMovieList({ watched, onDeleteWatched }) {
+function WatchedMovieList({ watched, onDeleteWatched, onUpdateWatchedRating }) {
   return (
     <ul className="list">
       {watched.map((movie) => (
-        <WatchedMovie movie={movie} key={movie.imdbID} onDeleteWatched={onDeleteWatched} />
+        <WatchedMovie
+          movie={movie}
+          key={movie.imdbID}
+          onDeleteWatched={onDeleteWatched}
+          onUpdateWatchedRating={onUpdateWatchedRating}
+        />
       ))}
     </ul>
   )
 }
 
-function WatchedMovie({ movie, onDeleteWatched }) {
+function WatchedMovie({ movie, onDeleteWatched, onUpdateWatchedRating }) {
+  const [isEditingRating, setIsEditingRating] = useState(false)
+
+  function handleUpdateRating(userRating) {
+    onUpdateWatchedRating(movie.imdbID, userRating)
+    setIsEditingRating(false)
+  }
+
   return (
     <li>
       <img src={movie.poster} alt={`${movie.title} poster`} onError={handleNotFoundImg} />
       <h3>{movie.title}</h3>
-      <div>
+      <div className="watched-movie-meta">
         <p>
           <LiaImdb style={{ fontSize: "1.6rem", color: "#fcc419" }} />
           <span>{movie.imdbRating}</span>
@@ -70,10 +88,30 @@ function WatchedMovie({ movie, onDeleteWatched }) {
           <HiOutlineClock style={{ fontSize: "1.6rem", color: "#adb5bd" }} />
           <span>{movie.runtime} min</span>
         </p>
+        <button
+          className="btn-edit"
+          type="button"
+          title="Edit rating"
+          onClick={() => setIsEditingRating((isEditing) => !isEditing)}
+        >
+          <HiPencil />
+        </button>
         <button className="btn-delete" onClick={() => onDeleteWatched(movie.imdbID)}>
           X
         </button>
       </div>
+      {isEditingRating && (
+        <div className="watched-rating-editor">
+          <StarRating
+            key={`${movie.imdbID}-${movie.userRating}`}
+            maxRating={10}
+            className="watched-rating-stars"
+            defaultRating={movie.userRating}
+            onSetRating={handleUpdateRating}
+            showText={false}
+          />
+        </div>
+      )}
     </li>
   )
 }

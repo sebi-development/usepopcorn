@@ -1,14 +1,22 @@
-## Project VAJ
+# Fake ČSFD
 
-### Instructions
+React + Express aplikace jako MVP verze osobního ČSFD pro vyhledávání filmů a správu vlastního seznamu zhlednutých a ohodnocených filmů.
 
-You will find instrucions on https://github.com/vsb-vaj
+Splněno: React SPA s routovaním, Express REST API, SQLite + Prisma ORM, dva propojené resources (`users`, `watched_movies`), CRUD pro filmy v seznamu a zakladni operace nad uživatelem.
 
-Split your projects into 2 JS projects. You will have 2x package.json. One will be for BE in folder be, one will be for FE in folder fe. 
+Navíc: Přihlášení a registrace přes JWT, chráněné API endpointy.
 
-You can write instructions to your project either in this README ind in separeate README files in the folders be, fe. 
+Poznámka: Pro zjednodušení spuštění je `.env` ponechaný v repozitáři (odebraný z `.gitignore`), aby nebylo nutné ručně vyplňovat `JWT_SECRET`.
 
-Delete this text after you finish :) 
+## Spuštění
 
-Good luck!
+```cmd v root
+cd be && npm i && npm run db:migrate && npm run dev
+```
 
+```cmd v root
+cd fe && npm i && npm run dev
+```
+
+## Chyba EADDRINUSE (port 3001)
+Vypnout docker (radši do budoucna)

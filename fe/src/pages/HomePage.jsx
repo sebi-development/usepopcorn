@@ -8,7 +8,7 @@ import Box from '../components/Box'
 import Loader from '../components/Loader'
 import { useDispatch, useSelector } from "react-redux";
 import { setSelected } from "../store/uiSlice";
-import { fetchWatched, fetchAddWatched, fetchDeleteWatched } from "../store/watchedSlice"
+import { fetchWatched, fetchAddWatched, fetchDeleteWatched, fetchUpdateWatchedRating } from "../store/watchedSlice"
 import ErrorBadge from "../components/ErrorBadge";
 
 function HomePage() {
@@ -41,6 +41,10 @@ function HomePage() {
     dispatch(fetchDeleteWatched(id))
   }
 
+  function handleUpdateWatchedRating(imdbID, userRating) {
+    dispatch(fetchUpdateWatchedRating({ imdbID, userRating }))
+  }
+
   return (
     <>
       <main className="main">
@@ -61,7 +65,11 @@ function HomePage() {
               watched={watched}
             />
           ) : (
-            <WatchedList watched={watched} onDeleteWatched={handleDeleteWatched} />
+            <WatchedList
+              watched={watched}
+              onDeleteWatched={handleDeleteWatched}
+              onUpdateWatchedRating={handleUpdateWatchedRating}
+            />
           )}
         </Box>
       </main>
