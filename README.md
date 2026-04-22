@@ -18,5 +18,22 @@ cd be && npm i && npm run db:migrate && npm run dev
 cd fe && npm i && npm run dev
 ```
 
-## Chyba EADDRINUSE (port 3001)
-Vypnout docker (radši do budoucna)
+## Otestování:
+Do webové URL zadejte http://localhost:5173/, poté klikněte Register
+Použitelné údaje:
+```
+Email: jmeno@email.cz
+Username: jmeno
+Password: 12tri
+Repeat: 12tri
+```
+(Pokud se nedá přihlásit, zkontrolujte ERRORY)
+
+V kolonce Search movies... se dá vyhledat jakýkoliv film. Poté se může ohodnotit a přidat do watchlistu. Filmu se dají z vlastního seznamu mazat nebo upravovat hodnocení (CRUD OPERACE)
+
+## ERRORY
+`EADDRINUSE (port 3001)`
+Vypnout proces na 3001 (nebo rovnou celý docker (jestli to je kvůli němu))
+
+`CORS ORIGIN (Nejde udělat registraci)`
+FE musí běžet na portu 5173 kvůli CORS. Vypněte proces zabírající tento port a restartujte FE
