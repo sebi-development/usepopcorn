@@ -6,6 +6,7 @@ import ProtectedRoute from './layout/ProtectedRoute'
 import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
 import ProfilePage from "./pages/ProfilePage"
+import LandingPage from './pages/LandingPage'
 
 import { profileAction, profileLoader } from "./pages/ProfilePage"
 
@@ -31,7 +32,8 @@ const router = createBrowserRouter([
         ),
         loader: profileLoader,
         action: profileAction
-      }
+      },
+      { path: '/landing', element: <LandingPage /> }
     ]
   }
 ])

@@ -8,7 +8,7 @@ import { Link } from "react-router"
 
 function Logo({ onClick }) {
   return (
-    <Link className="logo" onClick={onClick} >
+    <Link to="/landing" className="logo" onClick={onClick}>
       <span role="img">🍿</span>
       <h1>usePopcorn</h1>
     </Link>

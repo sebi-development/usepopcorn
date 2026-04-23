@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from "react-redux"
 import { useNavigate, Link } from "react-router"
-import { HiOutlineUser } from "react-icons/hi2"
+import { HiOutlineUser, HiOutlineHome } from "react-icons/hi2"
 import { logout } from "../store/authSlice"
 
 function NumResults() {
@@ -25,6 +25,11 @@ function UserMenu() {
   return (
     <div className="user-menu">
       <NumResults />
+
+      <Link to="/" className="user-menu__trigger" title="Home">
+        <HiOutlineHome />
+      </Link>
+
       <div className="user-menu__container">
         <div className="user-menu__trigger">
           <HiOutlineUser />
