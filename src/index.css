@@ -1,0 +1,261 @@
+@import "tailwindcss";
+
+/* ==================== 01. DESIGN TOKENS ==================== */
+@theme {
+  --color-primary: #6741d9;
+  --color-primary-light: #7950f2;
+  --color-text: #dee2e6;
+  --color-text-muted: #adb5bd;
+  --color-surface-900: #212529;
+  --color-surface-500: #2b3035;
+  --color-surface-100: #343a40;
+  --color-danger: #fa5252;
+  --color-danger-dark: #e03131;
+  --color-success: #40c057;
+  --radius-card: 0.9rem;
+}
+
+/* ==================== 03. BASE & RESET STYLES ==================== */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-surface-900);
+  padding: 0;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* ==================== 04. REUSABLE UTILITIES & GLASSMORPHIC ACCENTS ==================== */
+@layer components {
+  /* ── Bento Grid ── */
+  .bento-grid {
+    @apply grid gap-4 w-full max-w-4xl mx-auto;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .bento-card {
+    @apply relative flex flex-col gap-3 bg-surface-500 border border-transparent rounded-[1.2rem] p-7 cursor-pointer outline-none transition-all duration-200;
+  }
+
+  .bento-card:hover,
+  .bento-card:focus-visible {
+    @apply -translate-y-0.5;
+    border-color: rgba(121, 80, 242, 0.4);
+    box-shadow: 0 0 2.4rem rgba(121, 80, 242, 0.15),
+      0 1.2rem 3.2rem rgba(0, 0, 0, 0.3);
+  }
+
+  .bento-card--wide {
+    @apply col-span-2;
+  }
+
+  .bento-card--tall {
+    @apply row-span-2;
+  }
+
+  .bento-card--accent {
+    background: linear-gradient(135deg,
+        rgba(103, 65, 217, 0.2) 0%,
+        rgba(121, 80, 242, 0.08) 100%);
+    border-color: rgba(103, 65, 217, 0.22);
+  }
+
+  .bento-card--accent:hover,
+  .bento-card--accent:focus-visible {
+    border-color: rgba(121, 80, 242, 0.65);
+  }
+
+  .bento-card__icon {
+    @apply text-2xl text-primary-light shrink-0;
+  }
+
+  .bento-card--accent .bento-card__icon,
+  .bento-card--accent .bento-card__title {
+    @apply text-white;
+  }
+
+  .bento-card__title {
+    @apply text-lg font-semibold text-text;
+  }
+
+  .bento-card__desc {
+    @apply text-sm text-text-muted leading-relaxed;
+  }
+
+  .bento-stat {
+    @apply text-5xl font-bold text-primary-light leading-none tracking-tight;
+  }
+
+  .bento-stat__label {
+    @apply text-[1.3rem] text-text-muted uppercase tracking-widest mt-1;
+  }
+
+  @media (max-width: 720px) {
+    .bento-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .bento-card--wide {
+      @apply col-span-2;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .bento-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .bento-card--wide,
+    .bento-card--tall {
+      @apply col-span-1 row-span-1;
+    }
+  }
+
+  /* ── Button ── */
+  .btn-glow:hover {
+    box-shadow: 0 0 0.8rem rgba(121, 80, 242, 0.25),
+      0 0.4rem 0.8rem rgba(103, 65, 217, 0.15);
+  }
+
+  /* ── Landing Page ── */
+  .lp-root {
+    @apply flex flex-col items-center px-6 py-24;
+  }
+
+  .lp-hero {
+    @apply text-center mb-20 max-w-[60rem];
+  }
+
+  .lp-hero__emoji {
+    @apply block text-7xl leading-none mb-6;
+    filter: drop-shadow(0 0 2.4rem rgba(121, 80, 242, 0.5));
+  }
+
+  .lp-hero__headline {
+    @apply text-5xl font-bold text-text leading-tight mb-5;
+    letter-spacing: -0.02em;
+  }
+
+  .lp-hero__headline span {
+    @apply text-primary-light;
+  }
+
+  .lp-hero__sub {
+    @apply text-lg text-text-muted leading-relaxed mb-10;
+  }
+
+  .lp-cta-group {
+    @apply flex gap-3 justify-center flex-wrap;
+  }
+
+  @media (max-width: 720px) {
+    .lp-hero__headline {
+      @apply text-[3rem];
+    }
+  }
+
+  /* ── ErrorBadge ── */
+  .error-badge {
+    @apply rounded-card p-6 flex flex-col items-center gap-3 mb-6 border border-transparent;
+  }
+
+  .error-badge--danger {
+    background-color: rgba(250, 82, 82, 0.1);
+    border-color: rgba(250, 82, 82, 0.3);
+    @apply text-danger;
+  }
+
+  .error-badge--warning {
+    background-color: rgba(255, 180, 0, 0.1);
+    border-color: rgba(255, 180, 0, 0.3);
+    color: #ffb400;
+  }
+
+  .error-badge--info {
+    background-color: rgba(103, 65, 217, 0.1);
+    border-color: rgba(103, 65, 217, 0.3);
+    @apply text-primary-light;
+  }
+
+  .error-badge__icon {
+    @apply text-[2.8rem];
+  }
+
+  .error-badge__message {
+    @apply text-[1.4rem] font-medium text-center leading-relaxed;
+  }
+
+  /* ── Page Layouts ── */
+  .media-detail-grid {
+    display: grid;
+    grid-template-columns: min(300px, 30%) 1fr min(240px, 20%);
+    grid-template-areas:
+      "poster info rating"
+      "about about about";
+    gap: 2rem;
+    align-items: start;
+  }
+
+  /* ── Skeleton Shimmer ── */
+  .skeleton-shimmer {
+    background: linear-gradient(90deg,
+        var(--color-surface-100) 25%,
+        var(--color-surface-500) 50%,
+        var(--color-surface-100) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+  }
+
+  .rounded-inherit {
+    border-radius: inherit;
+  }
+}
+
+/* ── Animations ── */
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes overlay-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes item-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
