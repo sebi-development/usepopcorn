@@ -15,6 +15,7 @@ function Button({
     secondary: 'bg-surface-100 text-text hover:bg-surface-500',
     outline: 'bg-transparent border border-primary text-primary-light hover:bg-primary/10',
     ghost: 'bg-transparent text-text-muted hover:text-text hover:bg-surface-100/50',
+    danger: 'bg-red-600/20 text-red-400 border border-red-500/30 hover:opacity-75',
   }
 
   const sizes = {

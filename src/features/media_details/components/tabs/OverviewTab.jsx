@@ -7,7 +7,7 @@ function formatReleaseStatus(status) {
   if (!status) return null
 
   const UPCOMING_STATUSES = ['Post Production', 'In Production', 'Planned']
-  
+
   if (UPCOMING_STATUSES.includes(status)) {
     return 'Upcoming'
   }
@@ -62,6 +62,14 @@ export default function OverviewTab({ data }) {
           </div>
         </div>
       )}
+
+      {/* Streaming Info Section */}
+      <div>
+        <h3 className={SECTION_HEADER_CLASS}>Streaming availability</h3>
+        <p className="text-text text-sm leading-relaxed">
+          COMING SOON
+        </p>
+      </div>
     </div>
   )
 }
