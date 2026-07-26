@@ -16,7 +16,10 @@ export async function searchContent(query, type = 'movie') {
 }
 
 export async function getMediaDetails(id, type = 'movie') {
-  return tmdbFetch(`/${type}/${id}?append_to_response=external_ids`)
+  const append = type === 'movie'
+    ? '?append_to_response=release_dates,watch%2Fproviders'
+    : '?append_to_response=watch%2Fproviders'
+  return tmdbFetch(`/${type}/${id}${append}`)
 }
 
 // CATEGORIES
