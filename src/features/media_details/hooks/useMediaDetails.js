@@ -9,25 +9,44 @@ export default function useMediaDetails(id, type = 'movie', userCountry = 'US') 
     staleTime: 1000 * 60 * 15,
     enabled: !!id,
     select: (data) => {
-      const { certification, providers } = extractRegionalData(data, userCountry);
-      return {
+      const { certification, regionalReleaseDate, providers } = extractRegionalData(data, userCountry, type);
+
+      const base = {
         id: data.id,
         imdb_id: data.imdb_id || data.external_ids?.imdb_id,
         title: data.title || data.name,
         overview: data.overview,
-        release_date: data.release_date || data.first_air_date,
-        runtime: data.runtime || data.episode_run_time?.[0],
         genres: data.genres,
         poster_path: data.poster_path,
         explicit: data.adult,
-        budget: data.budget,
-        revenue: data.revenue,
         release_status: data.status,
         origin_country: data.origin_country,
         watch_providers: data['watch/providers'] ?? null,
         type,
         certification,
-        providers
+        providers,
+      };
+
+      if (type === 'movie') {
+        return {
+          ...base,
+          release_date: data.release_date,
+          runtime: data.runtime,
+          budget: data.budget,
+          revenue: data.revenue,
+          regionalReleaseDate,
+        };
+      }
+
+      // TV Series
+      return {
+        ...base,
+        first_air_date: data.first_air_date,
+        last_air_date: data.last_air_date,
+        number_of_seasons: data.number_of_seasons,
+        number_of_episodes: data.number_of_episodes,
+        seasons: data.seasons?.map(s => ({ id: s.id, season_number: s.season_number, name: s.name, episode_count: s.episode_count, air_date: s.air_date, poster_path: s.poster_path })) ?? [],
+        episode_run_time: data.episode_run_time,
       };
     }
   })

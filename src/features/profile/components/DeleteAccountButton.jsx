@@ -3,7 +3,7 @@ import Button from "../../../components/Button";
 import { LuLoaderCircle } from "react-icons/lu"
 import supabase from "../../../lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 export default function DeleteAccountButton() {
   const [isDeleting, setIsDeleting] = useState(false);

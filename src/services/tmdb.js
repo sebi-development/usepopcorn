@@ -18,7 +18,7 @@ export async function searchContent(query, type = 'movie') {
 export async function getMediaDetails(id, type = 'movie') {
   const append = type === 'movie'
     ? '?append_to_response=release_dates,watch%2Fproviders'
-    : '?append_to_response=content_ratings,watch%2Fproviders';
+    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids';
   return tmdbFetch(`/${type}/${id}${append}`);
 }
 
@@ -33,4 +33,8 @@ export async function getTrending(page = 1) {
 
 export async function getPopular(page = 1) {
   return tmdbFetch(`/movie/popular?page=${page}`)
+}
+
+export async function getSeasonDetails(tvId, seasonNumber) {
+  return tmdbFetch(`/tv/${tvId}/season/${seasonNumber}`)
 }
