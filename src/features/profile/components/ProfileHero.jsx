@@ -1,7 +1,7 @@
 import { HiOutlineUser } from "react-icons/hi2"
 import useUpdateAvatar from "../hooks/useUpdateAvatar"
 import useRemoveAvatar from "../hooks/useRemoveAvatar"
-import { useRef } from "react"
+import { useRef, useMemo } from "react"
 import toast from "react-hot-toast"
 import { FiLoader } from "react-icons/fi"
 import { HiOutlinePencilAlt, HiOutlineTrash } from "react-icons/hi"
@@ -13,12 +13,14 @@ function ProfileHero({ profileData, ratingsCount, action, isOwnProfile = false }
 	const isBusy = isUpdating || isRemoving
 	const fileInputRef = useRef(null)
 
-	const memberSince = profileData?.created_at
-		? new Date(profileData.created_at).toLocaleDateString('en-US', {
+	const createdAt = profileData?.created_at;
+	const memberSince = useMemo(() => {
+		if (!createdAt) return null
+		return new Date(createdAt).toLocaleDateString('en-US', {
 			month: 'long',
 			year: 'numeric'
 		})
-		: null
+	}, [createdAt])
 
 	function handleImageSelect(e) {
 		const file = e.target.files[0]
@@ -39,7 +41,7 @@ function ProfileHero({ profileData, ratingsCount, action, isOwnProfile = false }
 	return (
 		<div className="flex flex-col sm:flex-row items-center gap-8">
 			<div
-				onClick={() => isOwnProfile && fileInputRef.current.click()}
+				onClick={() => isOwnProfile && fileInputRef.current?.click()}
 				className="relative w-40 h-40 rounded-full overflow-hidden bg-surface-500 border-2 border-surface-100 flex items-center justify-center cursor-pointer group transition-all"
 			>
 				{isBusy && (
@@ -51,7 +53,7 @@ function ProfileHero({ profileData, ratingsCount, action, isOwnProfile = false }
 				{isOwnProfile && !isBusy && (
 					<div className="absolute inset-0 bg-black/50 flex flex-row items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
 						<button
-							onClick={(e) => { e.stopPropagation(); fileInputRef.current.click() }}
+							onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
 							className="p-2 text-white cursor-pointer"
 						>
 							<HiOutlinePencilAlt size={26} />
@@ -68,7 +70,7 @@ function ProfileHero({ profileData, ratingsCount, action, isOwnProfile = false }
 				)}
 
 				{profileData?.avatar_url ? (
-					<img src={profileData.avatar_url} alt={profileData.username} className="w-full h-full object-cover" />
+					<img src={profileData.avatar_url} alt={profileData.username} className="w-full h-full object-cover" decoding="async" />
 				) : (
 					<HiOutlineUser size={64} className="text-text-muted" />
 				)}
