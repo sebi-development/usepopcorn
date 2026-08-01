@@ -1,9 +1,10 @@
+import { memo } from "react"
 import { useNavigate } from "react-router"
 import MoviePoster from "../../../components/MoviePoster"
 import Chip from "../../../components/Chip"
 import { getGenreNames } from "../../../utils/genres"
 
-function SearchResultItem({ id, title, poster, releaseYear, media_type, genreIds, onClose, animationDelay = 0 }) {
+const SearchResultItem = memo(function SearchResultItem({ id, title, poster, releaseYear, media_type, genreIds, onClose, animationDelay = 0 }) {
   const navigate = useNavigate()
   const IMAGE_URL = import.meta.env.VITE_TMDB_IMAGE_URL
   const genres = getGenreNames(genreIds, media_type)
@@ -35,6 +36,6 @@ function SearchResultItem({ id, title, poster, releaseYear, media_type, genreIds
       </div>
     </div>
   )
-}
+})
 
 export default SearchResultItem

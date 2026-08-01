@@ -1,6 +1,11 @@
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 
 export default function useCurrentUser() {
-  const queryClient = useQueryClient()
-  return queryClient.getQueryData(['currentUser'])
+  const { data } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => null,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  })
+  return data
 }

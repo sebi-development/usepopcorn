@@ -5,7 +5,7 @@ import MediaCard from "./MediaCard"
 import useScrollArrows from "../hooks/useScrollArrows"
 import SkeletonBox from "./skeletons/components/SkeletonBox"
 
-function MediaRow({ heading, data, isLoading, limit = Infinity, fetchNextPage, hasNextPage, isFetchingNextPage, rank = true, showFavorite = false, showWatchlist = false, checkIsFavorited }) {
+function MediaRow({ heading, data, isLoading, limit = Infinity, fetchNextPage, hasNextPage, isFetchingNextPage, rank = true, showFavorite = false, favoritedSet }) {
   // Media data from api
   const media = useMemo(() => {
     if (!data) return []
@@ -57,7 +57,7 @@ function MediaRow({ heading, data, isLoading, limit = Infinity, fetchNextPage, h
         {/* Scrollable row */}
         <div ref={scrollRef} className="flex gap-3 overflow-x-auto scroll-smooth px-6 pb-2 scrollbar-hide">
           {media.map((item, index) => (
-            <div key={item.id} className="flex-none w-36 sm:w-40 md:w-44">
+            <div key={item.tmdb_id || item.id} className="flex-none w-36 sm:w-40 md:w-44">
               <MediaCard
                 id={item.tmdb_id || item.id}
                 type={item.media_type || item.type}
@@ -66,8 +66,7 @@ function MediaRow({ heading, data, isLoading, limit = Infinity, fetchNextPage, h
                 userRating={item.score}
                 rank={rank ? index + 1 : undefined}
                 showFavorite={showFavorite}
-                showWatchlist={showWatchlist}
-                isFavorited={checkIsFavorited ? checkIsFavorited(item) : undefined}
+                isFavorited={favoritedSet?.has(item.tmdb_id || item.id)}
               />
             </div>
           ))}

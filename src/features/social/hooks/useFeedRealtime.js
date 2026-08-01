@@ -1,23 +1,31 @@
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import supabase from "../../../lib/supabase"
+import useCurrentUser from "../../auth/hooks/useCurrentUser"
 
 export default function useFeedRealtime(followingIds) {
   const queryClient = useQueryClient()
+  const currentUser = useCurrentUser()
+  const followingKey = useMemo(() => {
+    if (!followingIds?.length) return null;
+    return [...followingIds].sort().join(',');
+  }, [followingIds]);
 
   useEffect(() => {
-    if (!followingIds?.length) return
+    if (!followingKey || !currentUser?.id) return;
+
+    const channelName = `feed-realtime-${currentUser.id}`;
 
     // subscription
-    const channel = supabase.channel('feed-realtime').on(
+    const channel = supabase.channel(channelName).on(
       'postgres_changes', {
       event: '*',
       schema: 'public',
       table: 'ratings',
-      filter: `user_id=in.(${followingIds.join(',')})`
+      filter: `user_id=in.(${followingKey})`
     },
     () => {
-      queryClient.invalidateQueries({queryKey: ['feed']})
+      queryClient.invalidateQueries({queryKey: ['feed', currentUser?.id]})
     }
     ).subscribe()
     
@@ -26,5 +34,5 @@ export default function useFeedRealtime(followingIds) {
       // cleanup will go here
       supabase.removeChannel(channel)
     }
-  }, [followingIds])
+  }, [followingKey, currentUser?.id, queryClient])
 }

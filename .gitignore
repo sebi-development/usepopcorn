@@ -32,3 +32,4 @@ dist-ssr
 .agy/
 *.agent.logANTIGRAVITY.md.DS_Store
 node_modules/
+ANTIGRAVITY.md

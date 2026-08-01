@@ -23,6 +23,7 @@ export default function useSeasonDetails(tvId, seasonNumber) {
         runtime: ep.runtime,
         still_path: ep.still_path,
         vote_average: ep.vote_average,
+        vote_count: ep.vote_count,
       })) ?? [],
     }),
   });

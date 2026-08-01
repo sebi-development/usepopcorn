@@ -8,9 +8,11 @@
   --color-text-muted: #adb5bd;
   --color-surface-900: #212529;
   --color-surface-500: #2b3035;
+  --color-surface-300: #495057;
   --color-surface-100: #343a40;
   --color-danger: #fa5252;
   --color-danger-dark: #e03131;
+  --color-warning: #fab005;
   --color-success: #40c057;
   --radius-card: 0.9rem;
 }

@@ -3,7 +3,7 @@ import { getProfileRelationship } from "../../../services/follows"
 
 export default function useProfileRelationship(targetUserId, currentUserId) {
   const { data, isLoading } = useQuery({
-    queryKey: ['profileRelationship', targetUserId],
+    queryKey: ['profileRelationship', targetUserId, currentUserId],
     queryFn: () => getProfileRelationship(currentUserId, targetUserId),
     enabled: !!targetUserId && !!currentUserId,
   })

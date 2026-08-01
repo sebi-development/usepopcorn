@@ -1,8 +1,9 @@
+import { memo } from "react"
 import { Link } from "react-router"
 import Avatar from "../../../components/Avatar"
 import { timeAgo } from "../../../utils/timeAgo"
 
-export default function FriendActivityItem({ friend }) {
+const FriendActivityItem = memo(function FriendActivityItem({ friend }) {
   const percentage = Math.round((friend.score / 10) * 100)
 
   return (
@@ -53,4 +54,6 @@ export default function FriendActivityItem({ friend }) {
       </div>
     </div>
   )
-}
+})
+
+export default FriendActivityItem

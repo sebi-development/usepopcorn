@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { getUserRatings } from "../../../services/ratings";
+import useCurrentUser from "../../auth/hooks/useCurrentUser";
 
 export default function useGetUserRatings() {
-
+  const currentUser = useCurrentUser();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['ratings', 'user'],
-    queryFn: getUserRatings
+    queryKey: ['ratings', 'user', currentUser?.id],
+    queryFn: () => getUserRatings(currentUser?.id),
+    enabled: !!currentUser?.id,
   })
 
   return { data, isLoading, error }

@@ -6,20 +6,24 @@ import { useOutsideClick } from "../hooks/useOutsideClick"
 import useProfileData from "../features/profile/hooks/useProfileData"
 import useCurrentUser from "../features/auth/hooks/useCurrentUser"
 import supabase from "../lib/supabase"
-import { QueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 
 
 function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const ref = useOutsideClick(() => setIsOpen(false))
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
+  const closeMenu = () => setIsOpen(false)
+  const toggleMenu = () => setIsOpen(prev => !prev)
 
   const currentUser = useCurrentUser()
   const { profileData } = useProfileData(currentUser?.id)
 
   async function handleLogout() {
     await supabase.auth.signOut()
-    QueryClient.clear()
+    queryClient.clear()
     supabase.removeAllChannels()
     navigate('/login')
   }
@@ -28,7 +32,7 @@ function UserMenu() {
     <div ref={ref} className="relative">
       {/* Trigger */}
       <button
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={toggleMenu}
         className="flex items-center justify-center w-9 h-9 rounded-full bg-primary-light text-white cursor-pointer transition-colors hover:bg-primary shrink-0 overflow-hidden"
       >
         {profileData?.avatar_url ? (
@@ -36,6 +40,8 @@ function UserMenu() {
             src={profileData.avatar_url}
             alt="User menu"
             className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <HiOutlineUser size={18} />
@@ -55,7 +61,7 @@ function UserMenu() {
           <div className="flex flex-col py-1">
             <Link
               to="/profile"
-              onClick={() => setIsOpen(false)}
+              onClick={closeMenu}
               className="flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-surface-100 transition-colors"
             >
               <FiUser size={15} className="text-text-muted" />
@@ -64,7 +70,7 @@ function UserMenu() {
 
             <Link
               to="/profile/stats"
-              onClick={() => setIsOpen(false)}
+              onClick={closeMenu}
               className="flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-surface-100 transition-colors"
             >
               <FiBarChart2 size={15} className="text-text-muted" />
@@ -73,7 +79,7 @@ function UserMenu() {
 
             <Link
               to="/community"
-              onClick={() => setIsOpen(false)}
+              onClick={closeMenu}
               className="flex items-center gap-3 px-4 py-2.5 text-sm text-text hover:bg-surface-100 transition-colors"
             >
               <HiMiniUserGroup size={15} className="text-text-muted" />
@@ -85,11 +91,7 @@ function UserMenu() {
           {/* Logout */}
           <div className="border-t border-surface-100 py-1">
             <button
-              onClick={() => {
-                handleLogout()
-                navigate('/login')
-              }
-              }
+              onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger hover:bg-surface-100 transition-colors"
             >
               <FiLogOut size={15} />

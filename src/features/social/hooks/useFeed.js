@@ -6,7 +6,7 @@ export default function useFeed() {
   const currentUser = useCurrentUser()
 
   const { data, isLoading } = useQuery({
-    queryKey: ['userFeed'],
+    queryKey: ['feed', currentUser?.id],
     queryFn: () => getFeed(currentUser?.id),
     enabled: !!currentUser?.id,
   })

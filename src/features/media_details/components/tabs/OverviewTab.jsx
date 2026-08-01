@@ -23,22 +23,19 @@ function formatReleaseStatus(status) {
 export default function OverviewTab({ data }) {
   const isTV = data?.type === 'tv'
 
-  // Format origin country array into "🇺🇸 US" format
-  const formattedCountries = data?.origin_country
-    ?.map((code) => {
-      const flag = countryToFlag(code)
-      try {
-        const countryName = regionNames.of(code);
-        return flag ? ` ${countryName} ( ${flag} )` : countryName;
-      } catch (e) {
-        console.warn(e.message)
-        return flag ? `${flag} ${code}` : code;
-        
-      }
-    })
-    .join(', ')
+  const activeInfoItems = useMemo(() => {
+    const formattedCountries = data?.origin_country
+      ?.map((code) => {
+        const flag = countryToFlag(code)
+        try {
+          const countryName = regionNames.of(code);
+          return flag ? `${countryName} (${flag})` : countryName;
+        } catch {
+          return flag ? `${flag} ${code}` : code;
+        }
+      })
+      .join(', ')
 
-  const infoItems = useMemo(() => {
     return [
       { label: 'Status', value: formatReleaseStatus(data?.release_status) },
       isTV ? { label: 'First Aired', value: formatDate(data?.first_air_date) } : { label: 'Release Date', value: formatDate(data?.release_date) },
@@ -51,12 +48,8 @@ export default function OverviewTab({ data }) {
       !isTV && { label: 'Revenue', value: formatCurrency(data?.revenue) },
       { label: 'Country', value: formattedCountries || null },
       { label: 'Content', value: data?.explicit ? '🔞 Adult Content' : null }
-    ].filter(Boolean);
-  }, [data, formattedCountries, isTV])
-
-  const activeInfoItems = useMemo(() => {
-    return infoItems.filter((item) => item.value !== null && item.value !== undefined)
-  }, [infoItems])
+    ].filter((item) => item && item.value != null);
+  }, [data, isTV])
 
   return (
     <div className="flex flex-col gap-6">
@@ -88,7 +81,7 @@ export default function OverviewTab({ data }) {
 
       {/* Streaming Providers Section */}
       <div>
-        <h3 className="text-sm font-bold tracking-wider text-text-muted uppercase mb-3 mt-6">Streaming Availability</h3>
+        <h3 className={`${SECTION_HEADER_CLASS} mt-6`}>Streaming Availability</h3>
         {data?.providers?.length > 0 ? (
           <div className="flex flex-wrap gap-4">
             {data.providers.map((provider) => (

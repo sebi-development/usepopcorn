@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Outlet, Navigate } from 'react-router'
 import supabase from '../lib/supabase'
 import Navbar from './Navbar'
@@ -24,19 +24,29 @@ function AppLayout() {
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [queryClient])
 
-  // still loading — don't flash login redirect
-  if (session === undefined) return null
+  // OPT-008: stable object reference — must be declared before any early returns
+  // so the hook count is identical on every render (Rules of Hooks)
+  const outletContext = useMemo(() => ({ session }), [session])
+  const isLoggedIn = Boolean(session)
 
-  // no session — redirect to login
+  // still loading
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen bg-surface-900 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (session === null) return <Navigate to='/login' replace />
 
   return (
     <div className="min-h-screen bg-surface-900">
-      <Navbar session={session} />
+      <Navbar isLoggedIn={isLoggedIn} />
       <main className="pt-24 px-6 max-w-7xl mx-auto w-full">
-        <Outlet context={ { session } }/>
+        <Outlet context={outletContext} />
       </main>
     </div>
   )

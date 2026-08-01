@@ -6,7 +6,7 @@ import toast from "react-hot-toast"
 export default function useFollow(userId) {
   const queryClient = useQueryClient()
   const currentUser = useCurrentUser()
-  const queryKey = ['profileRelationship', userId]
+  const queryKey = ['profileRelationship', userId, currentUser?.id]
 
   const { mutate, isPending } = useMutation({
     mutationFn: (isFollowing) => isFollowing
@@ -33,9 +33,9 @@ export default function useFollow(userId) {
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['profileRelationship', userId] })
+      queryClient.invalidateQueries({ queryKey: ['profileRelationship', userId, currentUser?.id] })
       queryClient.invalidateQueries({ queryKey: ['isFollowing', currentUser?.id, userId] })
-      queryClient.invalidateQueries({ queryKey: ['userFeed'] })
+      queryClient.invalidateQueries({ queryKey: ['feed', currentUser?.id] })
       queryClient.invalidateQueries({ queryKey: ['suggested', currentUser?.id] })
     }
   })

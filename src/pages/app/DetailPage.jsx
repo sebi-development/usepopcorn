@@ -1,6 +1,6 @@
 import { useLocation, useParams } from "react-router"
 import { useMemo, useState, useCallback } from "react"
-import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers } from "react-icons/hi2"
+import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers, HiOutlineListBullet } from "react-icons/hi2"
 
 import useMediaDetails from "../../features/media_details/hooks/useMediaDetails"
 import useGetRating from '../../features/ratings/hooks/useGetRating'
@@ -20,22 +20,17 @@ import SlidingTabs from "../../components/SlidingTabs"
 import FriendActivityTab from "../../features/media_details/components/tabs/FriendActivityTab"
 import ScoresTab from "../../features/media_details/components/tabs/ScoresTab"
 import OverviewTab from "../../features/media_details/components/tabs/OverviewTab"
-
-const DETAIL_TABS = [
-  { id: "overview", label: "Overview", icon: <HiOutlineInformationCircle size={18} /> },
-  { id: "scores", label: "Critic Scores", icon: <HiOutlineStar size={18} /> },
-  { id: "social", label: "Friend Activity", icon: <HiOutlineUsers size={18} /> },
-]
+import SeasonsTab from "../../features/media_details/components/tabs/SeasonsTab"
 
 function TabPanel({ id, activeTab, children }) {
-  const isActive = activeTab === id
+  if (activeTab !== id) return null
+
   return (
     <div
       role="tabpanel"
       id={`panel-${id}`}
       aria-labelledby={`tab-${id}`}
-      aria-hidden={!isActive}
-      className={isActive ? "animate-in fade-in duration-300 block" : "hidden"}
+      className="animate-in fade-in duration-300"
     >
       {children}
     </div>
@@ -50,6 +45,17 @@ export default function DetailPage() {
   const type = state?.type || 'movie'
   const currentUser = useCurrentUser()
   const [activeTab, setActiveTab] = useState("overview")
+
+  const DETAIL_TABS = useMemo(() => {
+    const base = [
+      { id: "overview", label: "Overview", icon: <HiOutlineInformationCircle size={18} /> },
+      { id: "scores", label: "Critic Scores", icon: <HiOutlineStar size={18} /> },
+      { id: "social", label: "Friend Activity", icon: <HiOutlineUsers size={18} /> },
+    ]
+    return type === 'tv'
+      ? [...base, { id: "seasons", label: "Episodes", icon: <HiOutlineListBullet size={18} /> }]
+      : base
+  }, [type])
 
   // ── Media & ratings ────────────────────────────────────────
   const { data, isLoading, error: errorDetailData } = useMediaDetails(tmdbId, type)
@@ -152,6 +158,13 @@ export default function DetailPage() {
           <TabPanel id="social" activeTab={activeTab}>
             <FriendActivityTab tmdbId={tmdbId} />
           </TabPanel>
+
+          {/* Tab Panel 4: Seasons (Series only) */}
+          {type === 'tv' && (
+            <TabPanel id="seasons" activeTab={activeTab}>
+              <SeasonsTab tvId={tmdbId} seasons={data?.seasons} />
+            </TabPanel>
+          )}
         </div>
       </div>
     </div>

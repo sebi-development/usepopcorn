@@ -1,8 +1,9 @@
+import { memo } from "react"
 import { Link } from "react-router"
 import { HiStar, HiOutlineUser } from "react-icons/hi2"
 import { timeAgo } from "../../../utils/timeAgo"
 
-export default function ActivityCard({ item }) {
+const ActivityCard = memo(function ActivityCard({ item }) {
   return (
     <article className="p-5 bg-surface-500 border border-surface-100 rounded-card flex flex-col gap-4">
       
@@ -76,4 +77,6 @@ export default function ActivityCard({ item }) {
       </Link>
     </article>
   )
-}
+})
+
+export default ActivityCard

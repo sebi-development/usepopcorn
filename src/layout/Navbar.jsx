@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { Link } from "react-router"
 import UserMenu from "../components/UserMenu"
 import Button from "../components/Button"
@@ -12,7 +13,8 @@ function GuestActions() {
   )
 }
 
-function Navbar({ session }) {
+// memo: only re-renders when isLoggedIn flips (login / logout)
+const Navbar = memo(function Navbar({ isLoggedIn }) {
   return (
     <nav className="
       sticky top-4 z-50
@@ -22,11 +24,11 @@ function Navbar({ session }) {
       px-6 py-3
       flex items-center justify-between gap-4
     ">
-      <Logo redirectTo={session ? '/browse' : '/'} />
-      {session && <Search />}
-      {session ? <UserMenu /> : <GuestActions />}
+      <Logo redirectTo={isLoggedIn ? '/browse' : '/'} />
+      {isLoggedIn && <Search />}
+      {isLoggedIn ? <UserMenu /> : <GuestActions />}
     </nav>
   )
-}
+})
 
 export default Navbar

@@ -9,6 +9,7 @@ export default function useSearch(query, filter) {
     queryKey: ['search', filter, debouncedQuery],
     queryFn: () => searchContent(debouncedQuery, filter),
     enabled: debouncedQuery.length > 0,
+    gcTime: 1000 * 30,
     placeholderData: keepPreviousData
   })
 

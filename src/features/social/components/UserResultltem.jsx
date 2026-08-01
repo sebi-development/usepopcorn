@@ -1,3 +1,4 @@
+import { memo } from "react"
 import { Link } from "react-router"
 import { FaCirclePlus, FaCircleCheck } from "react-icons/fa6"
 import toast from "react-hot-toast"
@@ -6,7 +7,7 @@ import Avatar from "../../../components/Avatar"
 import useFollow from "../hooks/useFollow"
 import useIsFollowing from "../hooks/useIsFollowing"
 
-export default function UserResultItem({ user, subtitle }) {
+const UserResultItem = memo(function UserResultItem({ user, subtitle }) {
   // Keeps cost per row low when rendering lists (search results, suggestions).
   const { data: isFollowing, isLoading } = useIsFollowing(user.id)
   const { mutate: toggleFollow, isPending } = useFollow(user.id)
@@ -68,4 +69,6 @@ export default function UserResultItem({ user, subtitle }) {
       </Tooltip>
     </Link>
   )
-}
+})
+
+export default UserResultItem
