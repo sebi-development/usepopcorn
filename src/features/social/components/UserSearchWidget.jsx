@@ -1,14 +1,12 @@
 import { useState } from "react"
 import { FiSearch, FiLoader } from "react-icons/fi"
-import useDebounce from "../../../hooks/useDebounce"
 import useUserSearch from "../../search/hooks/useUserSearch"
 import UserResultItem from "./UserResultltem"
 
 export default function UserSearchWidget() {
   const [searchTerm, setSearchTerm] = useState("")
-  const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
-  const { data: results, isLoading } = useUserSearch(debouncedSearchTerm)
+  const { data: results, isLoading } = useUserSearch(searchTerm)
 
   return (
     <div className="bg-surface-500 border border-surface-100 rounded-card p-5 flex flex-col transition-all duration-300">
@@ -37,7 +35,7 @@ export default function UserSearchWidget() {
       </div>
 
       {/* Inline Results Expansion */}
-      {debouncedSearchTerm.length >= 2 && (
+      {searchTerm.length >= 2 && (
         <div className="flex flex-col gap-1 mt-4 animate-in slide-in-from-top-2 fade-in duration-200">
 
           {/* Handle Empty State */}
