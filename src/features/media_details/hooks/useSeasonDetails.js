@@ -5,7 +5,8 @@ export default function useSeasonDetails(tvId, seasonNumber) {
   return useQuery({
     queryKey: ['seasonDetails', tvId, seasonNumber],
     queryFn: () => getSeasonDetails(tvId, seasonNumber),
-    staleTime: 1000 * 60 * 30,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60,
     enabled: !!tvId && seasonNumber != null,
     select: (data) => ({
       id: data.id,

@@ -10,7 +10,7 @@ export default function useInteractions(type, userId) {
     queryKey: ['interactions', type, id],
     queryFn: () => getInteractions(type, id),
     enabled: !!id,
-    staleTime: Infinity
+    staleTime: 1000 * 60 * 5
   })
   return { data, isLoading, error }
 }
