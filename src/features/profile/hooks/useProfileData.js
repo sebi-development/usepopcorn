@@ -11,21 +11,21 @@ export default function useProfileData(userId) {
     queryKey: ['profile', id],
     queryFn: () => getProfile(id),
     enabled: !!id,
-    staleTime: Infinity
+    staleTime: 1000 * 60 * 5
   })
 
   const { data: recentRatings, isLoading: isLoadingRatings } = useQuery({
     queryKey: ['ratings', 'user', id],
     queryFn: () => getUserRatings(15, id),
     enabled: !!id,
-    staleTime: Infinity
+    staleTime: 1000 * 60 * 5
   })
 
   const { data: ratingsCount } = useQuery({
     queryKey: ['ratings', 'user', 'count', id],
     queryFn: () => getUserRatingsCount(id),
     enabled: !!id,
-    staleTime: Infinity
+    staleTime: 1000 * 60 * 5
   })
 
   return { profileData, recentRatings, ratingsCount, isLoadingProfile, isLoadingRatings }

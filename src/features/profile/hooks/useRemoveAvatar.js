@@ -15,7 +15,10 @@ export default function useRemoveAvatar() {
     },
     onSuccess: () => {
       toast.success('Avatar deleted successfully')
-      queryClient.invalidateQueries({ queryKey: ['profile'] })
+      queryClient.setQueryData(['profile', currentUser?.id], (oldData) => {
+        if (!oldData) return oldData;
+        return { ...oldData, avatar_url: null };
+      });
     },
     onError: (err) => toast.error(`Failed deleting avatar: ${err.message}`)
   })

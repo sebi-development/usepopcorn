@@ -63,7 +63,6 @@ function ProfilePage() {
       {isOwnProfile && isModalOpen && (
         <Suspense fallback={null}>
           <EditProfileModal 
-            isOpen={isModalOpen} 
             onClose={() => setIsModalOpen(false)} 
             profileData={profileData} 
           />

@@ -5,7 +5,7 @@ import useUpdateProfile from "../hooks/useUpdateProfile"
 import CountrySelect from "./CountrySelect"
 import DeleteAccountButton from "./DeleteAccountButton"
 
-export default function EditProfileModal({ isOpen, onClose, profileData }) {
+export default function EditProfileModal({ onClose, profileData }) {
   const { updateUserProfile, isUpdating } = useUpdateProfile()
     const { register, handleSubmit, getValues, trigger, formState: { errors }, reset } = useForm({
     defaultValues: {
@@ -15,8 +15,6 @@ export default function EditProfileModal({ isOpen, onClose, profileData }) {
       confirmPassword: "",
     }
   })
-
-  if (!isOpen) return null;
 
   function onSubmit(data) {
     const { username, country, password } = data
