@@ -11,6 +11,7 @@ import useProfileRelationship from "../../features/social/hooks/useProfileRelati
 import useFollow from "../../features/social/hooks/useFollow"
 import { useParams } from "react-router"
 import useCurrentUser from "../../features/auth/hooks/useCurrentUser"
+import useDelayedLoading from "../../hooks/useDelayedLoading"
 
 const EditProfileModal = lazy(() => import("../../features/profile/components/EditProfileModal"))
 
@@ -21,6 +22,7 @@ function ProfilePage() {
   const targetUserId = userId ?? currentUser?.id
 
   const { profileData, recentRatings, ratingsCount, isLoadingProfile, isLoadingRatings } = useProfileData(targetUserId)
+  const showLoadingProfile = useDelayedLoading(isLoadingProfile)
   const { data: watchlist, isLoading: isWatchlistLoading } = useInteractions("watchlist", targetUserId)
   const { data: favorites, isLoading: isFavoritesLoading } = useInteractions("favorite", targetUserId)
   const { data: relationship } = useProfileRelationship(
@@ -45,7 +47,7 @@ function ProfilePage() {
 
   return (
     <main className="flex flex-col gap-12 md:gap-16 pb-12">
-      {isLoadingProfile ? (
+      {showLoadingProfile ? (
         <ProfileHeroSkeleton />
       ) : (
         <ProfileHero

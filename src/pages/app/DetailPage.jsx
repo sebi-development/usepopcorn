@@ -14,13 +14,14 @@ import useCurrentUser from "../../features/auth/hooks/useCurrentUser"
 import DetailCard from "../../features/media_details/components/DetailCard"
 import MoviePoster from "../../components/MoviePoster"
 import MediaDetailSkeleton from "../../components/skeletons/MediaDetailSkeleton"
-import ErrorBadge from "../../components/ErrorBadge"
+import AlertBanner from "../../components/AlertBanner"
 import ActionSection from "../../features/media_details/components/ActionSection"
 import SlidingTabs from "../../components/SlidingTabs"
 import FriendActivityTab from "../../features/media_details/components/tabs/FriendActivityTab"
 import ScoresTab from "../../features/media_details/components/tabs/ScoresTab"
 import OverviewTab from "../../features/media_details/components/tabs/OverviewTab"
 import SeasonsTab from "../../features/media_details/components/tabs/SeasonsTab"
+import useDelayedLoading from "../../hooks/useDelayedLoading"
 
 function TabPanel({ id, activeTab, children }) {
   if (activeTab !== id) return null
@@ -59,6 +60,7 @@ export default function DetailPage() {
 
   // ── Media & ratings ────────────────────────────────────────
   const { data, isLoading, error: errorDetailData } = useMediaDetails(tmdbId, type)
+  const showLoading = useDelayedLoading(isLoading)
   const { data: userRating } = useGetRating(tmdbId)
 
   const { data: averageRating } = useGetAverageRating(tmdbId)
@@ -98,12 +100,13 @@ export default function DetailPage() {
     mutateDeleteRating(tmdbId)
   }, [mutateDeleteRating, tmdbId])
 
-  if (errorDetailData) return <ErrorBadge message='Error fetching data. Please try again' variant="warning" />
-  if (isLoading) return <MediaDetailSkeleton />
-
+  if (showLoading) return <MediaDetailSkeleton />
+  if (errorDetailData) return <AlertBanner message='Error fetching data. Please try again' variant="danger" />
+  if (!data) return null
+  
   return (
     <div className="media-detail-grid">
-      {/* Poster */}
+
       <div className="[grid-area:poster]">
         <MoviePoster
           src={`${import.meta.env.VITE_TMDB_IMAGE_URL}${data?.poster_path}`}
@@ -138,15 +141,12 @@ export default function DetailPage() {
           onChange={setActiveTab}
         />
 
-        {/* Tab Content Container */}
         <div className="bg-surface-500 border border-surface-100 rounded-card p-6 min-h-[250px]">
 
-          {/* Tab Panel 1: Overview */}
           <TabPanel id="overview" activeTab={activeTab}>
             <OverviewTab data={data}></OverviewTab>
           </TabPanel>
 
-          {/* Tab Panel 2: Critic Scores */}
           <TabPanel id="scores" activeTab={activeTab}>
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-widest mb-3">
               Platform Scores
@@ -154,12 +154,10 @@ export default function DetailPage() {
             <ScoresTab imdbId={data?.imdb_id} />
           </TabPanel>
 
-          {/* Tab Panel 3: Friend Activity */}
           <TabPanel id="social" activeTab={activeTab}>
             <FriendActivityTab tmdbId={tmdbId} />
           </TabPanel>
 
-          {/* Tab Panel 4: Seasons (Series only) */}
           {type === 'tv' && (
             <TabPanel id="seasons" activeTab={activeTab}>
               <SeasonsTab tvId={tmdbId} seasons={data?.seasons} />
