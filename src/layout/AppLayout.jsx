@@ -26,8 +26,6 @@ function AppLayout() {
     return () => subscription.unsubscribe()
   }, [queryClient])
 
-  // OPT-008: stable object reference — must be declared before any early returns
-  // so the hook count is identical on every render (Rules of Hooks)
   const outletContext = useMemo(() => ({ session }), [session])
   const isLoggedIn = Boolean(session)
 

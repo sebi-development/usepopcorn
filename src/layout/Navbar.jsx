@@ -13,7 +13,7 @@ function GuestActions() {
   )
 }
 
-// memo: only re-renders when isLoggedIn flips (login / logout)
+// only re-renders when isLoggedIn flips (login / logout)
 const Navbar = memo(function Navbar({ isLoggedIn }) {
   return (
     <nav className="
