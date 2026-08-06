@@ -1,15 +1,17 @@
 import { useMemo, memo } from "react"
 import { FaImdb } from "react-icons/fa"
 import { SiRottentomatoes, SiMetacritic } from "react-icons/si"
-import useExternalApis from "../../hooks/useExternalApis" 
+import useExternalApis from "../../hooks/useExternalApis"
 import BentoGrid from "../../../../components/BentoGrid"
 import SkeletonBox from "../../../../components/skeletons/components/SkeletonBox"
+import AlertBanner from "../../../../components/AlertBanner"
+import useDelayedLoading from "../../../../hooks/useDelayedLoading"
 
 function CriticScoresSkeleton() {
   return (
     <BentoGrid>
       {[1, 2, 3].map((i) => (
-        <BentoGrid.Card key={i} className="flex flex-col items-center justify-between p-6 min-h-[140px]">
+        <BentoGrid.Card key={i} className="flex flex-col items-center justify-between p-6 min-h-35">
           <div className="flex items-center gap-2.5">
             <SkeletonBox className="w-6 h-6 rounded-md shrink-0" />
             <SkeletonBox className="w-20 h-4 rounded-md" />
@@ -23,6 +25,8 @@ function CriticScoresSkeleton() {
 
 function CriticScoresTab({ imdbId }) {
   const { data: scores, isLoading, isError } = useExternalApis(imdbId)
+  const showLoading = useDelayedLoading(isLoading)
+
   const platforms = useMemo(() => {
     if (!scores) return []
     return [
@@ -52,19 +56,15 @@ function CriticScoresTab({ imdbId }) {
 
   if (!imdbId) {
     return (
-      <div className="text-center py-10 text-sm text-text-muted">
-        External scores are not available for this title.
-      </div>
+      <AlertBanner title="External scores are not available for this title" variant="info" />
     )
   }
 
-  if (isLoading) return <CriticScoresSkeleton />
+  if (showLoading) return <CriticScoresSkeleton />
 
-  if (isError || !scores) {
+  if (isError) {
     return (
-      <div className="text-center py-10 text-sm text-red-400">
-        Failed to load platform scores. Please try again later.
-      </div>
+      <AlertBanner variant="danger" message="Failed to load platform scores. Please try again later." />
     )
   }
 
@@ -72,9 +72,9 @@ function CriticScoresTab({ imdbId }) {
     <div className="animate-in fade-in duration-300 mt-2">
       <BentoGrid>
         {platforms.map(({ id, name, icon: Icon, score, iconColor }) => (
-          <BentoGrid.Card 
-            key={id} 
-            className="flex flex-col items-center justify-between p-6 min-h-[140px]"
+          <BentoGrid.Card
+            key={id}
+            className="flex flex-col items-center justify-between p-6 min-h-35"
           >
             <div className="flex items-center gap-2.5 text-text-muted">
               <Icon className={`w-6 h-6 ${iconColor} shrink-0`} />

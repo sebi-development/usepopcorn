@@ -2,6 +2,8 @@ import { memo, useState, useMemo } from 'react'
 import useSeasonDetails from '../../hooks/useSeasonDetails'
 import { HiChevronDown } from 'react-icons/hi2'
 import SkeletonBox from '../../../../components/skeletons/components/SkeletonBox'
+import AlertBanner from '../../../../components/AlertBanner'
+import useDelayedLoading from '../../../../hooks/useDelayedLoading'
 
 const RATING_LEGEND = [
   { color: 'bg-success', label: 'Great' },
@@ -10,7 +12,6 @@ const RATING_LEGEND = [
   { color: 'bg-surface-300', label: 'Unaired' },
 ]
 
-// OPT-027: `todayISO` is a primitive string so React.memo can compare by value
 const EpisodeRow = memo(function EpisodeRow({ episode, seasonNumber, todayISO }) {
   const isUnaired = episode.vote_count === 0 || !episode.air_date || episode.air_date > todayISO
   const dotColor = isUnaired
@@ -37,7 +38,7 @@ function EpisodeSkeleton() {
     <div className="grid grid-cols-[8px_44px_minmax(0,1fr)_auto] gap-x-3 items-center py-2 px-2">
       <SkeletonBox className="w-2 h-2 rounded-full" />
       <SkeletonBox className="h-3 w-8 rounded" />
-      <SkeletonBox className="h-4 w-3/4 max-w-[200px] rounded" />
+      <SkeletonBox className="h-4 w-3/4 max-w-50 rounded" />
       <SkeletonBox className="h-3 w-10 rounded" />
     </div>
   )
@@ -45,8 +46,10 @@ function EpisodeSkeleton() {
 
 function SeasonEpisodes({ tvId, seasonNumber }) {
   const { data, isLoading, isError } = useSeasonDetails(tvId, seasonNumber)
+  const showLoading = useDelayedLoading(isLoading)
 
-  if (isLoading) return (
+
+  if (showLoading) return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-x-6 gap-y-1 px-2 pb-4 pt-1">
       {Array.from({ length: 8 }).map((_, i) => (
         <EpisodeSkeleton key={i} />
@@ -55,7 +58,7 @@ function SeasonEpisodes({ tvId, seasonNumber }) {
   )
 
   if (isError || !data?.episodes) return (
-    <p className="text-sm text-text-muted px-2 py-4">Could not load episodes. Please try again later.</p>
+    <AlertBanner variant='danger' message="Could not load episodes. Please try again later." />
   )
 
   // Compute once per list render — primitive string for memo-friendly props (OPT-027)

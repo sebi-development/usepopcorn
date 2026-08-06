@@ -1,32 +1,29 @@
+import AlertBanner from "../../../../components/AlertBanner"
 import FriendActivityTabSkeleton from "../../../../components/skeletons/FriendActivityTabSkeleton"
+import useDelayedLoading from "../../../../hooks/useDelayedLoading"
 import useFriendsRatings from "../../../social/hooks/useFriendsRatings"
 import FriendActivityItem from "../FriendActivityItem"
 
 export default function FriendActivityTab({ tmdbId }) {
   const { data: friends, isLoading, isError } = useFriendsRatings(tmdbId)
+  const showLoading = useDelayedLoading(isLoading)
 
-
-  if (isLoading) {
+  if (showLoading) {
     return <FriendActivityTabSkeleton />
   }
 
   if (isError) {
     return (
-      <div className="text-center py-10 text-sm text-red-400">
-        Failed to load activity. Please try again.
-      </div>
-    )
-  }
-
-  // 3. THEN check for empty data.
-  if (!friends || friends.length === 0) {
-    return (
-      <div className="text-center py-10 text-sm text-text-muted">
-        None of your friends have rated this yet.
-      </div>
+      <AlertBanner variant="danger" message="Failed to load activity. Please try again." />
     )
   }
   
+  if (!friends || friends.length === 0) {
+    return (
+      <AlertBanner variant="info" message="None of your friends have rated this yet." />
+    )
+  }
+
   return (
     <div className="flex flex-col gap-5 animate-in fade-in duration-300">
       <div className="flex items-center justify-between">
