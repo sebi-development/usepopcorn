@@ -38,6 +38,8 @@ export function useFocusTrap(isOpen) {
       }
     }
 
+    modal.addEventListener('keydown', handleTab)
+
     // update cleanup
     return () => {
       modal.removeEventListener('keydown', handleTab)
