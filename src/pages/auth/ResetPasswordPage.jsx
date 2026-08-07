@@ -5,7 +5,7 @@ import AuthCard from '../../features/auth/components/AuthCard'
 import ArrowLink from '../../features/auth/components/ArrowLink'
 import usePasswordRecovery from '../../features/auth/hooks/usePasswordRecovery'
 import { useAuth } from '../../features/auth/hooks/useAuth'
-import ErrorBadge from '../../components/ErrorBadge'
+import AlertBanner from '../../components/AlertBanner'
 
 // Helper component for the animated checklist items
 function Requirement({ met, text }) {
@@ -77,7 +77,7 @@ export default function ResetPasswordPage() {
   </AuthCard>
   return (
     <AuthCard title="Create new password" subtitle="Please enter your new, secure password below.">
-      {errors.root && <ErrorBadge message={errors.root.message} />}
+      {errors.root && <AlertBanner message={errors.root.message} />}
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Input
           {...register('password', {

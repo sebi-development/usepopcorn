@@ -5,9 +5,11 @@ import useFeed from "../../features/social/hooks/useFeed"
 import useFeedRealtime from "../../features/social/hooks/useFeedRealtime"
 import UserSearchWidget from "../../features/social/components/userSearchWidget"
 import SuggestedUsersWidget from "../../features/social/components/SuggestedUsersWidget"
+import useDelayedLoading from "../../hooks/useDelayedLoading"
 
 export default function CommunityPage() {
   const { data: feed, isLoading } = useFeed()
+  const showLoading = useDelayedLoading(isLoading)
   const followingIds = useMemo(() =>
     [...new Set(feed?.map(item => item.user_id) ?? [])]
     , [feed])
@@ -36,7 +38,7 @@ export default function CommunityPage() {
           <div className="absolute top-10 bottom-10 left-[19px] w-[2px] bg-surface-100 rounded-full" />
 
           {/* Skeletons */}
-          {isLoading && Array.from({ length: 3 }).map((_, i) => (
+          {showLoading && Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="flex gap-4 relative">
               <div className="w-10 shrink-0 flex justify-center pt-9 relative z-10">
                 <div className="w-2.5 h-2.5 rounded-full bg-surface-100 ring-[6px] ring-surface-900" />
@@ -48,14 +50,14 @@ export default function CommunityPage() {
           ))}
 
           {/* Empty state */}
-          {!isLoading && feed?.length === 0 && (
+          {!showLoading && feed?.length === 0 && (
             <p className="text-text-muted text-sm pl-2">
               You're not following anyone yet. Find friends to see their activity.
             </p>
           )}
 
           {/* Feed */}
-          {!isLoading && feed?.map((feedItem) => (
+          {!showLoading && feed?.map((feedItem) => (
             <div key={feedItem.id} className="flex gap-4 relative group">
               <div className="w-10 shrink-0 flex justify-center pt-9 relative z-10">
                 <div className="sticky top-32 w-2.5 h-2.5 rounded-full bg-surface-100 ring-[6px] ring-surface-900" />

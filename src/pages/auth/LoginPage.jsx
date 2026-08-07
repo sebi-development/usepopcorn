@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form'
 import Form from '../../components/Form'
-import ErrorBadge from '../../components/ErrorBadge'
+import AlertBanner from '../../components/AlertBanner'
 import AuthCard from '../../features/auth/components/AuthCard'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import ArrowLink from '../../features/auth/components/ArrowLink'
@@ -20,7 +20,7 @@ export default function LoginPage() {
 
   return (
     <AuthCard title="Welcome back" subtitle="Sign in to your account to continue">
-      {errors.root && <ErrorBadge message={errors.root.message} />}
+      {errors.root && <AlertBanner variant='warning' message={errors.root.message} />}
 
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Input

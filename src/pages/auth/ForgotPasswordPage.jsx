@@ -5,7 +5,7 @@ import ArrowLink from "../../features/auth/components/ArrowLink"
 import { useAuth } from "../../features/auth/hooks/useAuth"
 import { useForm } from "react-hook-form"
 import { useState } from "react"
-import ErrorBadge from "../../components/ErrorBadge"
+import AlertBanner from "../../components/AlertBanner"
 
 export default function ForgotPasswordPage() {
   const { forgotPassword } = useAuth()
@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthCard title="Reset Password" subtitle="We'll email you a link to reset your password.">
-      {errors.root && <ErrorBadge message={errors.root.message} />}
+      {errors.root && <AlertBanner message={errors.root.message} />}
 
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Input
