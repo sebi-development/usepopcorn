@@ -12,6 +12,7 @@ export default function useDeleteRating() {
     onSuccess: () => {
       toast.success('Rating deleted successfully')
       queryClient.invalidateQueries({ queryKey: ['ratings'] })
+      queryClient.invalidateQueries({ queryKey: ['profileStats', currentUser?.id] })
     },
     onError: (err) => {
       toast.error(`Error deleting rating (${err.message})`)
