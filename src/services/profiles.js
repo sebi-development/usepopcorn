@@ -29,7 +29,7 @@ export async function updateProfile(updateData, currentUserId) {
     const profileUpdates = {}
     if (username !== undefined) profileUpdates.username = username
     if (avatar_url !== undefined) profileUpdates.avatar_url = avatar_url
-    if(country !== undefined) profileUpdates.country = country
+    if (country !== undefined) profileUpdates.country = country
     const { error } = await supabase
       .from('profiles')
       .update(profileUpdates)
@@ -45,6 +45,12 @@ export async function searchUsers(query, currentUserId) {
     .ilike('username', `%${query}%`)
     .neq('id', currentUserId)
     .limit(5)
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function getUserProfileData(userId) {
+  const { data, error } = await supabase.rpc('get_profile_stats', { p_user_id: userId })
   if (error) throw new Error(error.message)
   return data
 }

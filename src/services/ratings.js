@@ -1,13 +1,13 @@
 import supabase from '../lib/supabase'
 
 export async function uploadRating(ratingData, currentUserId) {
-  const { score, tmdb_id, title, poster_path, type } = ratingData
+  const { score, tmdb_id, title, poster_path, type, runtime, genre_ids } = ratingData
   if (!score || !tmdb_id || !title || !type) {
     throw new Error('Missing required rating data')
   }
   const { data, error } = await supabase
     .from('ratings')
-    .upsert({ user_id: currentUserId, score, tmdb_id, title, poster_path, type }, { onConflict: 'user_id,tmdb_id' })
+    .upsert({ user_id: currentUserId, score, tmdb_id, title, poster_path, type, runtime, genre_ids }, { onConflict: 'user_id,tmdb_id' })
     .select()
     .maybeSingle()
   if (error) throw new Error(error.message)
