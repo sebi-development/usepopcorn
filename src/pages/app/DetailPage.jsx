@@ -92,7 +92,9 @@ export default function DetailPage() {
       score,
       title: data.title,
       poster_path: data.poster_path,
-      type
+      type,
+      runtime: type === 'movie' ? data.runtime : data.episode_run_time?.[0] ?? null,
+      genre_ids: data.genres?.map(g => g.id) ?? null,
     })
   }, [mutateUploadRating, tmdbId, data, type])
 
@@ -103,7 +105,7 @@ export default function DetailPage() {
   if (showLoading) return <MediaDetailSkeleton />
   if (errorDetailData) return <AlertBanner message='Error fetching data. Please try again' variant="danger" />
   if (!data) return null
-  
+
   return (
     <div className="media-detail-grid">
 
