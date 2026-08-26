@@ -13,6 +13,7 @@ export default function useUploadRating() {
       toast.success('Rating added successfully')
       queryClient.invalidateQueries({ queryKey: ['ratings'] })
       queryClient.invalidateQueries({ queryKey: ['profileStats', currentUser?.id] })
+      queryClient.invalidateQueries({ queryKey: ['profileActivity', currentUser?.id, new Date().getFullYear()] })
     },
     onError: (err) => {
       toast.error(`Error adding rating (${err.message})`)
