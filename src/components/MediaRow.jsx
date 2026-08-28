@@ -4,8 +4,9 @@ import useIntersectionObserver from "../hooks/useIntersectionObserver"
 import MediaCard from "./MediaCard"
 import useScrollArrows from "../hooks/useScrollArrows"
 import SkeletonBox from "./skeletons/components/SkeletonBox"
+import AlertBanner from "./AlertBanner"
 
-function MediaRow({ heading, data, isLoading, limit = Infinity, fetchNextPage, hasNextPage, isFetchingNextPage, rank = true, showFavorite = false, favoritedSet }) {
+function MediaRow({ heading, data, isLoading, isError, limit = Infinity, fetchNextPage, hasNextPage, isFetchingNextPage, rank = true, showFavorite = false, favoritedSet }) {
   // Media data from api
   const media = useMemo(() => {
     if (!data) return []
@@ -41,6 +42,13 @@ function MediaRow({ heading, data, isLoading, limit = Infinity, fetchNextPage, h
       </div>
     </div>
   )
+
+  if (isError) return (
+  <div>
+    <h2 className="text-text font-semibold text-xl mb-4 px-6">{heading}</h2>
+    <AlertBanner variant="danger" message="Couldn't load this. Please try again." />
+  </div>
+)
   if (!data) return null
 
   return (

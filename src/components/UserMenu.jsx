@@ -49,10 +49,7 @@ function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-[calc(100%+0.6rem)] left-1/2 -translate-x-1/2 w-52 bg-surface-500 border border-surface-100 rounded-lg shadow-2xl flex flex-col overflow-visible z-50">
-          {/* Arrow pointer */}
-          <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-surface-500 border-l border-t border-surface-100 rotate-45" />
-
+        <div className="glass-panel !bg-surface-500/95 absolute top-[calc(100%+0.6rem)] left-1/2 -translate-x-1/2 w-52 shadow-2xl flex flex-col overflow-hidden z-50">
           <div className="px-4 py-3 border-b border-surface-100 mt-1">
             <p className="text-xs text-text-muted">Signed in as {profileData?.username} </p>
           </div>
@@ -89,10 +86,10 @@ function UserMenu() {
           </div>
 
           {/* Logout */}
-          <div className="border-t border-surface-100 py-1">
+          <div className="border-t border-surface-100 mb-1">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-danger hover:bg-surface-100 transition-colors"
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-danger hover:bg-surface-100 transition-colors"
             >
               <FiLogOut size={15} />
               Sign out
