@@ -38,6 +38,12 @@ export async function updateProfile(updateData, currentUserId) {
   }
 }
 
+export async function getUserActivity(userId, year) {
+  const { data, error } = await supabase.rpc('get_profile_heatmap', { p_user_id: userId, p_year: year })
+  if (error) throw new Error(error.message)
+  return data
+}
+
 export async function searchUsers(query, currentUserId) {
   const { data, error } = await supabase
     .from('profiles')
