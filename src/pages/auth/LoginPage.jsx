@@ -3,7 +3,7 @@ import Form from '../../components/Form'
 import AlertBanner from '../../components/AlertBanner'
 import AuthCard from '../../features/auth/components/AuthCard'
 import { useAuth } from '../../features/auth/hooks/useAuth'
-import ArrowLink from '../../features/auth/components/ArrowLink'
+import ArrowLink from '../../components/ArrowLink'
 import { getCountry } from '../../utils/getCountry'
 
 export default function LoginPage() {

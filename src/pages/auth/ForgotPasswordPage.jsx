@@ -1,7 +1,7 @@
 import { HiOutlineEnvelope } from "react-icons/hi2"
 import Form from "../../components/Form"
 import AuthCard from "../../features/auth/components/AuthCard"
-import ArrowLink from "../../features/auth/components/ArrowLink"
+import ArrowLink from "../../components/ArrowLink"
 import { useAuth } from "../../features/auth/hooks/useAuth"
 import { useForm } from "react-hook-form"
 import { useState } from "react"
@@ -27,12 +27,9 @@ export default function ForgotPasswordPage() {
       <AuthCard
         title="Check your inbox"
         subtitle="We've sent a password reset link to your email address. It might take a minute to arrive."
+        icon={<HiOutlineEnvelope className="w-8 h-8 text-primary-light" />}
       >
-        <div className="flex flex-col items-center gap-6 mt-2">
-          <div className="w-16 h-16 bg-surface-100 rounded-full flex items-center justify-center">
-            <HiOutlineEnvelope className="w-8 h-8 text-primary-light" />
-          </div>
-
+        <div className="flex flex-col items-center mt-2">
           <ArrowLink
             to="/login"
             direction="left"
