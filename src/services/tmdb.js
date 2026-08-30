@@ -1,6 +1,7 @@
 const BASE_URL = import.meta.env.VITE_TMDB_BASE_URL
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY
 
+// ── TMDB queries ──────────────────────────────────────────────
 async function tmdbFetch(endpoint) {
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
@@ -17,24 +18,40 @@ export async function searchContent(query, type = 'movie') {
 
 export async function getMediaDetails(id, type = 'movie') {
   const append = type === 'movie'
-    ? '?append_to_response=release_dates,watch%2Fproviders'
-    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids';
+    ? '?append_to_response=release_dates,watch%2Fproviders' // movies endpoint
+    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids'; // series endpoint
   return tmdbFetch(`/${type}/${id}${append}`);
-}
-
-// CATEGORIES
-export async function getNowPlaying(page = 1) {
-  return tmdbFetch(`/movie/now_playing?language=en-US&page=${page}`)
-}
-
-export async function getTrending(page = 1) {
-  return tmdbFetch(`/trending/movie/week?page=${page}`)
-}
-
-export async function getPopular(page = 1) {
-  return tmdbFetch(`/movie/popular?page=${page}`)
 }
 
 export async function getSeasonDetails(tvId, seasonNumber) {
   return tmdbFetch(`/tv/${tvId}/season/${seasonNumber}`)
+}
+
+// ── CATEGORIES ──────────────────────────────────────────────
+// Shared shape across movie and series: trending, popular, top_rated.
+
+export async function getTrending(type = 'movie', page = 1) {
+  return tmdbFetch(`/trending/${type}/week?page=${page}`)
+}
+
+export async function getPopular(type = 'movie', page = 1) {
+  return tmdbFetch(`/${type}/popular?page=${page}`)
+}
+
+export async function getTopRated(type = 'movie', page = 1) {
+  return tmdbFetch(`/${type}/top_rated?page=${page}`)
+}
+
+// Movie-only categories — no series equivalent exists on TMDB.
+export async function getUpcoming(page = 1) {
+  return tmdbFetch(`/movie/upcoming?page=${page}`)
+}
+
+export async function getNowPlaying(page = 1) {
+  return tmdbFetch(`/movie/now_playing?page=${page}`)
+}
+
+// Series-only category — closest analogue to "upcoming" for TV,
+export async function getOnTheAir(page = 1) {
+  return tmdbFetch(`/tv/on_the_air?page=${page}`)
 }
