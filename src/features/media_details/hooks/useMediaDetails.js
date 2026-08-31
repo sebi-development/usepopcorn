@@ -50,7 +50,6 @@ export default function useMediaDetails(id, type = 'movie', userCountry = 'US') 
       };
     }
   })
-  console.log(data);
   
 
   return { data, isLoading, error }
