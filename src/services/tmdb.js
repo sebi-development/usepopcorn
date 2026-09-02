@@ -55,3 +55,9 @@ export async function getNowPlaying(page = 1) {
 export async function getOnTheAir(page = 1) {
   return tmdbFetch(`/tv/on_the_air?page=${page}`)
 }
+
+// Genre-based discovery — used by the browse page when a genre is selected
+// from the CategoryRail. TMDB's /discover endpoint filters by genre id.
+export async function getMediaByGenre(type = 'movie', genreId, page = 1) {
+  return tmdbFetch(`/discover/${type}?with_genres=${genreId}&sort_by=popularity.desc&page=${page}`)
+}
