@@ -3,7 +3,6 @@ import useSeasonDetails from '../../hooks/useSeasonDetails'
 import { HiChevronDown } from 'react-icons/hi2'
 import SkeletonBox from '../../../../components/skeletons/components/SkeletonBox'
 import AlertBanner from '../../../../components/AlertBanner'
-import useDelayedLoading from '../../../../hooks/useDelayedLoading'
 
 const RATING_LEGEND = [
   { color: 'bg-success', label: 'Great' },
@@ -46,10 +45,10 @@ function EpisodeSkeleton() {
 
 function SeasonEpisodes({ tvId, seasonNumber }) {
   const { data, isLoading, isError } = useSeasonDetails(tvId, seasonNumber)
-  const showLoading = useDelayedLoading(isLoading)
 
-
-  if (showLoading) return (
+  // Data should already be in cache from the bulk fetch.
+  // If somehow it's still loading, show skeleton.
+  if (isLoading && !data) return (
     <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-x-6 gap-y-1 px-2 pb-4 pt-1">
       {Array.from({ length: 8 }).map((_, i) => (
         <EpisodeSkeleton key={i} />
@@ -73,6 +72,29 @@ function SeasonEpisodes({ tvId, seasonNumber }) {
   )
 }
 
+function SeasonsLoadingSkeleton() {
+  return (
+    <div className="bg-surface-500 rounded-card p-6 space-y-3">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="flex items-center gap-3 py-4 px-2">
+          <SkeletonBox className="w-4 h-4 rounded" />
+          <SkeletonBox className="h-5 w-28 rounded" />
+          <SkeletonBox className="h-4 w-40 rounded" />
+        </div>
+      ))}
+      {/* Legend skeleton to match non-loading layout */}
+      <div className="flex items-center gap-5 pt-4 mt-2 border-t border-surface-100/20">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <SkeletonBox className="w-2 h-2 rounded-full" />
+            <SkeletonBox className="h-3 w-10 rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const SeasonAccordion = memo(function SeasonAccordion({ tvId, season, defaultOpen = false }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
@@ -88,11 +110,13 @@ const SeasonAccordion = memo(function SeasonAccordion({ tvId, season, defaultOpe
   )
 })
 
-export default function SeasonsTab({ tvId, seasons }) {
+export default function SeasonsTab({ tvId, seasons, isBulkLoading }) {
   const filteredSeasons = useMemo(() => {
     if (!seasons) return []
     return seasons.filter(s => s.season_number > 0).sort((a, b) => b.season_number - a.season_number)
   }, [seasons])
+
+  if (isBulkLoading) return <SeasonsLoadingSkeleton />
 
   return (
     <div className="bg-surface-500 rounded-card p-6">
