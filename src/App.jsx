@@ -45,32 +45,34 @@ const router = createBrowserRouter([
   }
 ])
 
+const toastOptions = {
+  style: {
+    background: '#2b3035',
+    color: '#dee2e6',
+    border: '1px solid #343a40',
+    borderRadius: '0.9rem',
+  },
+  success: {
+    iconTheme: {
+      primary: '#40c057',
+      secondary: '#2b3035',
+    }
+  },
+  error: {
+    iconTheme: {
+      primary: '#fa5252',
+      secondary: '#2b3035',
+    }
+  }
+}
+
 function App() {
   return (
     <>
       <RouterProvider router={router} />
       <Toaster
         position="bottom-right"
-        toastOptions={{
-          style: {
-            background: '#2b3035',
-            color: '#dee2e6',
-            border: '1px solid #343a40',
-            borderRadius: '0.9rem',
-          },
-          success: {
-            iconTheme: {
-              primary: '#40c057',
-              secondary: '#2b3035',
-            }
-          },
-          error: {
-            iconTheme: {
-              primary: '#fa5252',
-              secondary: '#2b3035',
-            }
-          }
-        }}
+        toastOptions={toastOptions}
       />
     </>
   )
