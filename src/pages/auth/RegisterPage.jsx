@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form'
 import Form from '../../components/Form'
 import AlertBanner from '../../components/AlertBanner'
-import AuthCard from '../../features/auth/components/AuthCard'
+import InfoCard from '../../components/InfoCard'
 import { useAuth } from '../../features/auth/hooks/useAuth'
 import ArrowLink from '../../components/ArrowLink'
 import { getCountry } from '../../utils/getCountry'
@@ -19,7 +19,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthCard title="Create an account" subtitle="Join us and dive into the world of cinema">
+    <InfoCard title="Create an account" subtitle="Join us and dive into the world of cinema">
       {errors.root && <AlertBanner message={errors.root.message} />}
 
       {/* Prefetch fires on hover — earliest intent signal. By submit time, await is instant. */}
@@ -68,6 +68,6 @@ export default function RegisterPage() {
           Login
         </ArrowLink>
       </div>
-    </AuthCard>
+    </InfoCard>
   )
 }

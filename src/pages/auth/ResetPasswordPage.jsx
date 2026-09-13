@@ -1,7 +1,7 @@
 import { useForm, useWatch } from 'react-hook-form'
 import { HiOutlineLockClosed, HiCheck, HiXMark } from 'react-icons/hi2'
 import Form from '../../components/Form'
-import AuthCard from '../../features/auth/components/AuthCard'
+import InfoCard from '../../components/InfoCard'
 import ArrowLink from '../../components/ArrowLink'
 import usePasswordRecovery from '../../features/auth/hooks/usePasswordRecovery'
 import { useAuth } from '../../features/auth/hooks/useAuth'
@@ -63,7 +63,7 @@ export default function ResetPasswordPage() {
 
   if (!isRecoveryReady && !isInvalid) return null
 
-  if (isInvalid) return <AuthCard title="Invalid link" subtitle="Link is invalid or expired. Please try again sending new one">
+  if (isInvalid) return <InfoCard title="Invalid link" subtitle="Link is invalid or expired. Please try again sending new one">
     {/* Fallback to reset password */}
     <div className="text-center mt-2">
       <ArrowLink
@@ -74,9 +74,9 @@ export default function ResetPasswordPage() {
         Request a new link
       </ArrowLink>
     </div>
-  </AuthCard>
+  </InfoCard>
   return (
-    <AuthCard title="Create new password" subtitle="Please enter your new, secure password below.">
+    <InfoCard title="Create new password" subtitle="Please enter your new, secure password below.">
       {errors.root && <AlertBanner message={errors.root.message} />}
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Input
@@ -120,6 +120,6 @@ export default function ResetPasswordPage() {
         </ArrowLink>
       </div>
 
-    </AuthCard>
+    </InfoCard>
   )
 }

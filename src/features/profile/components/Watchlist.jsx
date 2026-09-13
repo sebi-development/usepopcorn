@@ -1,14 +1,21 @@
 import MediaRow from "../../../components/MediaRow"
-
-function Favorites({ watchlist, isLoading }) {
-
+ 
+function Watchlist({ watchlist, isLoading, showInfo = false }) {
   if (!isLoading && (!watchlist || watchlist.length === 0)) return null
 
   return (
     <div>
-      <MediaRow type limit={15} isLoading={isLoading} heading='Watchlist' data={watchlist} rank={false} showWatchList={false} />
+      <MediaRow
+        limit={15}
+        isLoading={isLoading}
+        heading="Watchlist"
+        data={watchlist}
+        rank={false}
+        showWatchlist={false}
+        showInfo={showInfo}
+      />
     </div>
   )
 }
 
-export default Favorites
+export default Watchlist

@@ -37,7 +37,16 @@ body {
 
 /* ==================== 04. REUSABLE UTILITIES & GLASSMORPHIC ACCENTS ==================== */
 @layer components {
-  /* ── Bento Grid ── */
+  /* ── Gradients ── */
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-primary-light to-primary bg-clip-text text-transparent;
+  }
+
+  .glass-panel {
+    @apply bg-surface-500/80 backdrop-blur-md border border-surface-100 rounded-2xl;
+  }
+  
+ /* ── Bento Grid ── */
   .bento-grid {
     @apply grid gap-4 w-full max-w-4xl mx-auto;
     grid-template-columns: repeat(3, 1fr);
@@ -164,34 +173,34 @@ body {
     }
   }
 
-  /* ── ErrorBadge ── */
-  .error-badge {
+  /* ── AlertBanner ── */
+  .alert-banner {
     @apply rounded-card p-6 flex flex-col items-center gap-3 mb-6 border border-transparent;
   }
 
-  .error-badge--danger {
+  .alert-banner--danger {
     background-color: rgba(250, 82, 82, 0.1);
     border-color: rgba(250, 82, 82, 0.3);
     @apply text-danger;
   }
 
-  .error-badge--warning {
+  .alert-banner--warning {
     background-color: rgba(255, 180, 0, 0.1);
     border-color: rgba(255, 180, 0, 0.3);
     color: #ffb400;
   }
 
-  .error-badge--info {
+  .alert-banner--info {
     background-color: rgba(103, 65, 217, 0.1);
     border-color: rgba(103, 65, 217, 0.3);
     @apply text-primary-light;
   }
 
-  .error-badge__icon {
+  .alert-banner__icon {
     @apply text-[2.8rem];
   }
 
-  .error-badge__message {
+  .alert-banner__message {
     @apply text-[1.4rem] font-medium text-center leading-relaxed;
   }
 
