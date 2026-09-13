@@ -63,3 +63,9 @@ export async function deleteRating(tmdb_id, currentUserId) {
     .eq('user_id', currentUserId)
   if (error) throw new Error(error.message)
 }
+
+export async function getRecommendationSeed(userId) {
+  const { data, error } = await supabase.rpc('get_recommendation_seed', { p_user_id: userId })
+  if (error) throw new Error(error.message)
+  return data
+}

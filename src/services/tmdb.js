@@ -61,3 +61,7 @@ export async function getOnTheAir(page = 1) {
 export async function getMediaByGenre(type = 'movie', genreId, page = 1) {
   return tmdbFetch(`/discover/${type}?with_genres=${genreId}&sort_by=popularity.desc&page=${page}`)
 }
+
+export async function getRecommendations(id, type = 'movie', page = 1) {
+  return tmdbFetch(`/${type}/${id}/recommendations?page=${page}`)
+}

@@ -60,3 +60,15 @@ export async function getUserProfileData(userId) {
   if (error) throw new Error(error.message)
   return data
 }
+
+export async function getProfileStreakData(userId) {
+  const { data, error } = await supabase.rpc('get_recent_weekly_activity', { p_user_id: userId })
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function getExtendedStreak(userId) {
+  const { data, error } = await supabase.rpc('get_extended_streak', { p_user_id: userId })
+  if (error) throw new Error(error.message)
+  return data
+}
