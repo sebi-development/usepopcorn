@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getOmdbScores } from "../../../services/omdb";
+import { getOmdbScores } from "@/services/omdb";
 
 const ONE_HOUR = 1000 * 60 * 60;
 

@@ -1,5 +1,5 @@
-import SkeletonBox from "./SkeletonBox";
-import SkeletonText from "./SkeletonText";
+import SkeletonBox from "@/components/ui/SkeletonBox";
+import SkeletonText from "@/components/ui/SkeletonText";
 
 
 export default function FriendActivityItemSkeleton() {

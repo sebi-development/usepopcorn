@@ -7,9 +7,9 @@ import {
   HiChartBar,
   HiMagnifyingGlass,
 } from 'react-icons/hi2'
-import BentoGrid from '../../components/BentoGrid'
-import Button from '../../components/Button'
-import { PopcornIcon } from '../../components/Logo'
+import BentoGrid from '@/components/ui/BentoGrid'
+import Button from '@/components/ui/Button'
+import { PopcornIcon } from '@/components/ui/Logo'
 
 export default function LandingPage() {
   return (

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { getRating } from "../../../services/ratings"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import { getRating } from "@/services/ratings"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 export default function useGetRating(tmdb_id) {
   const currentUser = useCurrentUser()

@@ -1,7 +1,7 @@
 import { memo } from "react"
 import { Link } from "react-router"
-import Avatar from "../../../components/Avatar"
-import { timeAgo } from "../../../utils/timeAgo"
+import Avatar from "@/components/ui/Avatar"
+import { timeAgo } from "@/utils/timeAgo"
 
 const FriendActivityItem = memo(function FriendActivityItem({ friend }) {
   const percentage = Math.round((friend.score / 10) * 100)
@@ -37,7 +37,7 @@ const FriendActivityItem = memo(function FriendActivityItem({ friend }) {
           <span className="text-[10px] font-medium text-text-muted opacity-70 uppercase tracking-wider">
             Score
           </span>
-          <span className="text-lg font-semibold bg-gradient-to-r from-primary-light to-primary bg-clip-text text-transparent leading-none tracking-tight">
+          <span className="text-lg font-semibold text-gradient-primary leading-none tracking-tight">
             {percentage}%
           </span>
         </div>

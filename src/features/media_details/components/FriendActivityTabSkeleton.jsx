@@ -1,4 +1,4 @@
-import FriendActivityItemSkeleton from "./components/FriendActivityItemSkeleton"
+import FriendActivityItemSkeleton from "@/features/media_details/components/FriendActivityItemSkeleton"
 
 export default function FriendActivityTabSkeleton() {
   return (

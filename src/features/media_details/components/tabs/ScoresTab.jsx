@@ -1,11 +1,11 @@
 import { useMemo, memo } from "react"
 import { FaImdb } from "react-icons/fa"
 import { SiRottentomatoes, SiMetacritic } from "react-icons/si"
-import useExternalApis from "../../hooks/useExternalApis"
-import BentoGrid from "../../../../components/BentoGrid"
-import SkeletonBox from "../../../../components/skeletons/components/SkeletonBox"
-import AlertBanner from "../../../../components/AlertBanner"
-import useDelayedLoading from "../../../../hooks/useDelayedLoading"
+import useExternalApis from "@/features/media_details/hooks/useExternalApis"
+import BentoGrid from "@/components/ui/BentoGrid"
+import SkeletonBox from "@/components/ui/SkeletonBox"
+import AlertBanner from "@/components/ui/AlertBanner"
+import useDelayedLoading from "@/hooks/useDelayedLoading"
 
 function CriticScoresSkeleton() {
   return (

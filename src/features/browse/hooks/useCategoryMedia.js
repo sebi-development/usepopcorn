@@ -1,9 +1,10 @@
-import { useInfiniteQuery } from "@tanstack/react-query"
+import { useEffect, useMemo } from "react"
+import { useInfiniteQuery, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import {
   getTrending, getPopular, getTopRated,
   getUpcoming, getNowPlaying, getOnTheAir,
   getMediaByGenre,
-} from "../../../services/tmdb"
+} from "@/services/tmdb"
 
 // Maps section + categoryId → the TMDB fetch function for static (non-genre)
 // categories. Each function takes a single `page` argument and returns a TMDB
@@ -25,56 +26,120 @@ const FETCH_MAP = {
 }
 
 // Maps browse-page section names to TMDB's media-type path segments.
-const SECTION_TO_TYPE = { movies: 'movie', series: 'tv' }
+export const SECTION_TO_TYPE = { movies: 'movie', series: 'tv' }
 
-/**
- * Single parameterised hook for all browse-page categories, including genres.
- *
- * Replaces the previous pattern of nine individual wrapper hooks (useTrendingMovies,
- * usePopularMovies, …) plus a CATEGORY_HOOKS dictionary lookup in CategoryMediaRow.
- *
- * The old dictionary approach was technically sound — BrowsePage mounts
- * CategoryMediaRow with `key={section.categoryId}`, forcing a full remount on
- * every category change, so each component instance only ever called one hook
- * for its entire lifetime (no hook-order violation). We're switching to a
- * parameterised hook instead because you can't pre-write a named hook for every
- * possible TMDB genre id; a single hook that branches on the categoryId is the
- * only clean way to support the open-ended genre set.
- *
- * Genre detection: CategoryRail emits categoryIds like "genre-28" for genres.
- * We detect the "genre-" prefix, strip it to extract the raw TMDB genre id,
- * and route to the /discover endpoint via getMediaByGenre(). Non-genre
- * categories resolve through the static FETCH_MAP exactly as before.
- *
- * @param {'movies'|'series'} section  — which rail section is active
- * @param {string} categoryId — e.g. "trending", "popular", or "genre-28"
- */
-export default function useCategoryMedia(section, categoryId) {
-  // Determine whether this is a genre category or a static category.
+// Hard ceiling on how many pages a row will accumulate via infinite scroll.
+// TMDB pages are a fixed 20 items each, so this caps a row at 100 items
+// resident in the cache. Grid mode below doesn't need this — it only ever
+// holds one (or two, with prefetch) pages at a time.
+const MAX_ROW_PAGES = 5
+
+// Shared across row and grid so the two don't drift. Matching gcTime to
+// staleTime — data past staleTime refetches anyway, so a longer gcTime
+// just keeps stale objects in memory for no benefit during rapid browsing.
+const STALE_TIME = 1000 * 60 * 15
+const GC_TIME = 1000 * 60 * 15
+
+function cappedNextPageParam(lastPage, allPages) {
+  if (allPages.length >= MAX_ROW_PAGES) return undefined
+  return lastPage.page < lastPage.total_pages ? lastPage.page + 1 : undefined
+}
+
+// TMDB refuses to serve past page 500 on any endpoint regardless of how
+// many total_pages it reports — clamp so pagination controls never offer
+// a page that will 400.
+function clampTotalPages(totalPages) {
+  return Math.min(totalPages ?? 1, 500)
+}
+
+// Shared between the row (infinite) and grid (paginated) hooks — one place
+// that knows how to turn a section + categoryId into a TMDB fetch function
+// and a base query key, including genre detection. CategoryRail emits
+// categoryIds like "genre-28"; we strip the prefix and route to /discover.
+function resolveCategoryFetch(section, categoryId) {
+  const type = SECTION_TO_TYPE[section]
   const isGenre = categoryId.startsWith('genre-')
 
-  let queryKey
-  let fetchFn
-
   if (isGenre) {
-    // Genre category: strip the "genre-" prefix to get the raw TMDB genre id
-    // (e.g. "genre-28" → "28"), then use the /discover endpoint.
     const genreId = categoryId.slice(6)
-    const type = SECTION_TO_TYPE[section]
-    queryKey = ['browse', 'genre', type, genreId]
-    fetchFn = (page) => getMediaByGenre(type, genreId, page)
-  } else {
-    // Static category: look up the pre-defined fetch function from FETCH_MAP.
-    const type = SECTION_TO_TYPE[section]
-    queryKey = ['browse', categoryId, type]
-    fetchFn = FETCH_MAP[section]?.[categoryId]
+    return {
+      queryKeyBase: ['browse', 'genre', type, genreId],
+      fetchFn: (page) => getMediaByGenre(type, genreId, page),
+    }
   }
 
+  return {
+    queryKeyBase: ['browse', categoryId, type],
+    fetchFn: FETCH_MAP[section]?.[categoryId],
+  }
+}
+
+/**
+ * Row mode — infinite scroll, capped at MAX_ROW_PAGES so it can't grow
+ * without bound. Pass `enabled: false` while grid mode is active so it
+ * stops fetching (existing cached data is retained, not cleared, so
+ * collapsing back to row mode is instant if still within staleTime).
+ */
+export default function useCategoryMedia(section, categoryId, { enabled = true } = {}) {
+  const { queryKeyBase, fetchFn } = resolveCategoryFetch(section, categoryId)
+
   return useInfiniteQuery({
-    queryKey,
-    queryFn: ({ pageParam = 1 }) => fetchFn(pageParam),
-    getNextPageParam: (lastPage) =>
-      lastPage.page < lastPage.total_pages ? lastPage.page + 1 : undefined,
-    staleTime: 1000 * 60 * 15,
+    queryKey: queryKeyBase,
+    queryFn: ({ pageParam }) => fetchFn(pageParam),
+    initialPageParam: 1,
+    getNextPageParam: cappedNextPageParam,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    enabled,
   })
+}
+
+/**
+ * Grid mode — one TMDB page per query, keyed by page number.
+ * `keepPreviousData` means the previous page stays fully rendered while
+ * the next one loads — drive any "refreshing" UI off this hook's own
+ * `isPlaceholderData` / `isFetching`, not a transition's `isPending`,
+ * since nothing here suspends and a plain useQuery has no concept of
+ * "hold the old screen until the new one's data is ready."
+ *
+ * Also opportunistically prefetches page + 1 once the current page
+ * lands, so clicking "Next" is usually already-cached rather than a
+ * fresh round trip. prefetchQuery no-ops if that page is already fresh,
+ * so this never duplicates an in-flight or still-valid fetch.
+ */
+export function useCategoryMediaGrid(section, categoryId, page, { enabled = true } = {}) {
+  const queryClient = useQueryClient()
+
+  // Memoized so this stays referentially stable across renders unless
+  // section/categoryId actually change — resolveCategoryFetch() itself
+  // returns a fresh array/closure every call, which would otherwise
+  // re-fire the prefetch effect below on every unrelated render.
+  const { queryKeyBase, fetchFn } = useMemo(
+    () => resolveCategoryFetch(section, categoryId),
+    [section, categoryId]
+  )
+
+  const query = useQuery({
+    queryKey: [...queryKeyBase, 'grid', page],
+    queryFn: () => fetchFn(page),
+    placeholderData: keepPreviousData,
+    staleTime: STALE_TIME,
+    gcTime: GC_TIME,
+    enabled,
+  })
+
+  const totalPages = query.data ? clampTotalPages(query.data.total_pages) : 1
+
+  useEffect(() => {
+    if (!enabled || !query.data) return
+    if (page >= totalPages) return // nothing ahead to prefetch
+
+    queryClient.prefetchQuery({
+      queryKey: [...queryKeyBase, 'grid', page + 1],
+      queryFn: () => fetchFn(page + 1),
+      staleTime: STALE_TIME,
+    })
+  }, [enabled, query.data, page, totalPages, queryClient, queryKeyBase, fetchFn])
+
+  return { ...query, totalPages }
 }

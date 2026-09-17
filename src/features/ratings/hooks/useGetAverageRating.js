@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAverageRating } from "../../../services/ratings";
+import { getAverageRating } from "@/services/ratings";
 
 export default function useGetAverageRating(tmdbId) {
   const { data, isLoading, error } = useQuery({

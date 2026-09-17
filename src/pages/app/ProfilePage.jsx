@@ -1,17 +1,17 @@
 import { useState, Suspense, lazy } from "react"
-import ProfileHero from "../../features/profile/components/ProfileHero"
-import RecentlyRated from "../../features/profile/components/RecentlyRated"
-import Watchlist from "../../features/profile/components/Watchlist"
-import Favorites from "../../features/profile/components/Favorites"
-import Button from "../../components/Button"
-import ProfileHeroSkeleton from "../../components/skeletons/ProfileHeroSkeleton"
-import useProfileData from "../../features/profile/hooks/useProfileData"
-import useInteractions from "../../features/interactions/hooks/useInteractions"
-import useProfileRelationship from "../../features/social/hooks/useProfileRelationship"
-import useFollow from "../../features/social/hooks/useFollow"
+import ProfileHero from "@/features/profile/components/ProfileHero"
+import RecentlyRated from "@/features/profile/components/RecentlyRated"
+import Watchlist from "@/features/profile/components/Watchlist"
+import Favorites from "@/features/profile/components/Favorites"
+import Button from "@/components/ui/Button"
+import ProfileHeroSkeleton from "@/features/profile/components/ProfileHeroSkeleton"
+import useProfileData from "@/features/profile/hooks/useProfileData"
+import useInteractions from "@/features/interactions/hooks/useInteractions"
+import useProfileRelationship from "@/features/social/hooks/useProfileRelationship"
+import useFollow from "@/features/social/hooks/useFollow"
 import { useParams } from "react-router"
-import useCurrentUser from "../../features/auth/hooks/useCurrentUser"
-import useDelayedLoading from "../../hooks/useDelayedLoading"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
+import useDelayedLoading from "@/hooks/useDelayedLoading"
 
 const EditProfileModal = lazy(() => import("../../features/profile/components/EditProfileModal"))
 
@@ -58,9 +58,9 @@ function ProfilePage() {
         />
       )}
 
-      <Watchlist watchlist={watchlist} isLoading={isWatchlistLoading} />
-      <Favorites favorites={favorites} isLoading={isFavoritesLoading} />
-      <RecentlyRated recentlyRated={recentRatings} isLoading={isLoadingRatings} />
+      <Watchlist watchlist={watchlist} isLoading={isWatchlistLoading} showInfo={false} />
+      <Favorites favorites={favorites} isLoading={isFavoritesLoading} showInfo={false} />
+      <RecentlyRated recentlyRated={recentRatings} isLoading={isLoadingRatings} showInfo={false} />
 
       {isOwnProfile && isModalOpen && (
         <Suspense fallback={null}>

@@ -1,7 +1,7 @@
 // src/features/social/hooks/useFriendsRatings.js
 import { useQuery } from "@tanstack/react-query"
-import { getFriendsRatings } from "../../../services/follows"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import { getFriendsRatings } from "@/services/follows"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 export default function useFriendsRatings(tmdb_id) {
   const currentUser = useCurrentUser()

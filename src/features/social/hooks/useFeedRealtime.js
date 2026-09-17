@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
-import supabase from "../../../lib/supabase"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import supabase from "@/lib/supabase"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 export default function useFeedRealtime(followingIds) {
   const queryClient = useQueryClient()

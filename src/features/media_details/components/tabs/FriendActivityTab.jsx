@@ -1,8 +1,8 @@
-import AlertBanner from "../../../../components/AlertBanner"
-import FriendActivityTabSkeleton from "../../../../components/skeletons/FriendActivityTabSkeleton"
-import useDelayedLoading from "../../../../hooks/useDelayedLoading"
-import useFriendsRatings from "../../../social/hooks/useFriendsRatings"
-import FriendActivityItem from "../FriendActivityItem"
+import AlertBanner from "@/components/ui/AlertBanner"
+import FriendActivityTabSkeleton from "@/features/media_details/components/FriendActivityTabSkeleton"
+import useDelayedLoading from "@/hooks/useDelayedLoading"
+import useFriendsRatings from "@/features/social/hooks/useFriendsRatings"
+import FriendActivityItem from "@/features/media_details/components/FriendActivityItem"
 
 export default function FriendActivityTab({ tmdbId }) {
   const { data: friends, isLoading, isError } = useFriendsRatings(tmdbId)

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { getUserRatings } from "../../../services/ratings";
-import useCurrentUser from "../../auth/hooks/useCurrentUser";
+import { getUserRatings } from "@/services/ratings";
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser";
 
 export default function useGetUserRatings() {
   const currentUser = useCurrentUser();

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { deleteAvatarImage } from "../../../services/files"
-import { updateProfile } from "../../../services/profiles"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import { deleteAvatarImage } from "@/services/files"
+import { updateProfile } from "@/services/profiles"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import toast from "react-hot-toast"
 
 export default function useRemoveAvatar() {

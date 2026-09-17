@@ -1,4 +1,4 @@
-import MediaRow from "../../../components/MediaRow"
+import MediaRow from "@/components/media/MediaRow"
  
 function Watchlist({ watchlist, isLoading, showInfo = false }) {
   if (!isLoading && (!watchlist || watchlist.length === 0)) return null

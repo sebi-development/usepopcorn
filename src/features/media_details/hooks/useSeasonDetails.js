@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getSeasonDetails } from "../../../services/tmdb";
+import { getSeasonDetails } from "@/services/tmdb";
 
 export default function useSeasonDetails(tvId, seasonNumber) {
   return useQuery({

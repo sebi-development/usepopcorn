@@ -1,8 +1,8 @@
 import { memo, useState, useMemo } from 'react'
-import useSeasonDetails from '../../hooks/useSeasonDetails'
+import useSeasonDetails from '@/features/media_details/hooks/useSeasonDetails'
 import { HiChevronDown } from 'react-icons/hi2'
-import SkeletonBox from '../../../../components/skeletons/components/SkeletonBox'
-import AlertBanner from '../../../../components/AlertBanner'
+import SkeletonBox from '@/components/ui/SkeletonBox'
+import AlertBanner from '@/components/ui/AlertBanner'
 
 const RATING_LEGEND = [
   { color: 'bg-success', label: 'Great' },

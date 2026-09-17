@@ -1,6 +1,6 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query"
-import { searchContent } from "../../../services/tmdb";
-import useDebounce from "../../../hooks/useDebounce";
+import { searchContent } from "@/services/tmdb";
+import useDebounce from "@/hooks/useDebounce";
 
 export default function useSearch(query, filter) {
   const debouncedQuery = useDebounce(query, 200)

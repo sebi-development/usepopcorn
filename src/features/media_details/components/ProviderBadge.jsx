@@ -1,7 +1,8 @@
 import { SiNetflix, SiAppletv, SiHbomax, SiParamountplus } from 'react-icons/si'
 import { TbBrandDisney } from 'react-icons/tb'
 import { FaAmazon } from 'react-icons/fa'
-import Tooltip from '../../../components/Tooltip'
+import Tooltip from '@/components/ui/Tooltip'
+import getTmdbImageUrl from '@/utils/tmdbImage'
 
 const PROVIDER_CONFIG = {
   netflix: { icon: SiNetflix, color: '#E50914' },
@@ -40,7 +41,7 @@ export default function ProviderBadge({ provider }) {
   return (
     <Tooltip label={provider.name} side='bottom' >
       <img
-        src={`https://image.tmdb.org/t/p/w92${provider.logoPath}`}
+        src={getTmdbImageUrl(provider.logoPath, 'w92')}
         alt={provider.name}
         className="w-12 h-12 rounded-lg object-cover bg-surface-200"
         onError={(e) => (e.target.style.display = 'none')}

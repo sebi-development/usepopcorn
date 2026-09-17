@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Outlet, Navigate } from 'react-router'
-import supabase from '../lib/supabase'
-import Navbar from './Navbar'
+import supabase from '@/lib/supabase'
+import Navbar from '@/layout/Navbar'
 import { useQueryClient } from '@tanstack/react-query'
 
 function AppLayout() {

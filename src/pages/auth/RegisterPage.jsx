@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form'
-import Form from '../../components/Form'
-import AlertBanner from '../../components/AlertBanner'
-import InfoCard from '../../components/InfoCard'
-import { useAuth } from '../../features/auth/hooks/useAuth'
-import ArrowLink from '../../components/ArrowLink'
-import { getCountry } from '../../utils/getCountry'
+import Form from '@/components/ui/Form'
+import AlertBanner from '@/components/ui/AlertBanner'
+import InfoCard from '@/components/ui/InfoCard'
+import { useAuth } from '@/features/auth/hooks/useAuth'
+import ArrowLink from '@/components/ui/ArrowLink'
+import { getCountry } from '@/utils/getCountry'
 
 export default function RegisterPage() {
   const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm()  

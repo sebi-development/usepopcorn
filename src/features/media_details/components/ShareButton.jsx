@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { HiCheck } from 'react-icons/hi2'
 import { IoIosShareAlt } from 'react-icons/io'
-import Tooltip from '../../../components/Tooltip'
+import Tooltip from '@/components/ui/Tooltip'
 
 export default function ShareButton({className = ''}) {
   const [copied, setCopied] = useState(false)

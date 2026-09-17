@@ -1,6 +1,6 @@
 import { HiOutlineUser } from "react-icons/hi2"
-import useUpdateAvatar from "../hooks/useUpdateAvatar"
-import useRemoveAvatar from "../hooks/useRemoveAvatar"
+import useUpdateAvatar from "@/features/profile/hooks/useUpdateAvatar"
+import useRemoveAvatar from "@/features/profile/hooks/useRemoveAvatar"
 import { useRef, useMemo } from "react"
 import toast from "react-hot-toast"
 import { FiLoader } from "react-icons/fi"

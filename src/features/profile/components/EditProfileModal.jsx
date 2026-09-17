@@ -1,9 +1,9 @@
 import { useForm } from "react-hook-form"
-import Modal from "../../../components/Modal"
-import Form from "../../../components/Form"
-import useUpdateProfile from "../hooks/useUpdateProfile"
-import CountrySelect from "./CountrySelect"
-import DeleteAccountButton from "./DeleteAccountButton"
+import Modal from "@/components/ui/Modal"
+import Form from "@/components/ui/Form"
+import useUpdateProfile from "@/features/profile/hooks/useUpdateProfile"
+import CountrySelect from "@/features/profile/components/CountrySelect"
+import DeleteAccountButton from "@/features/profile/components/DeleteAccountButton"
 
 export default function EditProfileModal({ onClose, profileData }) {
   const { updateUserProfile, isUpdating } = useUpdateProfile()

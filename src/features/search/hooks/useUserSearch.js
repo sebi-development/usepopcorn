@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
-import { searchUsers } from "../../../services/profiles"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
-import useDebounce from "../../../hooks/useDebounce"
+import { searchUsers } from "@/services/profiles"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
+import useDebounce from "@/hooks/useDebounce"
 
 export default function useUserSearch(searchQuery) {
   const currentUser = useCurrentUser()

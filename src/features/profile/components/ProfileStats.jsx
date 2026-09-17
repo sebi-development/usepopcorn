@@ -1,20 +1,29 @@
-import { HiOutlineFilm, HiOutlineStar, HiOutlineClock, HiOutlineFire } from "react-icons/hi2"
+import { HiOutlineFilm, HiOutlineStar, HiOutlineFire, HiOutlineClock } from "react-icons/hi2"
+import { getGenreNames } from "@/utils/genres"
+import AlertBanner from "@/components/ui/AlertBanner"
+import BentoCardSkeleton from "@/components/ui/BentoCardSkeleton"
 
-export default function ProfileStats({ stats, isLoading }) {
+export default function ProfileStats({ stats, isLoading, isError }) {
+
   if (isLoading) {
     return (
-      <div className="bento-grid opacity-50 animate-pulse pointer-events-none">
-        <div className="bento-card h-32" />
-        <div className="bento-card h-32" />
-        <div className="bento-card h-32" />
-        <div className="bento-card bento-card--wide h-48" />
-        <div className="bento-card bento-card--accent h-48" />
+      <div className="bento-grid">
+        <BentoCardSkeleton className="h-32" />
+        <BentoCardSkeleton className="h-32" />
+        <BentoCardSkeleton className="h-32" />
+        <BentoCardSkeleton className="bento-card--wide h-48" />
+        <BentoCardSkeleton className="bento-card--accent h-48" />
       </div>
     )
   }
 
-  // Fallback if no stats exist yet
-  if (!stats) return null
+  if (isError) {
+    return <AlertBanner variant="danger" message="Couldn't load your stats. Please try again." />
+  }
+
+  if (!stats) {
+    return <AlertBanner variant="info" message="Rate a few titles to see your stats here." />
+  }
 
   return (
     <section className="w-full">
@@ -26,8 +35,8 @@ export default function ProfileStats({ stats, isLoading }) {
         <div className="bento-card">
           <HiOutlineFilm className="bento-card__icon" />
           <div className="mt-auto pt-4">
-            <div className="bento-stat">{stats.totalRated}</div>
-            <div className="bento-stat__label">Titles Rated</div>
+            <p className="bento-stat">{stats.totalRated}</p>
+            <p className="bento-stat__label">Titles Rated</p>
           </div>
         </div>
 
@@ -35,8 +44,11 @@ export default function ProfileStats({ stats, isLoading }) {
         <div className="bento-card">
           <HiOutlineStar className="bento-card__icon" />
           <div className="mt-auto pt-4">
-            <div className="bento-stat">{stats.averageScore}<span className="text-2xl text-text-muted">/10</span></div>
-            <div className="bento-stat__label">Average Rating</div>
+            <p className="bento-stat">
+              {stats.averageScore != null ? stats.averageScore : '—'}
+              <span className="text-2xl text-text-muted">/10</span>
+            </p>
+            <p className="bento-stat__label">Average Rating</p>
           </div>
         </div>
 
@@ -44,8 +56,11 @@ export default function ProfileStats({ stats, isLoading }) {
         <div className="bento-card">
           <HiOutlineClock className="bento-card__icon" />
           <div className="mt-auto pt-4">
-            <div className="bento-stat">{stats.totalWatchHours}<span className="text-2xl text-text-muted">h</span></div>
-            <div className="bento-stat__label">Watch Time</div>
+            <p className="bento-stat">
+              {stats.totalWatchHours != null ? stats.totalWatchHours : '—'}
+              <span className="text-2xl text-text-muted">h</span>
+            </p>
+            <p className="bento-stat__label">Movie Watch Time</p>
           </div>
         </div>
 
@@ -54,27 +69,30 @@ export default function ProfileStats({ stats, isLoading }) {
           <HiOutlineFire className="bento-card__icon mb-4" />
           <h3 className="bento-card__title mb-4">Most Watched Genres</h3>
           <div className="flex flex-wrap gap-2">
-            {stats.topGenres?.map((genre, index) => (
-              <span
-                key={genre.name}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium ${index === 0
+            {stats.topGenres?.map((genre, index) => {
+              const [name] = getGenreNames([genre.genreId], genre.type)
+              return (
+                <span
+                  key={`${genre.type}-${genre.genreId}`}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium ${index === 0
                     ? 'bg-primary/20 text-primary-light border border-primary/30'
                     : 'bg-surface-100 text-text-muted'
-                  }`}
-              >
-                {genre.name} <span className="opacity-50 text-xs ml-1">({genre.count})</span>
-              </span>
-            ))}
+                    }`}
+                >
+                  {name ?? 'Unknown'} <span className="opacity-50 text-xs ml-1">({genre.count})</span>
+                </span>
+              )
+            })}
           </div>
         </div>
 
-        {/* Card 5: The Cinematic Title (Accent/Tall) */}
+        {/* Card 5: The Cinematic Title (Accent) */}
         <div className="bento-card bento-card--accent flex items-center justify-center text-center">
           <div>
-            <div className="text-white/60 text-sm tracking-widest uppercase mb-2">Current Rank</div>
-            <div className="text-3xl font-black text-white leading-tight">
+            <p className="text-white/60 text-sm tracking-widest uppercase mb-2">Current Rank</p>
+            <p className="text-3xl font-black text-white leading-tight">
               {stats.totalRated > 50 ? 'Cinephile' : stats.totalRated > 10 ? 'Popcorn Enthusiast' : 'Casual Viewer'}
-            </div>
+            </p>
           </div>
         </div>
 

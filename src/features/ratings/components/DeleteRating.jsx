@@ -1,5 +1,5 @@
 import { FaTrash } from 'react-icons/fa'
-import Tooltip from '../../../components/Tooltip'
+import Tooltip from '@/components/ui/Tooltip'
 
 function DeleteRating({ onClick, hasRating, className = '' }) {
   if (!hasRating) return <div className="w-7.25" />

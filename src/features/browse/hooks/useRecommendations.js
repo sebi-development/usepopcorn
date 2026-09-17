@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
-import { getRecommendationSeed } from "../../../services/ratings"
-import { getRecommendations } from "../../../services/tmdb"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import { getRecommendationSeed } from "@/services/ratings"
+import { getRecommendations } from "@/services/tmdb"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 export default function useRecommendations() {
   const currentUser = useCurrentUser()

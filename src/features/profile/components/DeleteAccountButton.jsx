@@ -1,7 +1,7 @@
 import { useState } from "react";
-import Button from "../../../components/Button";
+import Button from "@/components/ui/Button";
 import { LuLoaderCircle } from "react-icons/lu"
-import supabase from "../../../lib/supabase";
+import supabase from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from 'react-router'
 

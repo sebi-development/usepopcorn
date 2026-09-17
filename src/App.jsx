@@ -1,20 +1,20 @@
 import { createBrowserRouter, RouterProvider } from "react-router"
 import { Toaster } from 'react-hot-toast'
 
-import PublicLayout from "./layout/PublicLayout"
-import AppLayout from "./layout/AppLayout"
+import PublicLayout from "@/layout/PublicLayout"
+import AppLayout from "@/layout/AppLayout"
 
-import LandingPage from "./pages/public/LandingPage"
-import LoginPage from "./pages/auth/LoginPage"
-import RegisterPage from "./pages/auth/RegisterPage"
-import DetailPage from "./pages/app/DetailPage"
-import BrowsePage from "./pages/app/BrowsePage"
-import ProfilePage from "./pages/app/ProfilePage"
-import ProfileStatsPage from "./pages/app/ProfileStatsPage"
-import CommunityPage from "./pages/app/CommunityPage"
-import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage"
-import ResetPasswordPage from "./pages/auth/ResetPasswordPage"
-import NotFoundPage from "./pages/public/NotFoundPage"
+import LandingPage from "@/pages/public/LandingPage"
+import LoginPage from "@/pages/auth/LoginPage"
+import RegisterPage from "@/pages/auth/RegisterPage"
+import DetailPage from "@/pages/app/DetailPage"
+import BrowsePage from "@/pages/app/BrowsePage"
+import ProfilePage from "@/pages/app/ProfilePage"
+import ProfileStatsPage from "@/pages/app/ProfileStatsPage"
+import CommunityPage from "@/pages/app/CommunityPage"
+import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage"
+import ResetPasswordPage from "@/pages/auth/ResetPasswordPage"
+import NotFoundPage from "@/pages/public/NotFoundPage"
 
 
 const router = createBrowserRouter([

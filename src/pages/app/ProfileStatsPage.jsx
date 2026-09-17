@@ -1,9 +1,9 @@
 import { useState } from "react"
-import ProfileStats from "../../features/profile/components/ProfileStats"
-import ActivityHeatmap from "../../features/profile/components/ActivityHeatmap"
-import ArrowLink from "../../components/ArrowLink"
-import useProfileStats from "../../features/profile/hooks/useProfileStats"
-import useProfileActivityData from "../../features/profile/hooks/useProfileActivityData"
+import ProfileStats from "@/features/profile/components/ProfileStats"
+import ActivityHeatmap from "@/features/profile/components/ActivityHeatmap"
+import ArrowLink from "@/components/ui/ArrowLink"
+import useProfileStats from "@/features/profile/hooks/useProfileStats"
+import useProfileActivityData from "@/features/profile/hooks/useProfileActivityData"
 import { useParams } from "react-router"
 
 export default function ProfileStatsPage() {

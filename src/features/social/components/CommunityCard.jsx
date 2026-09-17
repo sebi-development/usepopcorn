@@ -1,7 +1,8 @@
 import { memo } from "react"
 import { Link } from "react-router"
 import { HiStar, HiOutlineUser } from "react-icons/hi2"
-import { timeAgo } from "../../../utils/timeAgo"
+import { timeAgo } from "@/utils/timeAgo"
+import getTmdbImageUrl from "@/utils/tmdbImage"
 
 const ActivityCard = memo(function ActivityCard({ item }) {
   return (
@@ -50,7 +51,7 @@ const ActivityCard = memo(function ActivityCard({ item }) {
         <div className="w-16 sm:w-20 shrink-0 shadow-md rounded-md overflow-hidden bg-surface-100 aspect-2/3">
           {item.poster_path ? (
             <img 
-              src={`${import.meta.env.VITE_TMDB_IMAGE_URL}${item.poster_path}`} 
+              src={getTmdbImageUrl(item.poster_path, 'w185')} 
               alt={item.title} 
               className="w-full h-full object-cover"
             />

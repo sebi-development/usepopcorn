@@ -1,4 +1,4 @@
-import MediaRow from "../../../components/MediaRow"
+import MediaRow from "@/components/media/MediaRow"
 
 function RecentlyRated({ recentlyRated, isLoading, showInfo = false }) {
   if (!isLoading && (!recentlyRated || recentlyRated.length === 0)) return null

@@ -1,8 +1,8 @@
 import { useMemo, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2'
-import AlertBanner from '../../../components/AlertBanner'
-import BentoCardSkeleton from '../../../components/skeletons/components/BentoCardSkeleton'
+import AlertBanner from '@/components/ui/AlertBanner'
+import BentoCardSkeleton from '@/components/ui/BentoCardSkeleton'
 
 function HeatmapTooltip({ label, children }) {
   const anchorRef = useRef(null)

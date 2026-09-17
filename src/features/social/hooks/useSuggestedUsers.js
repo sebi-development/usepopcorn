@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
-import { getSuggestedUsers } from "../../../services/follows"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
+import { getSuggestedUsers } from "@/services/follows"
 
 export default function useSuggestedUsers() {
   const currentUser = useCurrentUser()

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { getUserActivity } from "../../../services/profiles"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import { getUserActivity } from "@/services/profiles"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 export default function useProfileActivityData(userId, year) {
   const currentUser = useCurrentUser()

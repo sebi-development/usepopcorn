@@ -1,12 +1,12 @@
 import { memo } from "react"
 import { useNavigate } from "react-router"
-import MoviePoster from "../../../components/MoviePoster"
-import Chip from "../../../components/Chip"
-import { getGenreNames } from "../../../utils/genres"
+import MoviePoster from "@/components/media/MoviePoster"
+import Chip from "@/components/ui/Chip"
+import { getGenreNames } from "@/utils/genres"
+import getTmdbImageUrl from "@/utils/tmdbImage"
 
 const SearchResultItem = memo(function SearchResultItem({ id, title, poster, releaseYear, media_type, genreIds, onClose, animationDelay = 0 }) {
   const navigate = useNavigate()
-  const IMAGE_URL = import.meta.env.VITE_TMDB_IMAGE_URL
   const genres = getGenreNames(genreIds, media_type)
 
   function handleClick() {
@@ -21,7 +21,7 @@ const SearchResultItem = memo(function SearchResultItem({ id, title, poster, rel
       className="flex items-center gap-5 px-5 py-4 cursor-pointer hover:bg-surface-100 transition-colors animate-[item-in_280ms_ease-out_both]"
     >
       <MoviePoster
-        src={IMAGE_URL + poster}
+        src={getTmdbImageUrl(poster, 'w185')}
         alt={title}
         className="w-16 h-24 shrink-0 rounded-md text-[0.45rem]"
       />

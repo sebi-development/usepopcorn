@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { getProfileStreakData, getExtendedStreak } from "../../../services/profiles"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import { getProfileStreakData, getExtendedStreak } from "@/services/profiles"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 export default function useProfileStreak(userId) {
   const currentUser = useCurrentUser()

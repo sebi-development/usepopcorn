@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { followUser, unfollowUser } from "../../../services/follows"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import { followUser, unfollowUser } from "@/services/follows"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import toast from "react-hot-toast"
 
 export default function useFollow(userId) {

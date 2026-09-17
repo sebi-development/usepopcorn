@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FiSearch } from 'react-icons/fi'
-import ActiveSearchModal from './ActiveSearchModal'
+import ActiveSearchModal from '@/features/search/components/ActiveSearchModal'
 
 
 function Search() {

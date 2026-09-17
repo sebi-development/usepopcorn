@@ -1,6 +1,6 @@
-import { FiCalendar, FiClock, FiTv, FiFilm } from 'react-icons/fi'
-import formatRuntime from '../../../utils/formatRuntime'
-import Chip from '../../../components/Chip'
+import { FiCalendar, FiClock, FiTv } from 'react-icons/fi'
+import formatRuntime from '@/utils/formatRuntime'
+import Chip from '@/components/ui/Chip'
 
 function DetailCard({ media }) {
   const isTV = media.type === 'tv'
@@ -34,11 +34,11 @@ function DetailCard({ media }) {
               <FiCalendar size={14} />
               {media.release_date?.slice(0, 4)}
             </span>
-            <span className="text-surface-100">•</span>
-            <span className="flex items-center gap-1.5">
+            {media.runtime !== 0 && <span className="flex items-center gap-1.5">
               <FiClock size={14} />
               {formatRuntime(media.runtime)}
-            </span>
+            </span>}
+
           </>
         )}
       </div>

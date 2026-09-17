@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { deleteRating } from "../../../services/ratings"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import { deleteRating } from "@/services/ratings"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import toast from "react-hot-toast"
 
 export default function useDeleteRating() {

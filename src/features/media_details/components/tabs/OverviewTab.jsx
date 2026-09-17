@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import formatCurrency from '../../../../utils/formatCurrency'
-import countryToFlag from '../../../../utils/countryToFlag'
-import ProviderBadge from '../ProviderBadge'
+import formatCurrency from '@/utils/formatCurrency'
+import countryToFlag from '@/utils/countryToFlag'
+import ProviderBadge from '@/features/media_details/components/ProviderBadge'
 
 const SECTION_HEADER_CLASS = "text-sm font-semibold text-text-muted uppercase tracking-widest mb-3"
 

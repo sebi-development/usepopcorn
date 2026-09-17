@@ -1,7 +1,8 @@
 import { useMemo } from "react"
 import { FiLoader } from "react-icons/fi"
-import useSuggestedUsers from "../hooks/useSuggestedUsers"
-import UserResultItem from "./UserResultltem"
+import useSuggestedUsers from "@/features/social/hooks/useSuggestedUsers"
+import UserResultItem from "@/features/social/components/UserResultltem"
+import useDelayedLoading from "@/hooks/useDelayedLoading"
 
 function getSuggestionSubtitle(user) {
   if (user.mutual_friend_count > 0) {
@@ -16,6 +17,7 @@ function getSuggestionSubtitle(user) {
 
 export default function SuggestedUsersWidget() {
   const { data: suggestions, isLoading } = useSuggestedUsers()
+  const showLoading = useDelayedLoading(isLoading)
 
   // Precompute subtitles once per data change, not once per render.
   // Cheap either way at 4 items, but this is the correct habit for list-derived data.
@@ -26,7 +28,7 @@ export default function SuggestedUsersWidget() {
     })) ?? []
   }, [suggestions])
 
-  if (isLoading) {
+  if (showLoading) {
     return (
       <div className="bg-surface-500 border border-surface-100 rounded-card p-5 flex justify-center py-10">
         <FiLoader className="animate-spin text-primary-light" size={20} />

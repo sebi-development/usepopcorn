@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router"
-import supabase from "../../../lib/supabase"
+import supabase from "@/lib/supabase"
 import toast from "react-hot-toast"
-import { getCountry } from "../../../utils/getCountry"
+import { getCountry } from "@/utils/getCountry"
 
 export function useAuth() {
   const navigate = useNavigate()

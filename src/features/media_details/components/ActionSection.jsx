@@ -1,11 +1,11 @@
 import { useState } from "react"
-import { useOutsideClick } from "../../../hooks/useOutsideClick"
-import StarRating from "../../ratings/components/StarRating"
-import DeleteRating from "../../ratings/components/DeleteRating"
-import WatchlistButton from "../../interactions/components/WatchlistButton"
-import Score from "./Score"
-import FavoriteButton from "../../interactions/components/FavoritesButton"
-import ShareButton from "./ShareButton"
+import { useOutsideClick } from "@/hooks/useOutsideClick"
+import StarRating from "@/features/ratings/components/StarRating"
+import DeleteRating from "@/features/ratings/components/DeleteRating"
+import WatchlistButton from "@/features/interactions/components/WatchlistButton"
+import Score from "@/features/media_details/components/Score"
+import FavoriteButton from "@/features/interactions/components/FavoritesButton"
+import ShareButton from "@/features/media_details/components/ShareButton"
 
 const dockBtnClass = "flex items-center justify-center w-10 h-10 rounded-xl bg-surface-500/50 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200 cursor-pointer"
 

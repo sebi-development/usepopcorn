@@ -1,4 +1,4 @@
-import supabase from '../lib/supabase'
+import supabase from '@/lib/supabase'
 
 export async function uploadRating(ratingData, currentUserId) {
   const { score, tmdb_id, title, poster_path, type, runtime, genre_ids } = ratingData

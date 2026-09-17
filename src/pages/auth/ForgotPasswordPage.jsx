@@ -1,11 +1,11 @@
 import { HiOutlineEnvelope } from "react-icons/hi2"
-import Form from "../../components/Form"
-import InfoCard from "../../components/InfoCard"
-import ArrowLink from "../../components/ArrowLink"
-import { useAuth } from "../../features/auth/hooks/useAuth"
+import Form from "@/components/ui/Form"
+import InfoCard from "@/components/ui/InfoCard"
+import ArrowLink from "@/components/ui/ArrowLink"
+import { useAuth } from "@/features/auth/hooks/useAuth"
 import { useForm } from "react-hook-form"
 import { useState } from "react"
-import AlertBanner from "../../components/AlertBanner"
+import AlertBanner from "@/components/ui/AlertBanner"
 
 export default function ForgotPasswordPage() {
   const { forgotPassword } = useAuth()

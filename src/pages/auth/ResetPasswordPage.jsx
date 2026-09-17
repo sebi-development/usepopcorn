@@ -1,11 +1,11 @@
 import { useForm, useWatch } from 'react-hook-form'
 import { HiOutlineLockClosed, HiCheck, HiXMark } from 'react-icons/hi2'
-import Form from '../../components/Form'
-import InfoCard from '../../components/InfoCard'
-import ArrowLink from '../../components/ArrowLink'
-import usePasswordRecovery from '../../features/auth/hooks/usePasswordRecovery'
-import { useAuth } from '../../features/auth/hooks/useAuth'
-import AlertBanner from '../../components/AlertBanner'
+import Form from '@/components/ui/Form'
+import InfoCard from '@/components/ui/InfoCard'
+import ArrowLink from '@/components/ui/ArrowLink'
+import usePasswordRecovery from '@/features/auth/hooks/usePasswordRecovery'
+import { useAuth } from '@/features/auth/hooks/useAuth'
+import AlertBanner from '@/components/ui/AlertBanner'
 
 // Helper component for the animated checklist items
 function Requirement({ met, text }) {

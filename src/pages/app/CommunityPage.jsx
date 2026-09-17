@@ -1,11 +1,11 @@
 import { useMemo } from "react"
-import CommunityCardSkeleton from "../../components/skeletons/CommunityPageSkeleton"
-import ActivityCard from "../../features/social/components/CommunityCard"
-import useFeed from "../../features/social/hooks/useFeed"
-import useFeedRealtime from "../../features/social/hooks/useFeedRealtime"
-import UserSearchWidget from "../../features/social/components/userSearchWidget"
-import SuggestedUsersWidget from "../../features/social/components/SuggestedUsersWidget"
-import useDelayedLoading from "../../hooks/useDelayedLoading"
+import CommunityCardSkeleton from "@/features/social/components/CommunityPageSkeleton"
+import ActivityCard from "@/features/social/components/CommunityCard"
+import useFeed from "@/features/social/hooks/useFeed"
+import useFeedRealtime from "@/features/social/hooks/useFeedRealtime"
+import UserSearchWidget from "@/features/social/components/userSearchWidget"
+import SuggestedUsersWidget from "@/features/social/components/SuggestedUsersWidget"
+import useDelayedLoading from "@/hooks/useDelayedLoading"
 
 export default function CommunityPage() {
   const { data: feed, isLoading } = useFeed()

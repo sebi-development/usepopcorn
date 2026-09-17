@@ -1,5 +1,5 @@
-import SkeletonBox from './components/SkeletonBox'
-import SkeletonText from './components/SkeletonText'
+import SkeletonBox from '@/components/ui/SkeletonBox'
+import SkeletonText from '@/components/ui/SkeletonText'
 
 export default function MediaDetailSkeleton() {
   return (

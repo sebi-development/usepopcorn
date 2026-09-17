@@ -1,4 +1,4 @@
-import SkeletonBox from './components/SkeletonBox'
+import SkeletonBox from '@/components/ui/SkeletonBox'
 
 export default function ProfileHeroSkeleton() {
   return (

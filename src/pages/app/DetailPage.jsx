@@ -2,26 +2,28 @@ import { useLocation, useParams } from "react-router"
 import { useMemo, useState, useCallback } from "react"
 import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers, HiOutlineListBullet } from "react-icons/hi2"
 
-import useMediaDetails from "../../features/media_details/hooks/useMediaDetails"
-import useGetRating from '../../features/ratings/hooks/useGetRating'
-import useUploadRating from "../../features/ratings/hooks/useUploadRating"
-import useDeleteRating from "../../features/ratings/hooks/useDeleteRating"
-import useInteractions from "../../features/interactions/hooks/useInteractions"
-import useGetAverageRating from "../../features/ratings/hooks/useGetAverageRating"
-import useAverageRatingRealtime from "../../features/ratings/hooks/useAverageRatingRealtime"
-import useCurrentUser from "../../features/auth/hooks/useCurrentUser"
+import useMediaDetails from "@/features/media_details/hooks/useMediaDetails"
+import useGetRating from '@/features/ratings/hooks/useGetRating'
+import useUploadRating from "@/features/ratings/hooks/useUploadRating"
+import useDeleteRating from "@/features/ratings/hooks/useDeleteRating"
+import useInteractions from "@/features/interactions/hooks/useInteractions"
+import useGetAverageRating from "@/features/ratings/hooks/useGetAverageRating"
+import useAverageRatingRealtime from "@/features/ratings/hooks/useAverageRatingRealtime"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
+import useAllSeasonDetails from "@/features/media_details/hooks/useAllSeasonDetails"
 
-import DetailCard from "../../features/media_details/components/DetailCard"
-import MoviePoster from "../../components/MoviePoster"
-import MediaDetailSkeleton from "../../components/skeletons/MediaDetailSkeleton"
-import AlertBanner from "../../components/AlertBanner"
-import ActionSection from "../../features/media_details/components/ActionSection"
-import SlidingTabs from "../../components/SlidingTabs"
-import FriendActivityTab from "../../features/media_details/components/tabs/FriendActivityTab"
-import ScoresTab from "../../features/media_details/components/tabs/ScoresTab"
-import OverviewTab from "../../features/media_details/components/tabs/OverviewTab"
-import SeasonsTab from "../../features/media_details/components/tabs/SeasonsTab"
-import useDelayedLoading from "../../hooks/useDelayedLoading"
+import DetailCard from "@/features/media_details/components/DetailCard"
+import MoviePoster from "@/components/media/MoviePoster"
+import MediaDetailSkeleton from "@/features/media_details/components/MediaDetailSkeleton"
+import AlertBanner from "@/components/ui/AlertBanner"
+import ActionSection from "@/features/media_details/components/ActionSection"
+import SlidingTabs from "@/components/ui/SlidingTabs"
+import FriendActivityTab from "@/features/media_details/components/tabs/FriendActivityTab"
+import ScoresTab from "@/features/media_details/components/tabs/ScoresTab"
+import OverviewTab from "@/features/media_details/components/tabs/OverviewTab"
+import SeasonsTab from "@/features/media_details/components/tabs/SeasonsTab"
+import useDelayedLoading from "@/hooks/useDelayedLoading"
+import getTmdbImageUrl from "@/utils/tmdbImage"
 
 function TabPanel({ id, activeTab, children }) {
   if (activeTab !== id) return null
@@ -46,6 +48,12 @@ export default function DetailPage() {
   const type = state?.type || 'movie'
   const currentUser = useCurrentUser()
   const [activeTab, setActiveTab] = useState("overview")
+  const [seasonsTabVisited, setSeasonsTabVisited] = useState(false)
+
+  const handleTabChange = useCallback((tabId) => {
+    setActiveTab(tabId)
+    if (tabId === 'seasons') setSeasonsTabVisited(true)
+  }, [])
 
   const DETAIL_TABS = useMemo(() => {
     const base = [
@@ -67,6 +75,13 @@ export default function DetailPage() {
   const averageScore = averageRating != null ? averageRating : null
 
   useAverageRatingRealtime(tmdbId)
+
+  // ── Bulk season fetch (OPT-010) — triggered on first Seasons tab click ──
+  const { isLoading: isSeasonsLoading } = useAllSeasonDetails(
+    tmdbId,
+    data?.seasons,
+    type === 'tv' && seasonsTabVisited
+  )
 
   // ── Interactions ───────────────────────────────────────────
   const { data: watchlist } = useInteractions('watchlist')
@@ -111,7 +126,7 @@ export default function DetailPage() {
 
       <div className="[grid-area:poster]">
         <MoviePoster
-          src={`${import.meta.env.VITE_TMDB_IMAGE_URL}${data?.poster_path}`}
+          src={getTmdbImageUrl(data?.poster_path, 'w500')}
           alt={data?.title}
           className="w-full aspect-2/3 rounded-card"
         />
@@ -140,7 +155,7 @@ export default function DetailPage() {
         <SlidingTabs
           tabs={DETAIL_TABS}
           activeTab={activeTab}
-          onChange={setActiveTab}
+          onChange={handleTabChange}
         />
 
         <div className="bg-surface-500 border border-surface-100 rounded-card p-6 min-h-[250px]">
@@ -162,7 +177,7 @@ export default function DetailPage() {
 
           {type === 'tv' && (
             <TabPanel id="seasons" activeTab={activeTab}>
-              <SeasonsTab tvId={tmdbId} seasons={data?.seasons} />
+              <SeasonsTab tvId={tmdbId} seasons={data?.seasons} isBulkLoading={isSeasonsLoading} />
             </TabPanel>
           )}
         </div>

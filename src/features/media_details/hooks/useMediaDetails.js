@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { getMediaDetails } from "../../../services/tmdb";
-import { extractRegionalData } from "../../../utils/extractRegionalData";
+import { getMediaDetails } from "@/services/tmdb";
+import { extractRegionalData } from "@/utils/extractRegionalData";
 
 export default function useMediaDetails(id, type = 'movie', userCountry = 'US') {
   const { data, isLoading, error } = useQuery({

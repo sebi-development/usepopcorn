@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
-import { getProfile } from "../../../services/profiles"
-import { getUserRatings, getUserRatingsCount } from "../../../services/ratings"
-import useCurrentUser from "../../auth/hooks/useCurrentUser"
+import { getProfile } from "@/services/profiles"
+import { getUserRatings, getUserRatingsCount } from "@/services/ratings"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 export default function useProfileData(userId) {
   const currentUser = useCurrentUser()

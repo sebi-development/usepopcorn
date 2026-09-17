@@ -13,5 +13,5 @@ export default function useDelayedLoading(isLoading, delayMs = 150) {
     }
   }, [isLoading, delayMs])
 
-  return showLoading
+  return isLoading && showLoading
 }

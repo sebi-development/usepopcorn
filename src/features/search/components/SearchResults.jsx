@@ -1,4 +1,4 @@
-import SearchResultItem from "./SearchResultItem"
+import SearchResultItem from "@/features/search/components/SearchResultItem"
 
 const STAGGER_STEP_MS = 30
 const MAX_STAGGERED_ITEMS = 6

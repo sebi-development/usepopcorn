@@ -2,10 +2,10 @@ import { memo } from "react"
 import { Link } from "react-router"
 import { FaCirclePlus, FaCircleCheck } from "react-icons/fa6"
 import toast from "react-hot-toast"
-import Tooltip from "../../../components/Tooltip"
-import Avatar from "../../../components/Avatar"
-import useFollow from "../hooks/useFollow"
-import useIsFollowing from "../hooks/useIsFollowing"
+import Tooltip from "@/components/ui/Tooltip"
+import Avatar from "@/components/ui/Avatar"
+import useFollow from "@/features/social/hooks/useFollow"
+import useIsFollowing from "@/features/social/hooks/useIsFollowing"
 
 const UserResultItem = memo(function UserResultItem({ user, subtitle }) {
   // Keeps cost per row low when rendering lists (search results, suggestions).

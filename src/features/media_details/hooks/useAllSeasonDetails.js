@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQueries } from "@tanstack/react-query";
-import { getSeasonDetails } from "../../../services/tmdb";
+import { getSeasonDetails } from "@/services/tmdb";
 
 /**
  * Fetches all season details in parallel when enabled.

@@ -1,11 +1,11 @@
 import { useCallback } from "react"
 import { createPortal } from "react-dom"
 import { LuX } from "react-icons/lu"
-import { useFocusTrap } from "../hooks/useFocusTrap"
-import useKey from "../hooks/useKey"
-import { useOutsideClick } from "../hooks/useOutsideClick"
-import { useScrollLock } from "../hooks/useScrollLock"
-import mergeRefs from "../utils/mergeRefs"
+import { useFocusTrap } from "@/hooks/useFocusTrap"
+import useKey from "@/hooks/useKey"
+import { useOutsideClick } from "@/hooks/useOutsideClick"
+import { useScrollLock } from "@/hooks/useScrollLock"
+import mergeRefs from "@/utils/mergeRefs"
 
 function Modal({ title, subtitle, onClose, children }) {
   const handleClose = useCallback(() => onClose(), [onClose])

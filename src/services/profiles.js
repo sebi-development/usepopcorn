@@ -1,4 +1,4 @@
-import supabase from '../lib/supabase'
+import supabase from '@/lib/supabase'
 
 export async function getProfile(userId) {
   const { data, error } = await supabase
@@ -69,6 +69,12 @@ export async function getProfileStreakData(userId) {
 
 export async function getExtendedStreak(userId) {
   const { data, error } = await supabase.rpc('get_extended_streak', { p_user_id: userId })
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function getBestRatedIn(userId, numberOfDays) {
+  const { data, error } = await supabase.rpc('get_best_rated_in_window', { p_user_id: userId, p_days: numberOfDays})
   if (error) throw new Error(error.message)
   return data
 }

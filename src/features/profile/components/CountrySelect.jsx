@@ -1,6 +1,6 @@
 import React from 'react';
 import { LuChevronDown } from 'react-icons/lu';
-import { getCountryOptions } from '../../../utils/getCountries';
+import { getCountryOptions } from '@/utils/getCountries';
 
 // This component is strictly separated so it can be lazy-loaded.
 const CountrySelect = React.forwardRef(function CountrySelect({ ...props }, ref) {

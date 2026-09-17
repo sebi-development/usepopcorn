@@ -1,6 +1,6 @@
 import { FiSearch } from 'react-icons/fi'
 import { LuLoaderCircle } from 'react-icons/lu'
-import SlidingTabs from '../../../components/SlidingTabs'
+import SlidingTabs from '@/components/ui/SlidingTabs'
 
 function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
   return (

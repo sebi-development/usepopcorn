@@ -1,10 +1,10 @@
 import { useForm } from 'react-hook-form'
-import Form from '../../components/Form'
-import AlertBanner from '../../components/AlertBanner'
-import AuthCard from '../../features/auth/components/AuthCard'
-import { useAuth } from '../../features/auth/hooks/useAuth'
-import ArrowLink from '../../components/ArrowLink'
-import { getCountry } from '../../utils/getCountry'
+import Form from '@/components/ui/Form'
+import AlertBanner from '@/components/ui/AlertBanner'
+import InfoCard from '@/components/ui/InfoCard'
+import { useAuth } from '@/features/auth/hooks/useAuth'
+import ArrowLink from '@/components/ui/ArrowLink'
+import { getCountry } from '@/utils/getCountry'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -19,7 +19,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthCard title="Welcome back" subtitle="Sign in to your account to continue">
+    <InfoCard title="Welcome back" subtitle="Sign in to your account to continue">
       {errors.root && <AlertBanner variant='warning' message={errors.root.message} />}
 
       <Form onSubmit={handleSubmit(onSubmit)}>
@@ -53,6 +53,6 @@ export default function LoginPage() {
           Forgot your password?
         </ArrowLink>
       </div>
-    </AuthCard>
+    </InfoCard>
   )
 }

@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
-import { useOutsideClick } from '../../../hooks/useOutsideClick'
-import { useScrollLock } from '../../../hooks/useScrollLock'
+import { useOutsideClick } from '@/hooks/useOutsideClick'
+import { useScrollLock } from '@/hooks/useScrollLock'
 
 function SearchOverlay({ onClose, children }) {
   const ref = useOutsideClick(onClose)

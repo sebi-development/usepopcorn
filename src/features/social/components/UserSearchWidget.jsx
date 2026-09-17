@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { FiSearch, FiLoader } from "react-icons/fi"
-import useUserSearch from "../../search/hooks/useUserSearch"
-import UserResultItem from "./UserResultltem"
+import useUserSearch from "@/features/search/hooks/useUserSearch"
+import UserResultItem from "@/features/social/components/UserResultltem"
 
 export default function UserSearchWidget() {
   const [searchTerm, setSearchTerm] = useState("")
