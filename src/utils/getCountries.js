@@ -1,5 +1,4 @@
 const FREQUENT_COUNTRY_CODES = [
-  // North America
   'US', 'CA', 'MX',
   'GB', 'IE', 'FR', 
   'DE', 'NL', 'BE', 
@@ -15,14 +14,10 @@ const FREQUENT_COUNTRY_CODES = [
 
 // Instantiate the Intl API once outside the function to prevent memory reallocation
 const regionNames = new Intl.DisplayNames(['en'], {type: 'region'})
+const COUNTRY_OPTIONS = FREQUENT_COUNTRY_CODES
+  .map((code) => ({ code, name: regionNames.of(code) }))
+  .sort((a, b) => a.name.localeCompare(b.name))
 
-
-// Returns an alphabetically sorted array of country objects: { code: 'US', name: 'United States' }
 export function getCountryOptions() {
-  return FREQUENT_COUNTRY_CODES.map((code) => {
-    return {
-      code,
-      name: regionNames.of(code) 
-    };
-  }).sort((a, b) => a.name.localeCompare(b.name)); 
+  return COUNTRY_OPTIONS
 }

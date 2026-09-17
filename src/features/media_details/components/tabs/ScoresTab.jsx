@@ -23,8 +23,10 @@ function CriticScoresSkeleton() {
   )
 }
 
-function CriticScoresTab({ imdbId }) {
-  const { data: scores, isLoading, isError } = useExternalApis(imdbId)
+function CriticScoresTab({ imdbId, prefetchedQuery }) {
+  // OPT-018: use pre-fetched query from parent when available, fall back to own fetch
+  const ownQuery = useExternalApis(prefetchedQuery ? null : imdbId)
+  const { data: scores, isLoading, isError } = prefetchedQuery || ownQuery
   const showLoading = useDelayedLoading(isLoading)
 
   const platforms = useMemo(() => {
@@ -76,17 +78,17 @@ function CriticScoresTab({ imdbId }) {
             key={id}
             className="flex flex-col items-center justify-between p-6 min-h-35"
           >
-            <div className="flex items-center gap-2.5 text-text-muted">
-              <Icon className={`w-6 h-6 ${iconColor} shrink-0`} />
-              <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
-                {name}
-              </span>
-            </div>
-
-            <div className="mt-5 flex items-center justify-center w-full">
+            <div className="flex items-center justify-center w-full mb-4">
               <div className="px-5 py-2 rounded-2xl bg-surface-900/60 border border-white/10 text-text font-bold text-base tracking-tight shadow-inner transition-colors hover:border-white/20">
                 {score}
               </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 text-text-muted mt-auto pt-1 border-t border-surface-100/50 w-full justify-center">
+              <Icon className={`w-5 h-5 ${iconColor} shrink-0`} />
+              <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+                {name}
+              </span>
             </div>
           </BentoGrid.Card>
         ))}

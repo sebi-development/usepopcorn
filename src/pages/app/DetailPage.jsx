@@ -1,22 +1,17 @@
 import { useLocation, useParams } from "react-router"
-import { useMemo, useState, useCallback } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers, HiOutlineListBullet } from "react-icons/hi2"
 
 import useMediaDetails from "@/features/media_details/hooks/useMediaDetails"
-import useGetRating from '@/features/ratings/hooks/useGetRating'
-import useUploadRating from "@/features/ratings/hooks/useUploadRating"
-import useDeleteRating from "@/features/ratings/hooks/useDeleteRating"
-import useInteractions from "@/features/interactions/hooks/useInteractions"
-import useGetAverageRating from "@/features/ratings/hooks/useGetAverageRating"
-import useAverageRatingRealtime from "@/features/ratings/hooks/useAverageRatingRealtime"
-import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import useAllSeasonDetails from "@/features/media_details/hooks/useAllSeasonDetails"
+import useExternalApis from "@/features/media_details/hooks/useExternalApis"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 import DetailCard from "@/features/media_details/components/DetailCard"
 import MoviePoster from "@/components/media/MoviePoster"
 import MediaDetailSkeleton from "@/features/media_details/components/MediaDetailSkeleton"
 import AlertBanner from "@/components/ui/AlertBanner"
-import ActionSection from "@/features/media_details/components/ActionSection"
+import ActionSectionContainer from "@/features/media_details/components/ActionSectionContainer"
 import SlidingTabs from "@/components/ui/SlidingTabs"
 import FriendActivityTab from "@/features/media_details/components/tabs/FriendActivityTab"
 import ScoresTab from "@/features/media_details/components/tabs/ScoresTab"
@@ -66,15 +61,13 @@ export default function DetailPage() {
       : base
   }, [type])
 
-  // ── Media & ratings ────────────────────────────────────────
+  // ── Media ────────────────────────────────────────────────
   const { data, isLoading, error: errorDetailData } = useMediaDetails(tmdbId, type)
   const showLoading = useDelayedLoading(isLoading)
-  const { data: userRating } = useGetRating(tmdbId)
 
-  const { data: averageRating } = useGetAverageRating(tmdbId)
-  const averageScore = averageRating != null ? averageRating : null
-
-  useAverageRatingRealtime(tmdbId)
+  // OPT-018: hoist external scores fetch to eliminate waterfall
+  // (starts as soon as imdb_id is available, instead of waiting for ScoresTab to mount)
+  const externalScores = useExternalApis(data?.imdb_id)
 
   // ── Bulk season fetch (OPT-010) — triggered on first Seasons tab click ──
   const { isLoading: isSeasonsLoading } = useAllSeasonDetails(
@@ -82,40 +75,6 @@ export default function DetailPage() {
     data?.seasons,
     type === 'tv' && seasonsTabVisited
   )
-
-  // ── Interactions ───────────────────────────────────────────
-  const { data: watchlist } = useInteractions('watchlist')
-  const { data: favorites } = useInteractions('favorite')
-
-  const isWatchlisted = useMemo(
-    () => watchlist?.some(item => item.tmdb_id === tmdbId) ?? false,
-    [watchlist, tmdbId]
-  )
-  const isFavorited = useMemo(
-    () => favorites?.some(item => item.tmdb_id === tmdbId) ?? false,
-    [favorites, tmdbId]
-  )
-
-  // ── Mutations & Callbacks ──────────────────────────────────
-  const { mutate: mutateUploadRating } = useUploadRating()
-  const { mutate: mutateDeleteRating } = useDeleteRating()
-
-  const handleRate = useCallback((score) => {
-    if (!data) return
-    mutateUploadRating({
-      tmdb_id: tmdbId,
-      score,
-      title: data.title,
-      poster_path: data.poster_path,
-      type,
-      runtime: type === 'movie' ? data.runtime : data.episode_run_time?.[0] ?? null,
-      genre_ids: data.genres?.map(g => g.id) ?? null,
-    })
-  }, [mutateUploadRating, tmdbId, data, type])
-
-  const handleDelete = useCallback(() => {
-    mutateDeleteRating(tmdbId)
-  }, [mutateDeleteRating, tmdbId])
 
   if (showLoading) return <MediaDetailSkeleton />
   if (errorDetailData) return <AlertBanner message='Error fetching data. Please try again' variant="danger" />
@@ -137,16 +96,8 @@ export default function DetailPage() {
         <DetailCard media={data} id={id} />
       </div>
 
-      {/* User actions + community score */}
-      <ActionSection
-        media={data}
-        userRating={userRating}
-        averageScore={averageScore}
-        isWatchlisted={isWatchlisted}
-        isFavorited={isFavorited}
-        onRate={handleRate}
-        onDelete={handleDelete}
-      />
+      {/* OPT-020: interaction/rating hooks isolated in container to prevent DetailPage rerenders */}
+      <ActionSectionContainer media={data} tmdbId={tmdbId} type={type} />
 
       {/* Tabbed Content Area */}
       <div className="[grid-area:about] flex flex-col gap-5 mb-14">
@@ -168,7 +119,7 @@ export default function DetailPage() {
             <h3 className="text-sm font-semibold text-text-muted uppercase tracking-widest mb-3">
               Platform Scores
             </h3>
-            <ScoresTab imdbId={data?.imdb_id} />
+            <ScoresTab imdbId={data?.imdb_id} prefetchedQuery={externalScores} />
           </TabPanel>
 
           <TabPanel id="social" activeTab={activeTab}>

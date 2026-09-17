@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import { useNavigate } from "react-router"
 import MoviePoster from "@/components/media/MoviePoster"
 import Chip from "@/components/ui/Chip"
@@ -7,7 +7,8 @@ import getTmdbImageUrl from "@/utils/tmdbImage"
 
 const SearchResultItem = memo(function SearchResultItem({ id, title, poster, releaseYear, media_type, genreIds, onClose, animationDelay = 0 }) {
   const navigate = useNavigate()
-  const genres = getGenreNames(genreIds, media_type)
+  // OPT-029: memoize genre lookup to avoid recomputing on every render
+  const genres = useMemo(() => getGenreNames(genreIds, media_type), [genreIds, media_type])
 
   function handleClick() {
     onClose()
