@@ -86,4 +86,4 @@ export default memo(function ActionSection({ media, userRating, averageScore, is
 
     </div>
   )
-}
+})
