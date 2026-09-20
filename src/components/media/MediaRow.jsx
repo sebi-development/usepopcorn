@@ -12,7 +12,7 @@ function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
     <button
       type="button"
       onClick={onToggle}
-      className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text transition-colors duration-200"
+      className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text hover:bg-surface-500 px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer"
     >
       {isLoadingFirstPage ? (
         <span className="w-3.5 h-3.5 border-2 border-text-muted/40 border-t-text-muted rounded-full animate-spin" />

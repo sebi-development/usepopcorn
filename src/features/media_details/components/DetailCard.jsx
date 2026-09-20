@@ -1,44 +1,62 @@
-import { FiCalendar, FiClock, FiTv } from 'react-icons/fi'
+
 import formatRuntime from '@/utils/formatRuntime'
 import Chip from '@/components/ui/Chip'
 
 function DetailCard({ media }) {
   const isTV = media.type === 'tv'
+  const director = !isTV ? media.credits?.crew?.find(c => c.job === 'Director')?.name : null;
+  const network = isTV ? media.networks?.[0]?.name : null;
 
   return (
     <div className="[grid-area:info] flex flex-col gap-6">
-
       {/* Title */}
       <h1 className="text-4xl font-bold text-text leading-tight">
         {media.title}
       </h1>
 
       {/* Meta */}
-      <div className="flex items-center gap-4 text-text-muted text-sm">
+      <div className="flex flex-wrap items-center gap-2">
         {isTV ? (
           <>
-            <span className="flex items-center gap-1.5">
-              <FiCalendar size={14} />
-              {media.first_air_date?.slice(0, 4)}
-              {media.last_air_date && ` – ${media.last_air_date.slice(0, 4)}`}
-            </span>
-            <span className="text-surface-100">•</span>
-            <span className="flex items-center gap-1.5">
-              <FiTv size={14} />
-              {media.number_of_seasons} {media.number_of_seasons === 1 ? 'Season' : 'Seasons'} · {media.number_of_episodes} Episodes
-            </span>
+            {network && (
+              <Chip 
+                size="sm"
+                colorRgb="161, 161, 170"
+                label={network}
+              />
+            )}
+            <Chip 
+              size="sm"
+              colorRgb="161, 161, 170"
+              label={`${media.first_air_date?.slice(0, 4) || ''}${media.last_air_date ? ` – ${media.last_air_date.slice(0, 4)}` : ''}`}
+            />
+            <Chip 
+              size="sm"
+              colorRgb="161, 161, 170"
+              label={`${media.number_of_seasons} ${media.number_of_seasons === 1 ? 'Season' : 'Seasons'} · ${media.number_of_episodes} Episodes`}
+            />
           </>
         ) : (
           <>
-            <span className="flex items-center gap-1.5">
-              <FiCalendar size={14} />
-              {media.release_date?.slice(0, 4)}
-            </span>
-            {media.runtime !== 0 && <span className="flex items-center gap-1.5">
-              <FiClock size={14} />
-              {formatRuntime(media.runtime)}
-            </span>}
-
+            {director && (
+              <Chip 
+                size="sm"
+                colorRgb="161, 161, 170"
+                label={`Directed by ${director}`}
+              />
+            )}
+            <Chip 
+              size="sm"
+              colorRgb="161, 161, 170"
+              label={media.release_date?.slice(0, 4) || 'TBA'}
+            />
+            {media.runtime !== 0 && media.runtime != null && (
+              <Chip 
+                size="sm"
+                colorRgb="161, 161, 170"
+                label={formatRuntime(media.runtime)}
+              />
+            )}
           </>
         )}
       </div>

@@ -36,7 +36,10 @@ export default function WatchlistButton({ media, className = '', isWatchlisted, 
         {activeWatchlist ? (
           <BsBookmarkFill className="text-primary-light drop-shadow-[0_0_8px_rgba(121,80,242,0.6)] animate-in zoom-in duration-300" size={16} />
         ) : (
-          <BsBookmark className="text-white/30 group-hover/btn:text-primary-light group-hover/btn:drop-shadow-[0_0_8px_rgba(121,80,242,0.6)] transition-all duration-300" size={16} />
+          <>
+            <BsBookmark className="text-white/30 group-hover/btn:opacity-0 transition-opacity duration-300" size={16} />
+            <BsBookmarkFill className="absolute opacity-0 group-hover/btn:opacity-100 text-primary-light drop-shadow-[0_0_8px_rgba(121,80,242,0.6)] transition-opacity duration-300" size={16} />
+          </>
         )}
       </button>
     </Tooltip>
