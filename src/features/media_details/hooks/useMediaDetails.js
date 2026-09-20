@@ -22,6 +22,7 @@ export default function useMediaDetails(id, type = 'movie', userCountry = 'US') 
         release_status: data.status,
         origin_country: data.origin_country,
         watch_providers: data['watch/providers'] ?? null,
+        credits: data.credits,
         type,
         certification,
         providers,
@@ -47,6 +48,7 @@ export default function useMediaDetails(id, type = 'movie', userCountry = 'US') 
         number_of_episodes: data.number_of_episodes,
         seasons: data.seasons?.map(s => ({ id: s.id, season_number: s.season_number, name: s.name, episode_count: s.episode_count, air_date: s.air_date, poster_path: s.poster_path })) ?? [],
         episode_run_time: data.episode_run_time,
+        networks: data.networks,
       };
     }
   })

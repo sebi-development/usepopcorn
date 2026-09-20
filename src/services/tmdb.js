@@ -18,8 +18,8 @@ export async function searchContent(query, type = 'movie') {
 
 export async function getMediaDetails(id, type = 'movie') {
   const append = type === 'movie'
-    ? '?append_to_response=release_dates,watch%2Fproviders' // movies endpoint
-    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids'; // series endpoint
+    ? '?append_to_response=release_dates,watch%2Fproviders,credits' // movies endpoint
+    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids,credits'; // series endpoint
   return tmdbFetch(`/${type}/${id}${append}`);
 }
 
