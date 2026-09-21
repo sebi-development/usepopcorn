@@ -2,6 +2,12 @@ import { FiSearch } from 'react-icons/fi'
 import { LuLoaderCircle } from 'react-icons/lu'
 import SlidingTabs from '@/components/ui/SlidingTabs'
 
+// Static — kept at module scope so SlidingTabs never sees a new reference on re-renders.
+const SEARCH_TABS = [
+  { id: 'movie', label: 'Movies' },
+  { id: 'tv', label: 'Series' },
+]
+
 function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 border-b border-surface-100">
@@ -18,10 +24,7 @@ function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
         className="w-full bg-transparent text-text text-lg placeholder:text-text-muted outline-none"
       />
       <SlidingTabs
-        tabs={[
-          { id: 'movie', label: 'Movies' },
-          { id: 'tv', label: 'Series' },
-        ]}
+        tabs={SEARCH_TABS}
         activeTab={filter}
         onChange={onFilterChange}
         containerPadding="p-0.5"
