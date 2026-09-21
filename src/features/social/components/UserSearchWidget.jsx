@@ -1,12 +1,14 @@
 import { useState } from "react"
 import { FiSearch, FiLoader } from "react-icons/fi"
 import useUserSearch from "@/features/search/hooks/useUserSearch"
+import useFollowingIds from "@/features/social/hooks/useFollowingIds"
 import UserResultItem from "@/features/social/components/UserResultltem"
 
 export default function UserSearchWidget() {
   const [searchTerm, setSearchTerm] = useState("")
 
   const { data: results, isLoading } = useUserSearch(searchTerm)
+  const { followingSet } = useFollowingIds()
 
   return (
     <div className="bg-surface-500 border border-surface-100 rounded-card p-5 flex flex-col transition-all duration-300">
@@ -47,7 +49,7 @@ export default function UserSearchWidget() {
 
           {/* Render Actual Results */}
           {!isLoading && results?.map((user) => (
-            <UserResultItem key={user.id} user={user} />
+            <UserResultItem key={user.id} user={user} isFollowing={followingSet.has(user.id)} />
           ))}
 
         </div>
