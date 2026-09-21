@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router"
 import { HiMiniUserGroup, HiOutlineUser } from "react-icons/hi2"
 import { FiUser, FiBarChart2, FiLogOut } from "react-icons/fi"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
-import useProfileData from "@/features/profile/hooks/useProfileData"
+import useUserProfile from "@/features/profile/hooks/useUserProfile"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import supabase from "@/lib/supabase"
 import { useQueryClient } from "@tanstack/react-query"
@@ -19,7 +19,7 @@ function UserMenu() {
   const toggleMenu = () => setIsOpen(prev => !prev)
 
   const currentUser = useCurrentUser()
-  const { profileData } = useProfileData(currentUser?.id)
+  const { profileData } = useUserProfile(currentUser?.id)
 
   async function handleLogout() {
     await supabase.auth.signOut()
