@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { useSearchParams } from 'react-router'
 
 import CategoryRail from '@/features/browse/components/CategoryRail'
@@ -38,10 +38,13 @@ function getCategoryTitle(section, categoryId) {
 export default function BrowsePage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
-  const active = {
-    section: searchParams.get('type') || 'movies',
-    categoryId: searchParams.get('category') || 'trending',
-  }
+  const section = searchParams.get('type') || 'movies'
+  const categoryId = searchParams.get('category') || 'trending'
+
+  const active = useMemo(
+    () => ({ section, categoryId }),
+    [section, categoryId]
+  )
 
   const { data: favorites } = useInteractions('favorite')
   const favoriteSet = useMemo(
@@ -49,9 +52,12 @@ export default function BrowsePage() {
     [favorites]
   )
 
-  function handleSelect(section, categoryId) {
-    setSearchParams({ type: section, category: categoryId }, { replace: true })
-  }
+  const handleSelect = useCallback(
+    (section, categoryId) => {
+      setSearchParams({ type: section, category: categoryId }, { replace: true })
+    },
+    [setSearchParams]
+  )
 
   return (
     <main className='flex flex-col gap-10 pb-12'>
