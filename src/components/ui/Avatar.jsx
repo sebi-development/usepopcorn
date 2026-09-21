@@ -12,6 +12,8 @@ export default function Avatar({ userId, avatarUrl, username, sizeClass = "w-10 
           src={avatarUrl}
           alt={username}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          loading="lazy"
+          decoding="async"
         />
       ) : (
         <HiOutlineUser 

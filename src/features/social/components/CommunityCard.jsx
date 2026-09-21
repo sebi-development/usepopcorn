@@ -16,6 +16,8 @@ const ActivityCard = memo(function ActivityCard({ item }) {
               src={item.avatar_url} 
               alt={item.username} 
               className="w-10 h-10 rounded-full object-cover border border-surface-100 bg-surface-900"
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <div className="w-10 h-10 rounded-full border border-surface-100 bg-surface-900 flex items-center justify-center text-text-muted">
@@ -54,6 +56,8 @@ const ActivityCard = memo(function ActivityCard({ item }) {
               src={getTmdbImageUrl(item.poster_path, 'w185')} 
               alt={item.title} 
               className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-xs text-text-muted text-center p-1 bg-surface-500">

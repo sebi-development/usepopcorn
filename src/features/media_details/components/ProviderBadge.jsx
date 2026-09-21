@@ -44,6 +44,8 @@ export default function ProviderBadge({ provider }) {
         src={getTmdbImageUrl(provider.logoPath, 'w92')}
         alt={provider.name}
         className="w-12 h-12 rounded-lg object-cover bg-surface-200"
+        loading="lazy"
+        decoding="async"
         onError={(e) => (e.target.style.display = 'none')}
       />
     </Tooltip>
