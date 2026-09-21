@@ -3,6 +3,7 @@ import { Outlet, Navigate } from 'react-router'
 import supabase from '@/lib/supabase'
 import Navbar from '@/layout/Navbar'
 import { useQueryClient } from '@tanstack/react-query'
+import BackgroundMesh from '@/components/ui/BackgroundMesh'
 
 function AppLayout() {
   const [session, setSession] = useState(undefined)
@@ -32,8 +33,9 @@ function AppLayout() {
   // still loading
   if (session === undefined) {
     return (
-      <div className="min-h-screen bg-surface-900 flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center relative">
+        <BackgroundMesh />
+        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin z-10" />
       </div>
     );
   }
@@ -41,9 +43,10 @@ function AppLayout() {
   if (session === null) return <Navigate to='/login' replace />
 
   return (
-    <div className="min-h-screen bg-surface-900">
+    <div className="min-h-screen relative">
+      <BackgroundMesh />
       <Navbar isLoggedIn={isLoggedIn} />
-      <main className="pt-24 px-6 max-w-7xl mx-auto w-full">
+      <main className="pt-24 px-6 max-w-7xl mx-auto w-full relative z-10">
         <Outlet context={outletContext} />
       </main>
     </div>
