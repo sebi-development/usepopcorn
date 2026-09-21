@@ -5,14 +5,11 @@ import toast from "react-hot-toast"
 import Tooltip from "@/components/ui/Tooltip"
 import Avatar from "@/components/ui/Avatar"
 import useFollow from "@/features/social/hooks/useFollow"
-import useIsFollowing from "@/features/social/hooks/useIsFollowing"
 
-const UserResultItem = memo(function UserResultItem({ user, subtitle }) {
-  // Keeps cost per row low when rendering lists (search results, suggestions).
-  const { data: isFollowing, isLoading } = useIsFollowing(user.id)
+const UserResultItem = memo(function UserResultItem({ user, subtitle, isFollowing = false }) {
   const { mutate: toggleFollow, isPending } = useFollow(user.id)
 
-  const isBusy = isLoading || isPending
+  const isBusy = isPending
 
   function handleToggleFollow(e) {
     // Prevent the click from also triggering the wrapping <Link>

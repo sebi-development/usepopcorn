@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { FiLoader } from "react-icons/fi"
 import useSuggestedUsers from "@/features/social/hooks/useSuggestedUsers"
+import useFollowingIds from "@/features/social/hooks/useFollowingIds"
 import UserResultItem from "@/features/social/components/UserResultltem"
 import useDelayedLoading from "@/hooks/useDelayedLoading"
 
@@ -17,6 +18,7 @@ function getSuggestionSubtitle(user) {
 
 export default function SuggestedUsersWidget() {
   const { data: suggestions, isLoading } = useSuggestedUsers()
+  const { followingSet } = useFollowingIds()
   const showLoading = useDelayedLoading(isLoading)
 
   // Precompute subtitles once per data change, not once per render.
@@ -47,7 +49,7 @@ export default function SuggestedUsersWidget() {
 
       <div className="flex flex-col">
         {suggestionsWithSubtitles.map((user) => (
-          <UserResultItem key={user.id} user={user} subtitle={user.subtitle} />
+          <UserResultItem key={user.id} user={user} subtitle={user.subtitle} isFollowing={followingSet.has(user.id)} />
         ))}
       </div>
     </div>

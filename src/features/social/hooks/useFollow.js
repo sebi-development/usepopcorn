@@ -35,6 +35,7 @@ export default function useFollow(userId) {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['profileRelationship', userId, currentUser?.id] })
       queryClient.invalidateQueries({ queryKey: ['isFollowing', currentUser?.id, userId] })
+      queryClient.invalidateQueries({ queryKey: ['followingIds', currentUser?.id] })
       queryClient.invalidateQueries({ queryKey: ['feed', currentUser?.id] })
       queryClient.invalidateQueries({ queryKey: ['suggested', currentUser?.id] })
     }
