@@ -26,6 +26,7 @@ function MediaCard({
   showFavorite = false,
   showWatchlist = false,
   showInfo = true,
+  showUpcomingChip = false,
   isFavorited: isFavoritedProp,
   isWatchlisted: isWatchlistedProp,
 }) {
@@ -118,11 +119,16 @@ function MediaCard({
 
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-black/80 to-transparent pointer-events-none" />
       {rank && (
-        <span className={`absolute bottom-2 left-3 text-5xl font-black leading-none select-none pointer-events-none ${rank <= 3 ? 'text-gradient-primary opacity-25' : 'text-white/20'}`}>
+        <span className="absolute bottom-2 left-3 text-5xl font-black leading-none select-none pointer-events-none text-white/20">
           {rank}
         </span>
       )}
 
+      {showUpcomingChip && (
+        <div className={`absolute bottom-2 left-2 z-10 pointer-events-none transition-opacity duration-200 ${infoOpen ? 'opacity-0' : 'opacity-100'}`}>
+          <Chip variant="ghost" size="xs">Upcoming</Chip>
+        </div>
+      )}
       {showInfo && (
         <>
           <button

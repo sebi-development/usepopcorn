@@ -40,6 +40,7 @@ export default function CategoryMediaRow({ section, categoryId, title, favoriteS
       isFetchingNextPage={isFetchingNextPage}
       showFavorite={true}
       favoritedSet={favoriteSet}
+      showUpcomingChip={categoryId === 'upcoming'}
       expandable
       isExpanded={isExpanded}
       // isPlaceholderData is true exactly while keepPreviousData is
