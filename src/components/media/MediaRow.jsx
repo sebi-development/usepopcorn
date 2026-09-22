@@ -1,4 +1,4 @@
-import { useCallback, useMemo, memo } from "react"
+import { useCallback, useMemo, memo, useRef } from "react"
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi"
 import { HiOutlineSquares2X2, HiOutlineBars3 } from "react-icons/hi2"
 import useIntersectionObserver from "@/hooks/useIntersectionObserver"
@@ -6,6 +6,7 @@ import MediaCard from "@/components/media/MediaCard"
 import useScrollArrows from "@/hooks/useScrollArrows"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
+import Chip from "@/components/ui/Chip"
 
 function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
   return (
@@ -26,27 +27,37 @@ function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
   )
 }
 
-function PaginationControls({ page, totalPages, onPageChange, isPending }) {
+function PaginationControls({ page, totalPages, onPageChange, isPending, containerRef }) {
   if (!totalPages || totalPages <= 1) return null
+
+  const handlePageClick = (newPage) => {
+    onPageChange(newPage)
+    if (containerRef?.current) {
+      const top = containerRef.current.getBoundingClientRect().top + window.scrollY - 100
+      window.scrollTo({ top, behavior: 'smooth' })
+    }
+  }
 
   return (
     <div className="flex items-center justify-center gap-4 pt-6">
       <button
         type="button"
-        onClick={() => onPageChange(page - 1)}
+        onClick={() => handlePageClick(page - 1)}
         disabled={page <= 1}
-        className="w-9 h-9 rounded-full border border-surface-100 flex items-center justify-center text-text-muted hover:bg-surface-500 disabled:opacity-30 disabled:pointer-events-none transition-colors duration-200"
+        className="w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex items-center justify-center text-text-muted hover:scale-110 hover:bg-surface-800 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200"
       >
         <FiChevronLeft size={16} />
       </button>
-      <span className={`text-sm text-text-muted transition-opacity duration-200 ${isPending ? "opacity-50" : "opacity-100"}`}>
-        Page {page} of {totalPages}
-      </span>
+      
+      <div className={`transition-opacity duration-200 ${isPending ? "opacity-50" : "opacity-100"}`}>
+        <Chip label={`Page ${page} of ${totalPages}`} size="sm" variant="ghost" />
+      </div>
+
       <button
         type="button"
-        onClick={() => onPageChange(page + 1)}
+        onClick={() => handlePageClick(page + 1)}
         disabled={page >= totalPages}
-        className="w-9 h-9 rounded-full border border-surface-100 flex items-center justify-center text-text-muted hover:bg-surface-500 disabled:opacity-30 disabled:pointer-events-none transition-colors duration-200"
+        className="w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex items-center justify-center text-text-muted hover:scale-110 hover:bg-surface-800 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200"
       >
         <FiChevronRight size={16} />
       </button>
@@ -92,6 +103,8 @@ function MediaRow({
   }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   const sentinelRef = useIntersectionObserver(handleIntersect)
+
+  const containerRef = useRef(null)
 
   // isExpanded flips the moment the button is clicked (so it feels
   // responsive), but the layout itself only swaps once the first grid
@@ -144,7 +157,7 @@ function MediaRow({
   if (!data) return null
 
   return (
-    <div>
+    <div ref={containerRef}>
       <div className="flex items-center justify-between mb-4 px-6">
         <h2 className="text-text font-semibold text-xl">{heading}</h2>
         {expandable && (
@@ -179,6 +192,7 @@ function MediaRow({
                 totalPages={totalPages}
                 onPageChange={onPageChange}
                 isPending={isPending}
+                containerRef={containerRef}
               />
             </>
           )}

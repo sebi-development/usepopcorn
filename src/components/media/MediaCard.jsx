@@ -10,6 +10,7 @@ import { getGenreNames } from "@/utils/genres"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
 import RatingBadge from "@/components/media/RatingBadge"
+import Chip from "@/components/ui/Chip"
 
 function MediaCard({
   id,
@@ -108,8 +109,10 @@ function MediaCard({
       )}
 
       {userRating && (
-        <div className="absolute top-2 right-2 bg-surface-900/80 backdrop-blur-sm border border-surface-100 px-2 py-1 rounded-full text-xs font-semibold text-text z-10 shadow-lg">
-          <RatingBadge text={userRating} size={14} />
+        <div className="absolute top-2 right-2 z-10">
+          <Chip variant="ghost" size="sm" className="shadow-lg font-semibold">
+            <RatingBadge text={userRating} size={14} />
+          </Chip>
         </div>
       )}
 
@@ -152,15 +155,13 @@ function MediaCard({
             <div className="flex items-center justify-between gap-2">
               {isUpcoming
                 ? (
-                  <div className="bg-surface-900/80 backdrop-blur-sm border border-surface-100 px-2 py-0.5 rounded-full shadow-sm flex items-center">
-                    <span className="text-[10px] font-medium text-text">Upcoming</span>
-                  </div>
+                  <Chip variant="ghost" size="xs">Upcoming</Chip>
                 )
                 : displayScore > 0.0
                 ? (
-                  <div className="bg-surface-900/80 backdrop-blur-sm border border-surface-100 px-1.5 py-0.5 rounded-full shadow-sm">
+                  <Chip variant="ghost" size="xs">
                     <RatingBadge text={displayScore} size={10} className="text-[10px] font-medium text-text" />
-                  </div>
+                  </Chip>
                 )
                 : <span />}
               {isAdult && (

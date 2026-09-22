@@ -2,11 +2,13 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { HiMiniUserGroup, HiOutlineUser } from "react-icons/hi2"
 import { FiUser, FiBarChart2, FiLogOut } from "react-icons/fi"
+import { LuLoaderCircle } from "react-icons/lu"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import useUserProfile from "@/features/profile/hooks/useUserProfile"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import supabase from "@/lib/supabase"
-import { useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import toast from "react-hot-toast"
 
 
 function UserMenu() {
@@ -21,12 +23,16 @@ function UserMenu() {
   const currentUser = useCurrentUser()
   const { profileData } = useUserProfile(currentUser?.id)
 
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    queryClient.clear()
-    supabase.removeAllChannels()
-    navigate('/login')
-  }
+  const {mutate: logout, isPending: isLoggingOut} = useMutation({
+    mutationFn: () => supabase.auth.signOut(),
+    onSuccess: () => {
+      queryClient.clear()
+      supabase.removeAllChannels()
+      navigate('/login')
+    },
+    onError: () => toast.error('Sign out failed. Please try again.'),
+  })
+
 
   return (
     <div ref={ref} className="relative">
@@ -49,7 +55,7 @@ function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="glass-panel !bg-surface-500/95 absolute top-[calc(100%+0.6rem)] left-1/2 -translate-x-1/2 w-52 shadow-2xl flex flex-col overflow-hidden z-50">
+        <div className="glass-panel bg-surface-500/95! absolute top-[calc(100%+0.6rem)] left-1/2 -translate-x-1/2 w-52 shadow-2xl flex flex-col overflow-hidden z-50">
           <div className="px-4 py-3 border-b border-surface-100 mt-1">
             <p className="text-xs text-text-muted">Signed in as {profileData?.username} </p>
           </div>
@@ -89,10 +95,14 @@ function UserMenu() {
           <div className="flex flex-col pb-2">
             <div className="mx-2 mb-2 h-px bg-surface-100 shrink-0" />
             <button
-              onClick={handleLogout}
-              className="flex items-center gap-3 px-3 h-8 mx-2 rounded-md text-sm text-danger hover:bg-surface-100 transition-colors"
+              onClick={logout}
+              disabled={isLoggingOut}
+              className="flex items-center gap-3 px-3 h-8 mx-2 rounded-md text-sm text-danger cursor-pointer hover:bg-surface-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <FiLogOut size={15} className="shrink-0" />
+              {isLoggingOut
+                ? <LuLoaderCircle size={15} className="animate-spin shrink-0" />
+                : <FiLogOut size={15} className="shrink-0" />
+              }
               Sign out
             </button>
           </div>
