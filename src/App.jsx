@@ -5,18 +5,27 @@ import { Toaster } from 'react-hot-toast'
 import PublicLayout from "@/layout/PublicLayout"
 import AppLayout from "@/layout/AppLayout"
 
+// ─── T0: Critical first-paint bundle ──────────────────────────────────────────
+// Only what the user sees before they've done anything: landing, login, register.
 import LandingPage from "@/pages/public/LandingPage"
 import LoginPage from "@/pages/auth/LoginPage"
 import RegisterPage from "@/pages/auth/RegisterPage"
-import BrowsePage from "@/pages/app/BrowsePage"
-import ProfilePage from "@/pages/app/ProfilePage"
-import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage"
-import ResetPasswordPage from "@/pages/auth/ResetPasswordPage"
 import NotFoundPage from "@/pages/public/NotFoundPage"
 
+// ─── T1: Lazy — prefetched the moment session resolves in AppLayout ───────────
+// BrowsePage is the first authenticated view; it and its deps arrive during the
+// auth spinner so there's zero wait on navigation.
+const BrowsePage = lazy(() => import("@/pages/app/BrowsePage"))
+
+// ─── T2: Lazy — loaded on demand (user navigates there) ──────────────────────
 const DetailPage = lazy(() => import("@/pages/app/DetailPage"))
-const CommunityPage = lazy(() => import("@/pages/app/CommunityPage"))
+const ProfilePage = lazy(() => import("@/pages/app/ProfilePage"))
+const ForgotPasswordPage = lazy(() => import("@/pages/auth/ForgotPasswordPage"))
+const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"))
+
+// ─── T3: Lazy — low priority, prefetched after BrowsePage mounts ─────────────
 const ProfileStatsPage = lazy(() => import("@/pages/app/ProfileStatsPage"))
+const CommunityPage = lazy(() => import("@/pages/app/CommunityPage"))
 
 
 const router = createBrowserRouter([
@@ -27,8 +36,8 @@ const router = createBrowserRouter([
       { path: '/', element: <LandingPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
-      { path: '/forgot-password', element: <ForgotPasswordPage /> },
-      { path: '/reset-password', element: <ResetPasswordPage /> },
+      { path: '/forgot-password', element: <Suspense fallback={null}><ForgotPasswordPage /></Suspense> },
+      { path: '/reset-password', element: <Suspense fallback={null}><ResetPasswordPage /></Suspense> },
       { path: '*', element: <NotFoundPage /> }
     ],
   },
@@ -36,14 +45,14 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     errorElement: <NotFoundPage />,
     children: [
-      { path: '/browse', element: <BrowsePage /> },
+      { path: '/browse', element: <Suspense fallback={null}><BrowsePage /></Suspense> },
       { path: '/browse/:id', element: <Suspense fallback={null}><DetailPage /></Suspense> },
-      { path: '/profile', element: <ProfilePage /> },
+      { path: '/profile', element: <Suspense fallback={null}><ProfilePage /></Suspense> },
       { path: '/community', element: <Suspense fallback={null}><CommunityPage /></Suspense> },
       { path: '/profile/stats', element: <Suspense fallback={null}><ProfileStatsPage /></Suspense> },
-      { path: '/profile/:userId', element: <ProfilePage /> },
+      { path: '/profile/:userId', element: <Suspense fallback={null}><ProfilePage /></Suspense> },
       { path: '*', element: <NotFoundPage /> }
-    ], 
+    ],
   }
 ])
 
