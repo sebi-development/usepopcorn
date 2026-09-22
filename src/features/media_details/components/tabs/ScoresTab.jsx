@@ -84,7 +84,7 @@ function CriticScoresTab({ imdbId, prefetchedQuery }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 text-text-muted mt-auto pt-1 border-t border-surface-100/50 w-full justify-center">
+            <div className="flex items-center gap-2.5 text-text-muted mt-auto w-full justify-center">
               <Icon className={`w-5 h-5 ${iconColor} shrink-0`} />
               <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
                 {name}
