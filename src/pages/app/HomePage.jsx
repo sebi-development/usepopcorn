@@ -11,7 +11,6 @@ import InfoCard from '@/components/ui/InfoCard'
 import Button from '@/components/ui/Button'
 import { Link } from 'react-router'
 import ArrowLink from '@/components/ui/ArrowLink'
-import { LuLoaderCircle } from 'react-icons/lu'
 import useProfileStreak from '@/features/profile/hooks/useProfileStreak'
 import FeatureCard from '@/components/ui/FeatureCard'
 import { HiStar, HiHeart } from 'react-icons/hi2'
@@ -36,15 +35,9 @@ export default function HomePage() {
   const genreCategoryId = topMovieGenreId ? `genre-${topMovieGenreId}` : 'popular'
   const genreQuery = useCategoryMedia('movies', genreCategoryId)
 
-  if (!stats || isLoadingRecs) {
-    return (
-      <div className="w-full h-[60vh] flex items-center justify-center">
-        <LuLoaderCircle className="animate-spin text-primary-light w-8 h-8" />
-      </div>
-    )
-  }
+  const isLoadingCards = !stats || isLoadingBestRecent
 
-  if (!seedTitle) return (
+  if (!isLoadingCards && !seedTitle) return (
     <InfoCard title="Welcome to usePopcorn" subtitle="Rate a few titles and this page fills in with picks made for you.">
       <ul className="flex flex-col gap-3 text-sm text-text-muted">
         <li>Search any movie or series and give it a rating</li>
@@ -69,43 +62,63 @@ export default function HomePage() {
           isSaturated={isSaturated}
         />
 
-        <FeatureCard
-          heroBackground={
-            bestRecent?.poster_path
-              ? `url('https://image.tmdb.org/t/p/w342${bestRecent.poster_path}') center/cover`
-              : "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)"
-          }
-          floatingIcon={<HiStar className="text-2xl sm:text-4xl text-amber-400" />}
-        >
-          <h3 className="text-xs sm:text-base font-bold text-text leading-tight mb-0.5 sm:mb-1">
-            Top of the Month
-          </h3>
-          <p className="text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2 mb-auto">
-            {bestRecent?.title ?? bestRecent?.name ?? 'No ratings yet'}
-          </p>
-          <div className="pt-2 sm:pt-3 mt-1.5 sm:mt-2 border-t border-surface-100/10 flex items-center gap-1 sm:gap-3 text-xs sm:text-sm text-text-muted">
-            {bestRecent?.rating != null && (
-              <RatingBadge text={`${bestRecent.rating}/10`} size={14} className="text-text text-xs sm:text-sm font-bold" />
-            )}
+        {isLoadingCards ? (
+          <div className="aspect-2/3 w-full rounded-[1.75rem] sm:rounded-4xl bg-surface-900 border border-surface-100/10 p-1.5 sm:p-2 animate-pulse flex flex-col">
+            <div className="h-[70%] w-full rounded-[1.25rem] sm:rounded-3xl bg-surface-800" />
+            <div className="flex-1 mt-4 mx-2">
+              <div className="h-3 w-2/3 bg-surface-800 rounded mb-1.5" />
+              <div className="h-3 w-1/2 bg-surface-800 rounded" />
+            </div>
           </div>
-        </FeatureCard>
+        ) : (
+          <FeatureCard
+            heroBackground={
+              bestRecent?.poster_path
+                ? `url('https://image.tmdb.org/t/p/w342${bestRecent.poster_path}') center/cover`
+                : "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)"
+            }
+            floatingIcon={<HiStar className="text-2xl sm:text-4xl text-amber-400" />}
+          >
+            <h3 className="text-xs sm:text-base font-bold text-text leading-tight mb-0.5 sm:mb-1">
+              Top of the Month
+            </h3>
+            <p className="text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2 mb-auto">
+              {bestRecent?.title ?? bestRecent?.name ?? 'No ratings yet'}
+            </p>
+            <div className="pt-2 sm:pt-3 mt-1.5 sm:mt-2 border-t border-surface-100/10 flex items-center gap-1 sm:gap-3 text-xs sm:text-sm text-text-muted">
+              {bestRecent?.rating != null && (
+                <RatingBadge text={`${bestRecent.rating}/10`} size={14} className="text-text text-xs sm:text-sm font-bold" />
+              )}
+            </div>
+          </FeatureCard>
+        )}
 
-        <FeatureCard
-          heroBackground="linear-gradient(135deg, #a855f7 0%, #ec4899 100%)"
-          floatingIcon={<HiHeart className="text-2xl sm:text-4xl text-pink-500" />}
-        >
-          <h3 className="text-xs sm:text-base font-bold text-text leading-tight mb-1">
-            Favorites
-          </h3>
-          <p className="text-[10px] sm:text-sm text-text-muted leading-tight mb-auto line-clamp-2">
-            You've loved {favorites?.length ?? 0} titles.
-          </p>
-          <div className="pt-2 sm:pt-3 mt-1.5 sm:mt-2 border-t border-surface-100/10">
-            <ArrowLink to="/profile" className="text-primary-light text-xs sm:text-sm font-semibold">
-              View all
-            </ArrowLink>
+        {isLoadingCards ? (
+          <div className="aspect-2/3 w-full rounded-[1.75rem] sm:rounded-4xl bg-surface-900 border border-surface-100/10 p-1.5 sm:p-2 animate-pulse flex flex-col">
+            <div className="h-[70%] w-full rounded-[1.25rem] sm:rounded-3xl bg-surface-800" />
+            <div className="flex-1 mt-4 mx-2">
+              <div className="h-3 w-2/3 bg-surface-800 rounded mb-1.5" />
+              <div className="h-3 w-1/2 bg-surface-800 rounded" />
+            </div>
           </div>
-        </FeatureCard>
+        ) : (
+          <FeatureCard
+            heroBackground="linear-gradient(135deg, #a855f7 0%, #ec4899 100%)"
+            floatingIcon={<HiHeart className="text-2xl sm:text-4xl text-pink-500" />}
+          >
+            <h3 className="text-xs sm:text-base font-bold text-text leading-tight mb-1">
+              Favorites
+            </h3>
+            <p className="text-[10px] sm:text-sm text-text-muted leading-tight mb-auto line-clamp-2">
+              You've loved {favorites?.length ?? 0} titles.
+            </p>
+            <div className="pt-2 sm:pt-3 mt-1.5 sm:mt-2 border-t border-surface-100/10">
+              <ArrowLink to="/profile" className="text-primary-light text-xs sm:text-sm font-semibold">
+                View all
+              </ArrowLink>
+            </div>
+          </FeatureCard>
+        )}
       </div>
 
       {seedTitle && (

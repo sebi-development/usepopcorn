@@ -39,7 +39,7 @@ export default function BrowsePage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const section = searchParams.get('type') || 'movies'
-  const categoryId = searchParams.get('category') || 'trending'
+  const categoryId = searchParams.get('category') || 'home'
 
   const active = useMemo(
     () => ({ section, categoryId }),

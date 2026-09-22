@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react"
 import { createBrowserRouter, RouterProvider } from "react-router"
 import { Toaster } from 'react-hot-toast'
 
@@ -7,14 +8,15 @@ import AppLayout from "@/layout/AppLayout"
 import LandingPage from "@/pages/public/LandingPage"
 import LoginPage from "@/pages/auth/LoginPage"
 import RegisterPage from "@/pages/auth/RegisterPage"
-import DetailPage from "@/pages/app/DetailPage"
 import BrowsePage from "@/pages/app/BrowsePage"
 import ProfilePage from "@/pages/app/ProfilePage"
-import ProfileStatsPage from "@/pages/app/ProfileStatsPage"
-import CommunityPage from "@/pages/app/CommunityPage"
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage"
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage"
 import NotFoundPage from "@/pages/public/NotFoundPage"
+
+const DetailPage = lazy(() => import("@/pages/app/DetailPage"))
+const CommunityPage = lazy(() => import("@/pages/app/CommunityPage"))
+const ProfileStatsPage = lazy(() => import("@/pages/app/ProfileStatsPage"))
 
 
 const router = createBrowserRouter([
@@ -35,10 +37,10 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage />,
     children: [
       { path: '/browse', element: <BrowsePage /> },
-      { path: '/browse/:id', element: <DetailPage /> },
+      { path: '/browse/:id', element: <Suspense fallback={null}><DetailPage /></Suspense> },
       { path: '/profile', element: <ProfilePage /> },
-      { path: '/community', element: <CommunityPage /> },
-      { path: '/profile/stats', element: <ProfileStatsPage /> },
+      { path: '/community', element: <Suspense fallback={null}><CommunityPage /></Suspense> },
+      { path: '/profile/stats', element: <Suspense fallback={null}><ProfileStatsPage /></Suspense> },
       { path: '/profile/:userId', element: <ProfilePage /> },
       { path: '*', element: <NotFoundPage /> }
     ], 
