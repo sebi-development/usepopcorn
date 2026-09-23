@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react"
+import { addDays, addMonths, format } from 'date-fns'
 import { useInfiniteQuery, useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import {
   getTrending, getPopular, getTopRated,
@@ -6,22 +7,37 @@ import {
   getMediaByGenre,
 } from "@/services/tmdb"
 
+// Both "Upcoming" rows call this — one function, called twice, so the two
+// windows are always tiled correctly and can never drift out of sync.
+function getUpcomingWindows() {
+  const thisMonthMin = addDays(new Date(), 1)
+  const thisMonthMax = addMonths(thisMonthMin, 1)
+  const nextMonthMin = addDays(thisMonthMax, 1)
+  const nextMonthMax = addMonths(nextMonthMin, 1)
+
+  return {
+    thisMonth: { minDate: format(thisMonthMin, 'yyyy-MM-dd'), maxDate: format(thisMonthMax, 'yyyy-MM-dd') },
+    nextMonth: { minDate: format(nextMonthMin, 'yyyy-MM-dd'), maxDate: format(nextMonthMax, 'yyyy-MM-dd') },
+  }
+}
+
 // Maps section + categoryId → the TMDB fetch function for static (non-genre)
 // categories. Each function takes a single `page` argument and returns a TMDB
 // paginated response.
 const FETCH_MAP = {
   movies: {
-    trending:    (page) => getTrending('movie', page),
-    popular:     (page) => getPopular('movie', page),
-    top_rated:   (page) => getTopRated('movie', page),
-    upcoming:    (page) => getUpcoming(page),
+    trending: (page) => getTrending('movie', page),
+    popular: (page) => getPopular('movie', page),
+    top_rated: (page) => getTopRated('movie', page),
+    upcoming: (page) => getUpcoming(page, getUpcomingWindows().thisMonth.minDate, getUpcomingWindows().thisMonth.maxDate),
+    upcoming_next_month: (page) => getUpcoming(page, getUpcomingWindows().nextMonth.minDate, getUpcomingWindows().nextMonth.maxDate),
     now_playing: (page) => getNowPlaying(page),
   },
   series: {
-    trending:    (page) => getTrending('tv', page),
-    popular:     (page) => getPopular('tv', page),
-    top_rated:   (page) => getTopRated('tv', page),
-    on_the_air:  (page) => getOnTheAir(page),
+    trending: (page) => getTrending('tv', page),
+    popular: (page) => getPopular('tv', page),
+    top_rated: (page) => getTopRated('tv', page),
+    on_the_air: (page) => getOnTheAir(page),
   },
 }
 
@@ -39,6 +55,8 @@ const MAX_ROW_PAGES = 5
 // just keeps stale objects in memory for no benefit during rapid browsing.
 const STALE_TIME = 1000 * 60 * 15
 const GC_TIME = 1000 * 60 * 15
+
+
 
 function cappedNextPageParam(lastPage, allPages) {
   if (allPages.length >= MAX_ROW_PAGES) return undefined

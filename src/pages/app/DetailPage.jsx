@@ -96,7 +96,6 @@ export default function DetailPage() {
         <DetailCard media={data} id={id} />
       </div>
 
-      {/* OPT-020: interaction/rating hooks isolated in container to prevent DetailPage rerenders */}
       <ActionSectionContainer media={data} tmdbId={tmdbId} type={type} />
 
       {/* Tabbed Content Area */}

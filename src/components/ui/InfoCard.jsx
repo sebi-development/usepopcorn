@@ -1,6 +1,6 @@
 export default function InfoCard({ title, subtitle, icon, children }) {
   return (
-    <div className="w-full max-w-[400px] bg-surface-900/50 backdrop-blur-xl p-8 rounded-3xl border border-primary-light/20 shadow-2xl flex flex-col gap-6">
+    <div className="w-full max-w-100 bg-surface-900/50 backdrop-blur-xl p-8 rounded-3xl border border-primary-light/20 shadow-2xl flex flex-col gap-6">
 
       <div className="text-center flex flex-col items-center gap-4">
         {icon && (

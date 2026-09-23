@@ -43,8 +43,10 @@ export async function getTopRated(type = 'movie', page = 1) {
 }
 
 // Movie-only categories — no series equivalent exists on TMDB.
-export async function getUpcoming(page = 1) {
-  return tmdbFetch(`/movie/upcoming?page=${page}`)
+export async function getUpcoming(page = 1, minDate, maxDate) {
+  return tmdbFetch(
+    `/discover/movie?sort_by=popularity.desc&with_release_type=2|3&release_date.gte=${minDate}&release_date.lte=${maxDate}&page=${page}`
+  )
 }
 
 export async function getNowPlaying(page = 1) {

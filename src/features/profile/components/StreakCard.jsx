@@ -2,7 +2,8 @@ import { useMemo } from "react"
 import { HiFire } from "react-icons/hi2"
 import Tooltip from "@/components/ui/Tooltip"
 import SkeletonBox from "@/components/ui/SkeletonBox"
-import FeatureCard from "@/components/ui/FeatureCard"
+import FeatureCard, { FeatureCardSkeleton } from "@/components/ui/FeatureCard"
+import Chip from "@/components/ui/Chip"
 
 function calculateStreak(completedWeeks) {
   let streak = 0
@@ -30,17 +31,7 @@ export default function StreakCard({ data, extendedStreak, isSaturated, isLoadin
   const isWaitingOnExtended = isSaturated && isLoadingExtended
   const displayStreak = isSaturated && extendedStreak != null ? extendedStreak : fastStreak
 
-  if (isLoading) {
-    return (
-      <div className="aspect-2/3 w-full rounded-4xl bg-surface-900 border border-surface-100/10 p-2 animate-pulse flex flex-col">
-        <div className="h-[70%] w-full rounded-3xl bg-surface-800" />
-        <div className="flex-1 mt-4 mx-2">
-          <div className="h-3 w-2/3 bg-surface-800 rounded mb-1.5" />
-          <div className="h-6 w-1/2 bg-surface-800 rounded" />
-        </div>
-      </div>
-    )
-  }
+  if (isLoading) return <FeatureCardSkeleton />
 
   if (isError) return null
 
@@ -48,25 +39,22 @@ export default function StreakCard({ data, extendedStreak, isSaturated, isLoadin
     <FeatureCard
       heroBackground="linear-gradient(135deg, #fab005 0%, #f76707 100%)"
       floatingIcon={<HiFire className="text-xl sm:text-3xl text-orange-500" />}
+      heroContent={
+        isWaitingOnExtended ? (
+          <SkeletonBox className="w-10 sm:w-16 h-8 sm:h-12 rounded-md" />
+        ) : displayStreak > 0 ? (
+          <span className="text-4xl sm:text-6xl font-black text-white leading-none drop-shadow-md">{displayStreak}</span>
+        ) : (
+          <span className="text-[10px] sm:text-sm font-semibold text-white drop-shadow-md">Start rating</span>
+        )
+      }
     >
-      <h3 className="text-[10px] sm:text-sm font-bold text-text leading-tight mb-0.5 sm:mb-1">
-        Weekly Streak
-      </h3>
-      
-      {isWaitingOnExtended ? (
-        <SkeletonBox className="w-10 sm:w-16 h-6 sm:h-8 rounded-md mb-auto" />
-      ) : (
-        <div className="flex items-baseline gap-0.5 sm:gap-1 mb-auto">
-          {displayStreak > 0 ? (
-            <span className="text-xl sm:text-3xl font-black text-text leading-none">{displayStreak}</span>
-          ) : (
-            <span className="text-[9px] sm:text-xs text-text-muted leading-tight line-clamp-2">Start rating.</span>
-          )}
-        </div>
-      )}
+      <Chip size="sm" colorRgb="247, 103, 7" className="self-start max-w-full">
+        <span className="truncate">Weekly Streak</span>
+      </Chip>
 
       {recentWeeks.length > 0 && (
-        <div className="pt-2 sm:pt-3 mt-1 sm:mt-2 border-t border-surface-100/10 flex justify-center">
+        <div className="mt-auto flex justify-center">
           <div className="flex gap-px sm:gap-0.5 items-center">
             {recentWeeks.map((week) => (
               <Tooltip

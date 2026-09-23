@@ -26,7 +26,6 @@ function MediaCard({
   showFavorite = false,
   showWatchlist = false,
   showInfo = true,
-  showUpcomingChip = false,
   isFavorited: isFavoritedProp,
   isWatchlisted: isWatchlistedProp,
 }) {
@@ -124,11 +123,6 @@ function MediaCard({
         </span>
       )}
 
-      {showUpcomingChip && (
-        <div className={`absolute bottom-2 left-2 z-10 pointer-events-none transition-opacity duration-200 ${infoOpen ? 'opacity-0' : 'opacity-100'}`}>
-          <Chip variant="ghost" size="xs">Upcoming</Chip>
-        </div>
-      )}
       {showInfo && (
         <>
           <button

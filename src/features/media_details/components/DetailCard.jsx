@@ -19,18 +19,18 @@ function DetailCard({ media }) {
         {isTV ? (
           <>
             {network && (
-              <Chip 
+              <Chip
                 size="sm"
                 colorRgb="161, 161, 170"
                 label={network}
               />
             )}
-            <Chip 
+            <Chip
               size="sm"
               colorRgb="161, 161, 170"
               label={`${media.first_air_date?.slice(0, 4) || ''}${media.last_air_date ? ` – ${media.last_air_date.slice(0, 4)}` : ''}`}
             />
-            <Chip 
+            <Chip
               size="sm"
               colorRgb="161, 161, 170"
               label={`${media.number_of_seasons} ${media.number_of_seasons === 1 ? 'Season' : 'Seasons'} · ${media.number_of_episodes} Episodes`}
@@ -38,23 +38,23 @@ function DetailCard({ media }) {
           </>
         ) : (
           <>
-            {director && (
-              <Chip 
-                size="sm"
-                colorRgb="161, 161, 170"
-                label={`Directed by ${director}`}
-              />
-            )}
-            <Chip 
+            <Chip
               size="sm"
               colorRgb="161, 161, 170"
               label={media.release_date?.slice(0, 4) || 'TBA'}
             />
             {media.runtime !== 0 && media.runtime != null && (
-              <Chip 
+              <Chip
                 size="sm"
                 colorRgb="161, 161, 170"
                 label={formatRuntime(media.runtime)}
+              />
+            )}
+            {director && (
+              <Chip
+                size="sm"
+                colorRgb="161, 161, 170"
+                label={`Directed by ${director}`}
               />
             )}
           </>

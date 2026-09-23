@@ -71,7 +71,6 @@ function MediaRow({
   rank = true, showFavorite = false, favoritedSet,
   showWatchlist = false, watchlistedSet,
   showInfo = true,
-  showUpcomingChip = false,
   // Fallback media type for items that don't carry their own media_type/type
   // (e.g. TMDB category endpoints like /tv/popular omit media_type on items).
   mediaType,
@@ -129,7 +128,6 @@ function MediaRow({
         rank={rankValue}
         showFavorite={showFavorite}
         showInfo={showInfo}
-        showUpcomingChip={showUpcomingChip}
         isFavorited={favoritedSet?.has(item.tmdb_id || item.id)}
         showWatchlist={showWatchlist}
         isWatchlisted={watchlistedSet?.has(item.tmdb_id || item.id)}

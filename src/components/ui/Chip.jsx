@@ -70,7 +70,7 @@ const Chip = memo(function Chip({
 
       {/* The Content */}
       <div 
-        className={`relative z-10 flex items-center ${content} font-medium tracking-wide drop-shadow-md`}
+        className={`relative z-10 flex min-w-0 items-center ${content} font-medium tracking-wide drop-shadow-md`}
         style={variant === 'glow' ? { color: "var(--chip-base)" } : undefined}
       >
         {Icon && <Icon className={icon} />}

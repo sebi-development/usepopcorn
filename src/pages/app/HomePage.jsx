@@ -12,7 +12,8 @@ import Button from '@/components/ui/Button'
 import { Link } from 'react-router'
 import ArrowLink from '@/components/ui/ArrowLink'
 import useProfileStreak from '@/features/profile/hooks/useProfileStreak'
-import FeatureCard from '@/components/ui/FeatureCard'
+import FeatureCard, { FeatureCardSkeleton } from '@/components/ui/FeatureCard'
+import Chip from '@/components/ui/Chip'
 import { HiStar, HiHeart } from 'react-icons/hi2'
 import useBestRatedRecent from '@/features/profile/hooks/useBestRatedRecent'
 import RatingBadge from '@/components/media/RatingBadge'
@@ -36,6 +37,16 @@ export default function HomePage() {
   const genreQuery = useCategoryMedia('movies', genreCategoryId)
 
   const isLoadingCards = !stats || isLoadingBestRecent
+
+  // The RPC row already carries what the detail page needs, so no extra fetch.
+  // DetailPage reads the media type from router state (defaulting to 'movie').
+  const bestRecentTitle = bestRecent?.title ?? bestRecent?.name
+  const bestRecentId = bestRecent?.tmdb_id ?? bestRecent?.id
+  const bestRecentType = bestRecent?.type ?? bestRecent?.media_type ?? 'movie'
+  const bestRecentLink = useMemo(
+    () => (bestRecentId ? { to: `/browse/${bestRecentId}`, state: { type: bestRecentType } } : null),
+    [bestRecentId, bestRecentType]
+  )
 
   if (!isLoadingCards && !seedTitle) return (
     <InfoCard title="Welcome to usePopcorn" subtitle="Rate a few titles and this page fills in with picks made for you.">
@@ -63,13 +74,7 @@ export default function HomePage() {
         />
 
         {isLoadingCards ? (
-          <div className="aspect-2/3 w-full rounded-[1.75rem] sm:rounded-4xl bg-surface-900 border border-surface-100/10 p-1.5 sm:p-2 animate-pulse flex flex-col">
-            <div className="h-[70%] w-full rounded-[1.25rem] sm:rounded-3xl bg-surface-800" />
-            <div className="flex-1 mt-4 mx-2">
-              <div className="h-3 w-2/3 bg-surface-800 rounded mb-1.5" />
-              <div className="h-3 w-1/2 bg-surface-800 rounded" />
-            </div>
-          </div>
+          <FeatureCardSkeleton />
         ) : (
           <FeatureCard
             heroBackground={
@@ -79,40 +84,44 @@ export default function HomePage() {
             }
             floatingIcon={<HiStar className="text-2xl sm:text-4xl text-amber-400" />}
           >
-            <h3 className="text-xs sm:text-base font-bold text-text leading-tight mb-0.5 sm:mb-1">
-              Top of the Month
-            </h3>
-            <p className="text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2 mb-auto">
-              {bestRecent?.title ?? bestRecent?.name ?? 'No ratings yet'}
-            </p>
-            <div className="pt-2 sm:pt-3 mt-1.5 sm:mt-2 border-t border-surface-100/10 flex items-center gap-1 sm:gap-3 text-xs sm:text-sm text-text-muted">
-              {bestRecent?.rating != null && (
-                <RatingBadge text={`${bestRecent.rating}/10`} size={14} className="text-text text-xs sm:text-sm font-bold" />
-              )}
-            </div>
+            <Chip size="sm" colorRgb="245, 158, 11" className="self-start max-w-full">
+              <span className="truncate">Top of the Month</span>
+            </Chip>
+            {bestRecentLink ? (
+              // Stretched link: the ::after covers the whole card so it is one
+              // click target, without nesting the title Chip (a <button>) in an <a>
+              <Link
+                to={bestRecentLink.to}
+                state={bestRecentLink.state}
+                className="text-[10px] sm:text-sm text-text-muted hover:text-text transition-colors leading-tight line-clamp-2 after:absolute after:inset-0 after:z-20"
+              >
+                {bestRecentTitle}
+              </Link>
+            ) : (
+              <p className="text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2">
+                {bestRecentTitle ?? 'No ratings yet'}
+              </p>
+            )}
+            {bestRecent?.rating != null && (
+              <RatingBadge text={`${bestRecent.rating}/10`} size={14} className="mt-auto text-text text-xs sm:text-sm font-bold" />
+            )}
           </FeatureCard>
         )}
 
         {isLoadingCards ? (
-          <div className="aspect-2/3 w-full rounded-[1.75rem] sm:rounded-4xl bg-surface-900 border border-surface-100/10 p-1.5 sm:p-2 animate-pulse flex flex-col">
-            <div className="h-[70%] w-full rounded-[1.25rem] sm:rounded-3xl bg-surface-800" />
-            <div className="flex-1 mt-4 mx-2">
-              <div className="h-3 w-2/3 bg-surface-800 rounded mb-1.5" />
-              <div className="h-3 w-1/2 bg-surface-800 rounded" />
-            </div>
-          </div>
+          <FeatureCardSkeleton />
         ) : (
           <FeatureCard
             heroBackground="linear-gradient(135deg, #a855f7 0%, #ec4899 100%)"
             floatingIcon={<HiHeart className="text-2xl sm:text-4xl text-pink-500" />}
           >
-            <h3 className="text-xs sm:text-base font-bold text-text leading-tight mb-1">
-              Favorites
-            </h3>
-            <p className="text-[10px] sm:text-sm text-text-muted leading-tight mb-auto line-clamp-2">
+            <Chip size="sm" colorRgb="236, 72, 153" className="self-start max-w-full">
+              <span className="truncate">Favorites</span>
+            </Chip>
+            <p className="text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2">
               You've loved {favorites?.length ?? 0} titles.
             </p>
-            <div className="pt-2 sm:pt-3 mt-1.5 sm:mt-2 border-t border-surface-100/10">
+            <div className="mt-auto">
               <ArrowLink to="/profile" className="text-primary-light text-xs sm:text-sm font-semibold">
                 View all
               </ArrowLink>

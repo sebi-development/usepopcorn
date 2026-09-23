@@ -62,8 +62,14 @@ export default function BrowsePage() {
   return (
     <main className='flex flex-col gap-10 pb-12'>
       <CategoryRail active={active} onSelect={handleSelect} />
-      {active.categoryId === 'home' ?
-        <HomePage /> :
+      {active.categoryId === 'home' ? (
+        <HomePage />
+      ) : active.categoryId === 'upcoming' ? (
+        <>
+          <CategoryMediaRow section="movies" categoryId="upcoming" title="Upcoming this month" favoriteSet={favoriteSet} />
+          <CategoryMediaRow section="movies" categoryId="upcoming_next_month" title="Upcoming next month" favoriteSet={favoriteSet} />
+        </>
+      ) : (
         <CategoryMediaRow
           key={`${active.section}.${active.categoryId}`}
           section={active.section}
@@ -71,7 +77,7 @@ export default function BrowsePage() {
           title={getCategoryTitle(active.section, active.categoryId)}
           favoriteSet={favoriteSet}
         />
-      }
+      )}
 
     </main>
   )
