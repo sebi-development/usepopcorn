@@ -5,7 +5,6 @@ import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers, HiOutlineLis
 import useMediaDetails from "@/features/media_details/hooks/useMediaDetails"
 import useAllSeasonDetails from "@/features/media_details/hooks/useAllSeasonDetails"
 import useExternalApis from "@/features/media_details/hooks/useExternalApis"
-import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 import DetailCard from "@/features/media_details/components/DetailCard"
 import MoviePoster from "@/components/media/MoviePoster"
@@ -41,7 +40,6 @@ export default function DetailPage() {
 
   const { state } = useLocation()
   const type = state?.type || 'movie'
-  const currentUser = useCurrentUser()
   const [activeTab, setActiveTab] = useState("overview")
   const [seasonsTabVisited, setSeasonsTabVisited] = useState(false)
 
@@ -108,7 +106,7 @@ export default function DetailPage() {
           onChange={handleTabChange}
         />
 
-        <div className="bg-surface-500 border border-surface-100 rounded-card p-6 min-h-[250px]">
+        <div className="bg-surface-500 border border-surface-100 rounded-card p-6 min-h-62.5">
 
           <TabPanel id="overview" activeTab={activeTab}>
             <OverviewTab data={data}></OverviewTab>

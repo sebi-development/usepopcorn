@@ -3,7 +3,7 @@ import CommunityCardSkeleton from "@/features/social/components/CommunityPageSke
 import ActivityCard from "@/features/social/components/CommunityCard"
 import useFeed from "@/features/social/hooks/useFeed"
 import useFeedRealtime from "@/features/social/hooks/useFeedRealtime"
-import UserSearchWidget from "@/features/social/components/userSearchWidget"
+import UserSearchWidget from "@/features/social/components/UserSearchWidget"
 import SuggestedUsersWidget from "@/features/social/components/SuggestedUsersWidget"
 import useDelayedLoading from "@/hooks/useDelayedLoading"
 
