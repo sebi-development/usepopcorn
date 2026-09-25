@@ -91,7 +91,7 @@ export default function ProfileStats({ stats, isLoading, isError }) {
           <div>
             <p className="text-white/60 text-sm tracking-widest uppercase mb-2">Current Rank</p>
             <p className="text-3xl font-black text-white leading-tight">
-              {stats.totalRated > 50 ? 'Cinephile' : stats.totalRated > 10 ? 'Popcorn Enthusiast' : 'Casual Viewer'}
+              {stats.totalRated > 250 ? 'Total Cinematist' : stats.totalRated > 150 ? 'Cinephile' : stats.totalRated > 100 ? 'Popcorn Enthusiast' : 'Casual Viewer'}
             </p>
           </div>
         </div>

@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { FiLoader } from "react-icons/fi"
 import useSuggestedUsers from "@/features/social/hooks/useSuggestedUsers"
 import useFollowingIds from "@/features/social/hooks/useFollowingIds"
-import UserResultItem from "@/features/social/components/UserResultltem"
+import UserResultItem from "@/features/social/components/UserResultItem"
 import useDelayedLoading from "@/hooks/useDelayedLoading"
 
 function getSuggestionSubtitle(user) {
@@ -42,7 +42,7 @@ export default function SuggestedUsersWidget() {
   if (suggestionsWithSubtitles.length === 0) return null
 
   return (
-    <div className="bg-surface-500 border border-surface-100 rounded-card p-5 flex flex-col gap-2 transition-all duration-300 shadow-sm">
+    <div className="bg-surface-500 border border-surface-100 rounded-card p-5 flex flex-col gap-2 shadow-sm">
       <h3 className="font-bold text-sm text-text uppercase tracking-wider mb-2">
         Who to Follow
       </h3>

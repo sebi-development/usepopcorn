@@ -58,7 +58,7 @@ const UserResultItem = memo(function UserResultItem({ user, subtitle, isFollowin
           aria-label={isFollowing ? "Following" : "Follow user"}
         >
           {isFollowing ? (
-            <FaCircleCheck className="text-primary-light animate-in zoom-in-50 duration-300 ease-out" size={18} />
+            <FaCircleCheck className="text-primary-light" size={18} />
           ) : (
             <FaCirclePlus className="text-text-muted hover:text-text transition-colors duration-200" size={18} />
           )}

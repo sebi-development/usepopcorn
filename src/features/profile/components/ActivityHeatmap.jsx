@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2'
 import AlertBanner from '@/components/ui/AlertBanner'
 import BentoCardSkeleton from '@/components/ui/BentoCardSkeleton'
+import { bucketFor } from '@/utils/heatmapBuckets'
 
 function HeatmapTooltip({ label, children }) {
   const anchorRef = useRef(null)
@@ -37,14 +38,6 @@ function HeatmapTooltip({ label, children }) {
   )
 }
 
-const BUCKETS = [
-  { threshold: 0, className: 'bg-surface-100' },
-  { threshold: 0.25, className: 'bg-primary/30' },
-  { threshold: 0.5, className: 'bg-primary/55' },
-  { threshold: 0.75, className: 'bg-primary/80' },
-  { threshold: 1, className: 'bg-primary-light' },
-]
-
 const HEATMAP_LEGEND = [
   { className: 'bg-surface-100', label: 'No activity' },
   { className: 'bg-primary/30', label: 'Light' },
@@ -52,16 +45,6 @@ const HEATMAP_LEGEND = [
   { className: 'bg-primary/80', label: 'Active' },
   { className: 'bg-primary-light', label: 'Peak' },
 ]
-
-const REVERSED_BUCKETS = [...BUCKETS].slice(1).reverse()
-
-function bucketFor(count, max) {
-  if (count === 0) return BUCKETS[0].className
-  if (max === 0) return BUCKETS[0].className
-  const ratio = count / max
-  const bucket = REVERSED_BUCKETS.find(b => ratio >= b.threshold)
-  return bucket ? bucket.className : BUCKETS[1].className
-}
 
 function formatWeekRange(weekStart) {
   const start = new Date(weekStart)
