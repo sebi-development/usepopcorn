@@ -73,8 +73,8 @@ export async function getExtendedStreak(userId) {
   return data
 }
 
-export async function getBestRatedIn(userId, numberOfDays) {
-  const { data, error } = await supabase.rpc('get_best_rated_in_window', { p_user_id: userId, p_days: numberOfDays})
+export async function getBestRatedSince(userId, since) {
+  const { data, error } = await supabase.rpc('get_best_rated_since', { p_user_id: userId, p_since: since })
   if (error) throw new Error(error.message)
   return data
 }

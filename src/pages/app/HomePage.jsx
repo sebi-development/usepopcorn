@@ -14,9 +14,9 @@ import ArrowLink from '@/components/ui/ArrowLink'
 import useProfileStreak from '@/features/profile/hooks/useProfileStreak'
 import FeatureCard, { FeatureCardSkeleton } from '@/components/ui/FeatureCard'
 import Chip from '@/components/ui/Chip'
-import { HiStar, HiHeart } from 'react-icons/hi2'
-import useBestRatedRecent from '@/features/profile/hooks/useBestRatedRecent'
-import RatingBadge from '@/components/media/RatingBadge'
+import { HiHeart } from 'react-icons/hi2'
+import useBestRated from '@/features/profile/hooks/useBestRated'
+import BestRatedCard from '@/features/profile/components/BestRatedCard'
 
 export default function HomePage() {
   const currentUser = useCurrentUser()
@@ -25,7 +25,7 @@ export default function HomePage() {
   const { data: watchlist, isLoading: isLoadingWatchlist, isError: isErrorWatchlist } = useInteractions('watchlist')
   const { data: favorites } = useInteractions('favorite', undefined, { staleTime: Infinity })
   const { data: streakData, isLoading: isLoadingStreak, isError: isErrorStreak, isLoadingExtended, extendedStreak, isSaturated } = useProfileStreak(currentUser?.id)
-  const { data: bestRecent, isLoading: isLoadingBestRecent, isError: isErrorBestRecent } = useBestRatedRecent(currentUser?.id)
+  const { movie: bestMovie, tv: bestSeries, isLoading: isLoadingBestRated } = useBestRated(currentUser?.id)
 
   const { data: stats } = useProfileStats(currentUser?.id)
 
@@ -36,17 +36,7 @@ export default function HomePage() {
   const genreCategoryId = topMovieGenreId ? `genre-${topMovieGenreId}` : 'popular'
   const genreQuery = useCategoryMedia('movies', genreCategoryId)
 
-  const isLoadingCards = !stats || isLoadingBestRecent
-
-  // The RPC row already carries what the detail page needs, so no extra fetch.
-  // DetailPage reads the media type from router state (defaulting to 'movie').
-  const bestRecentTitle = bestRecent?.title ?? bestRecent?.name
-  const bestRecentId = bestRecent?.tmdb_id ?? bestRecent?.id
-  const bestRecentType = bestRecent?.type ?? bestRecent?.media_type ?? 'movie'
-  const bestRecentLink = useMemo(
-    () => (bestRecentId ? { to: `/browse/${bestRecentId}`, state: { type: bestRecentType } } : null),
-    [bestRecentId, bestRecentType]
-  )
+  const isLoadingCards = !stats || isLoadingBestRated
 
   if (!isLoadingCards && !seedTitle) return (
     <InfoCard title="Welcome to usePopcorn" subtitle="Rate a few titles and this page fills in with picks made for you.">
@@ -63,7 +53,7 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-col gap-8 md:gap-10 pb-12">
-      <div className="grid grid-cols-3 gap-3 sm:gap-5 px-4 sm:px-8 pt-6 w-full max-w-3xl mx-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 px-4 sm:px-8 pt-6 w-full max-w-4xl mx-auto">
         <StreakCard
           data={streakData}
           isLoading={isLoadingStreak}
@@ -73,40 +63,8 @@ export default function HomePage() {
           isSaturated={isSaturated}
         />
 
-        {isLoadingCards ? (
-          <FeatureCardSkeleton />
-        ) : (
-          <FeatureCard
-            heroBackground={
-              bestRecent?.poster_path
-                ? `url('https://image.tmdb.org/t/p/w342${bestRecent.poster_path}') center/cover`
-                : "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)"
-            }
-            floatingIcon={<HiStar className="text-2xl sm:text-4xl text-amber-400" />}
-          >
-            <Chip size="sm" colorRgb="245, 158, 11" className="self-start max-w-full">
-              <span className="truncate">Top of the Month</span>
-            </Chip>
-            {bestRecentLink ? (
-              // Stretched link: the ::after covers the whole card so it is one
-              // click target, without nesting the title Chip (a <button>) in an <a>
-              <Link
-                to={bestRecentLink.to}
-                state={bestRecentLink.state}
-                className="text-[10px] sm:text-sm text-text-muted hover:text-text transition-colors leading-tight line-clamp-2 after:absolute after:inset-0 after:z-20"
-              >
-                {bestRecentTitle}
-              </Link>
-            ) : (
-              <p className="text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2">
-                {bestRecentTitle ?? 'No ratings yet'}
-              </p>
-            )}
-            {bestRecent?.rating != null && (
-              <RatingBadge text={`${bestRecent.rating}/10`} size={14} className="mt-auto text-text text-xs sm:text-sm font-bold" />
-            )}
-          </FeatureCard>
-        )}
+        <BestRatedCard kind="movie" pick={bestMovie} isLoading={isLoadingCards} />
+        <BestRatedCard kind="tv" pick={bestSeries} isLoading={isLoadingCards} />
 
         {isLoadingCards ? (
           <FeatureCardSkeleton />
