@@ -4,6 +4,7 @@ import Tooltip from "@/components/ui/Tooltip"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import FeatureCard, { FeatureCardSkeleton } from "@/components/ui/FeatureCard"
 import Chip from "@/components/ui/Chip"
+import { bucketFor } from "@/utils/heatmapBuckets"
 
 function calculateStreak(completedWeeks) {
   let streak = 0
@@ -19,12 +20,14 @@ function formatWeekLabel(weekStart) {
 }
 
 export default function StreakCard({ data, extendedStreak, isSaturated, isLoading, isLoadingExtended, isError }) {
-  const { fastStreak, recentWeeks } = useMemo(() => {
-    if (!data?.length) return { fastStreak: 0, recentWeeks: [] }
+  const { fastStreak, recentWeeks, maxCount } = useMemo(() => {
+    if (!data?.length) return { fastStreak: 0, recentWeeks: [], maxCount: 0 }
     const completedWeeks = data.slice(0, -1)
+    const recent = completedWeeks.slice(-6)
     return {
       fastStreak: calculateStreak(completedWeeks),
-      recentWeeks: completedWeeks.slice(-6),
+      recentWeeks: recent,
+      maxCount: Math.max(0, ...recent.map(w => w.count)),
     }
   }, [data])
 
@@ -54,21 +57,15 @@ export default function StreakCard({ data, extendedStreak, isSaturated, isLoadin
       </Chip>
 
       {recentWeeks.length > 0 && (
-        <div className="mt-auto flex justify-center">
-          <div className="flex gap-px sm:gap-0.5 items-center">
-            {recentWeeks.map((week) => (
-              <Tooltip
-                key={week.weekStart}
-                label={`Week of ${formatWeekLabel(week.weekStart)}: ${week.count} rating${week.count === 1 ? '' : 's'}`}
-              >
-                <span
-                  className={`block w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 rounded-[1px] sm:rounded-sm ${
-                    week.count > 0 ? 'bg-primary-light' : 'bg-surface-100/10'
-                  }`}
-                />
-              </Tooltip>
-            ))}
-          </div>
+        <div className="mt-auto flex w-full justify-center gap-0.5 sm:gap-1">
+          {recentWeeks.map((week) => (
+            <Tooltip
+              key={week.weekStart}
+              label={`Week of ${formatWeekLabel(week.weekStart)}: ${week.count} rating${week.count === 1 ? '' : 's'}`}
+            >
+              <span className={`block w-2 h-2 sm:w-3 sm:h-3 rounded-sm ${bucketFor(week.count, maxCount)}`} />
+            </Tooltip>
+          ))}
         </div>
       )}
     </FeatureCard>
