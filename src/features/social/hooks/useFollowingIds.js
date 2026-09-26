@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import { getFollowingIds } from "@/services/follows"
 
-// Fetches the current user's full following list once and returns it as a Set.
+// Fetches the current user's full following list once and returns it as an array and a Set.
 // Widgets pass `followingSet.has(userId)` down to each item instead of N individual queries.
 export default function useFollowingIds() {
   const currentUser = useCurrentUser()
@@ -20,5 +20,5 @@ export default function useFollowingIds() {
     [followingIds]
   )
 
-  return { followingSet, isLoading }
+  return { followingIds, followingSet, isLoading }
 }

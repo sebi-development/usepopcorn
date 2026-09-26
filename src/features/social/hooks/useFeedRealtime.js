@@ -2,10 +2,13 @@ import { useEffect, useMemo } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import supabase from "@/lib/supabase"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
+import useFollowingIds from "@/features/social/hooks/useFollowingIds"
 
-export default function useFeedRealtime(followingIds) {
+// Subscribes to ratings from everyone the user follows (not just authors already in the feed).
+export default function useFeedRealtime() {
   const queryClient = useQueryClient()
   const currentUser = useCurrentUser()
+  const { followingIds } = useFollowingIds()
   const followingKey = useMemo(() => {
     if (!followingIds?.length) return null;
     return [...followingIds].sort().join(',');
