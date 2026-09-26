@@ -22,5 +22,5 @@ export default function useAverageRatingRealtime(tmdbId) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [tmdbId])
+  }, [tmdbId, queryClient])
 }

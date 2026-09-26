@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, memo } from "react"
+import { useMemo, useState, memo } from "react"
 import { useNavigate } from "react-router"
 import { HiChevronDown } from "react-icons/hi2"
 import { TbRating18Plus } from "react-icons/tb"
@@ -31,6 +31,7 @@ function MediaCard({
 }) {
   const navigate = useNavigate()
   const [infoOpen, setInfoOpen] = useState(false)
+  const [infoOpened, setInfoOpened] = useState(false)
 
   // Skip the query subscription entirely when the parent already provides
   // the boolean — avoids N×2 redundant observers in browse grids.
@@ -59,12 +60,11 @@ function MediaCard({
   const isUpcoming = releaseDate ? new Date(releaseDate) > new Date() : false
 
   // Deferred until first opened to save lookup cost for skipped cards.
-  // Cached indefinitely afterwards to prevent layout shift during close animation.
-  const genresRef = useRef([])
-  if (infoOpen && genreIds?.length && genresRef.current.length === 0) {
-    genresRef.current = getGenreNames(genreIds, type)
-  }
-  const genreNames = genresRef.current
+  // Kept once opened (infoOpened never resets) to prevent layout shift during close animation.
+  const genreNames = useMemo(
+    () => (infoOpened ? getGenreNames(genreIds ?? [], type) : []),
+    [infoOpened, genreIds, type]
+  )
 
   return (
     <div
@@ -127,7 +127,7 @@ function MediaCard({
         <>
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); setInfoOpen((v) => !v) }}
+            onClick={(e) => { e.stopPropagation(); setInfoOpen((v) => !v); setInfoOpened(true) }}
             className="absolute bottom-2 right-2 z-20 w-6 h-6 rounded-full cursor-pointer bg-surface-900/70 backdrop-blur-sm flex items-center justify-center text-text-muted transition-opacity duration-200 opacity-60 md:opacity-0 md:group-hover/card:opacity-100"
             aria-expanded={infoOpen}
             aria-label="Show details"
