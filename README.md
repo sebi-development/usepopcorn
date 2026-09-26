@@ -148,7 +148,7 @@ Per-query overrides follow the volatility of the data. `staleTime` is always set
 
 ## 3. Deep Dive: Custom Database Engine
 
-Twelve functions live in `public` (the trigger function also depends on the `auth` schema). The client reaches ten of them through `supabase.rpc(...)`. `handle_new_user` is invoked by the database on signup, and `delete_user` is invoked through `supabase.rpc('delete_user')`.
+Eleven functions live in `public` (the trigger function also depends on the `auth` schema). The client reaches nine of them through `supabase.rpc(...)`. `handle_new_user` is invoked by the database on signup, and `delete_user` is invoked through `supabase.rpc('delete_user')`.
 
 | # | Function & signature | Returns | Algorithmic strategy | Security posture |
 |---|---|---|---|---|
@@ -158,12 +158,11 @@ Twelve functions live in `public` (the trigger function also depends on the `aut
 | 4 | `get_profile_stats(p_user_id uuid)` | `jsonb` | `unnest(genre_ids)` per type → `GROUP BY type, genre_id` → `row_number() OVER (PARTITION BY type ORDER BY genre_count DESC)`; keeps `rank <= 3`. Scalars via `count(*) FILTER (WHERE type = …)`, `round(avg(score), 1)` and `sum(runtime) FILTER (WHERE type = 'movie') / 60.0` for watch-hours. Assembled with `jsonb_build_object` / `jsonb_agg`. | `SECURITY DEFINER`, `search_path = public` |
 | 5 | `get_profile_heatmap(p_user_id uuid, p_year integer)` | `jsonb` | `generate_series` of weeks from `max(joined_at, Jan 1)` to `min(Dec 31, today)`, `LEFT JOIN` to ratings on `date_trunc('week', created_at)`, `GROUP BY week`, `jsonb_agg(... ORDER BY week_start)`. Zero-activity weeks are preserved. Also returns `joinedAt`. | `SECURITY DEFINER`, `search_path = public` |
 | 6 | `get_recent_weekly_activity(p_user_id uuid, p_weeks integer DEFAULT 12)` | `jsonb` | Same dense-calendar pattern over a rolling window of `p_weeks` weeks ending at the current week. Fixed-size output (12 by default). | `SECURITY DEFINER`, `search_path = public` |
-| 7 | `get_recommendation_seed(p_user_id uuid)` | `jsonb` | CTE takes the 10 most recent ratings (`ORDER BY created_at DESC LIMIT 10`), then picks the highest score with `tmdb_id` as a deterministic tie-breaker. The client passes this seed to TMDB `/recommendations`. | `SECURITY DEFINER`, `search_path = public` |
-| 8 | `get_best_rated_in_window(p_user_id uuid, p_days integer DEFAULT 30)` | `jsonb` | Filter `created_at >= current_date - p_days × interval '1 day'`, `ORDER BY score DESC, created_at DESC LIMIT 1`. Returns the title's poster and score for the profile highlight card. | `SECURITY DEFINER`, `search_path = public` |
-| 9 | `get_average_rating(p_tmdb_id integer)` | `numeric` | `ROUND(AVG(score)::numeric, 1)` over all ratings for a title. | `SECURITY INVOKER` (default), marked `STABLE` |
-| 10 | `get_user_feed(current_user_id uuid)` | `TABLE(id, tmdb_id, title, poster_path, type, score, created_at, user_id, username, avatar_url)` | `ratings ⨝ follows ON r.user_id = f.following_id ⨝ profiles`, filtered by `f.follower_id = current_user_id`, `ORDER BY created_at DESC LIMIT 50`. The join and row cap are server-side, so the client receives at most 50 fully-hydrated rows. | `SECURITY INVOKER` (plpgsql default), so RLS applies |
-| 11 | `get_friends_ratings(current_user_id uuid, p_tmdb_id integer)` | `TABLE(rating_id, score, created_at, user_id, username, avatar_url)` | Same three-way join, restricted to a single `tmdb_id`. Drives the friend activity tab on a title's page. | `SECURITY INVOKER`, so RLS applies |
-| 12 | `get_suggested_users(current_user_id uuid)` | `TABLE(id, username, avatar_url, recent_activity_count, mutual_friend_count, suggestion_score)` | Three CTEs: `my_follows`, `user_activity` (ratings in the last 14 days, `GROUP BY user_id`) and `mutual_connections` (for users followed by people I follow, `count(follower_id)`). Score = `mutual × 10 + activity`. Excludes self and already-followed users via `NOT EXISTS`, requires `score > 0`, `ORDER BY suggestion_score DESC LIMIT 4`. | `SECURITY INVOKER`, so RLS applies |
+| 7 | `get_best_rated_since(p_user_id uuid, p_since timestamptz)` | `jsonb` | `DISTINCT ON (type)` over the user's `movie` / `tv` ratings with `updated_at >= p_since`, `ORDER BY type, score DESC, updated_at DESC`, so each type keeps its best-scored rating (ties go to the most recently updated). `jsonb_object_agg(type, to_jsonb(t))` folds the two rows into one `{ movie, tv }` object (`{}` when the window is empty), each pick carrying `type`, `tmdb_id`, `title`, `poster_path`, `rating`. The client passes calendar-snapped windows from `src/utils/periods.js`: the month for the "of the Month" cards, then 3, 6 and 12 months as fallbacks that seed the recommendation rows, which then call TMDB `/recommendations`. | `SECURITY INVOKER` (default), marked `STABLE`, so RLS applies |
+| 8 | `get_average_rating(p_tmdb_id integer)` | `numeric` | `ROUND(AVG(score)::numeric, 1)` over all ratings for a title. | `SECURITY INVOKER` (default), marked `STABLE` |
+| 9 | `get_user_feed(current_user_id uuid)` | `TABLE(id, tmdb_id, title, poster_path, type, score, created_at, user_id, username, avatar_url)` | `ratings ⨝ follows ON r.user_id = f.following_id ⨝ profiles`, filtered by `f.follower_id = current_user_id`, `ORDER BY created_at DESC LIMIT 50`. The join and row cap are server-side, so the client receives at most 50 fully-hydrated rows. | `SECURITY INVOKER` (plpgsql default), so RLS applies |
+| 10 | `get_friends_ratings(current_user_id uuid, p_tmdb_id integer)` | `TABLE(rating_id, score, created_at, user_id, username, avatar_url)` | Same three-way join, restricted to a single `tmdb_id`. Drives the friend activity tab on a title's page. | `SECURITY INVOKER`, so RLS applies |
+| 11 | `get_suggested_users(current_user_id uuid)` | `TABLE(id, username, avatar_url, recent_activity_count, mutual_friend_count, suggestion_score)` | Three CTEs: `my_follows`, `user_activity` (ratings in the last 14 days, `GROUP BY user_id`) and `mutual_connections` (for users followed by people I follow, `count(follower_id)`). Score = `mutual × 10 + activity`. Excludes self and already-followed users via `NOT EXISTS`, requires `score > 0`, `ORDER BY suggestion_score DESC LIMIT 4`. | `SECURITY INVOKER`, so RLS applies |
 
 ### Selected implementations
 
@@ -216,7 +215,7 @@ ranked_genres as (
 
 ### Security notes
 
-- The six analytics functions and the recommendation and highlight functions are `SECURITY DEFINER`. They take a `p_user_id` parameter because the app renders other users' public profiles (`/profile/:userId`), so the caller is not always the subject. Definer rights bypass row-level policies, so the functions only expose aggregates of the target user's ratings and never expose other tables. `search_path` is pinned to `public` on each, which prevents search-path hijacking of a definer function.
+- The four analytics functions are `SECURITY DEFINER`. They take a `p_user_id` parameter because the app renders other users' public profiles (`/profile/:userId`), so the caller is not always the subject. Definer rights bypass row-level policies, so the functions only expose aggregates of the target user's ratings and never expose other tables. `search_path` is pinned to `public` on each, which prevents search-path hijacking of a definer function.
 - The social functions (`get_user_feed`, `get_friends_ratings`, `get_suggested_users`) and `get_average_rating` run as `SECURITY INVOKER`, so RLS policies on `ratings`, `follows` and `profiles` stay in force for them.
 - `delete_user()` accepts no arguments, and the target is derived from the JWT.
 - The Supabase **anon key** and the TMDB / OMDb keys are `VITE_`-prefixed and are therefore embedded in the client bundle. Authorization has to come from RLS and the RPC design above. The TMDB and OMDb keys should be treated as public, low-privilege, rate-limited credentials.
@@ -233,7 +232,7 @@ ranked_genres as (
 - Debounced title search, overlay results, and user search.
 - Title pages with tabbed Overview / Scores / Seasons / Friend Activity panels. TMDB details are fetched with `append_to_response` (credits, providers, release dates or content ratings, external IDs) to keep it to one request. IMDb, Rotten Tomatoes and Metacritic scores are fetched separately through OMDb once an IMDb id is known. Season details load lazily, only after the Seasons tab is visited.
 - Favourites and watchlist toggles (optimistic).
-- Recommendations seeded from the user's highest-rated recent title (`get_recommendation_seed`, then TMDB `/recommendations`).
+- Movie and series recommendation rows seeded from the user's movie and series of the month (`get_best_rated_since`, then TMDB `/recommendations`), widening to the last 3, 6 or 12 months when a type has no pick and labelling the window used.
 
 **Social**
 - Feed of followed users' ratings (`get_user_feed`), live-updated over Realtime.
@@ -245,7 +244,7 @@ ranked_genres as (
 **Analytics**
 - Annual activity heatmap (`get_profile_heatmap`, per year).
 - Running weekly streak (two-tier, described in 2.1).
-- Rolling 30-day top-rated highlight (`get_best_rated_in_window`).
+- Movie and series "of the Month" highlight cards (`get_best_rated_since`).
 - Totals, average score, watch-hours and top-3 genres per media type (`get_profile_stats`).
 
 **Account**

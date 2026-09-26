@@ -1,29 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
-import { getRecommendationSeed } from "@/services/ratings"
 import { getRecommendations } from "@/services/tmdb"
-import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
-export default function useRecommendations() {
-  const currentUser = useCurrentUser()
-
-  const seedQuery = useQuery({
-    queryKey: ['recommendationSeed', currentUser?.id],
-    queryFn: () => getRecommendationSeed(currentUser?.id),
-    enabled: !!currentUser?.id,
+// `pick` is a best-rated row ({ tmdb_id, ... }); `type` is 'movie' | 'tv'.
+export default function useRecommendations(pick, type) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['recommendations', pick?.tmdb_id, type],
+    queryFn: () => getRecommendations(pick.tmdb_id, type),
+    enabled: !!pick?.tmdb_id,
     staleTime: 1000 * 60 * 15,
   })
 
-  const recsQuery = useQuery({
-    queryKey: ['recommendations', seedQuery.data?.tmdb_id, seedQuery.data?.type],
-    queryFn: () => getRecommendations(seedQuery.data.tmdb_id, seedQuery.data.type),
-    enabled: !!seedQuery.data?.tmdb_id,
-    staleTime: 1000 * 60 * 15,
-  })
-
-  return {
-    seedTitle: seedQuery.data,
-    data: recsQuery.data?.results,
-    isLoading: seedQuery.isLoading || recsQuery.isLoading,
-    isError: seedQuery.isError || recsQuery.isError,
-  }
+  return { data: data?.results, isLoading, isError }
 }

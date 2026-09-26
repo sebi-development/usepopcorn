@@ -1,4 +1,5 @@
-import useRecommendations from '@/features/browse/hooks/useRecommendations'
+import useRecommendationSeeds from '@/features/browse/hooks/useRecommendationSeeds'
+import RecommendationRow from '@/features/browse/components/RecommendationRow'
 import useInteractions from '@/features/interactions/hooks/useInteractions'
 import useProfileStats from '@/features/profile/hooks/useProfileStats'
 import useCurrentUser from '@/features/auth/hooks/useCurrentUser'
@@ -21,24 +22,26 @@ import BestRatedCard from '@/features/profile/components/BestRatedCard'
 export default function HomePage() {
   const currentUser = useCurrentUser()
 
-  const { seedTitle, data: recsData, isLoading: isLoadingRecs, isError: isErrorRecs } = useRecommendations()
+  const seeds = useRecommendationSeeds(currentUser?.id)
   const { data: watchlist, isLoading: isLoadingWatchlist, isError: isErrorWatchlist } = useInteractions('watchlist')
   const { data: favorites } = useInteractions('favorite', undefined, { staleTime: Infinity })
   const { data: streakData, isLoading: isLoadingStreak, isError: isErrorStreak, isLoadingExtended, extendedStreak, isSaturated } = useProfileStreak(currentUser?.id)
   const { movie: bestMovie, tv: bestSeries, isLoading: isLoadingBestRated } = useBestRated(currentUser?.id)
 
-  const { data: stats } = useProfileStats(currentUser?.id)
+  const { data: stats, isLoading: isLoadingStats } = useProfileStats(currentUser?.id)
 
   const topMovieGenreId = useMemo(
     () => stats?.topGenres?.find(g => g.type === 'movie')?.genreId ?? null,
     [stats]
   )
   const genreCategoryId = topMovieGenreId ? `genre-${topMovieGenreId}` : 'popular'
-  const genreQuery = useCategoryMedia('movies', genreCategoryId)
+  // Held until stats resolve so the placeholder 'popular' id doesn't fire a request
+  // that is thrown away as soon as the real top genre is known
+  const genreQuery = useCategoryMedia('movies', genreCategoryId, { enabled: !isLoadingStats })
 
   const isLoadingCards = !stats || isLoadingBestRated
 
-  if (!isLoadingCards && !seedTitle) return (
+  if (!isLoadingCards && !stats.totalRated) return (
     <InfoCard title="Welcome to usePopcorn" subtitle="Rate a few titles and this page fills in with picks made for you.">
       <ul className="flex flex-col gap-3 text-sm text-text-muted">
         <li>Search any movie or series and give it a rating</li>
@@ -88,23 +91,14 @@ export default function HomePage() {
         )}
       </div>
 
-      {seedTitle && (
-        <MediaRow
-          heading={`Because you loved "${seedTitle.title}"`}
-          data={recsData}
-          mediaType={seedTitle.type}
-          isLoading={isLoadingRecs}
-          isError={isErrorRecs}
-          showInfo={true}
-          rank={false}
-        />
-      )}
+      <RecommendationRow seed={seeds.movie} type="movie" isLoadingSeed={seeds.isLoading} />
+      <RecommendationRow seed={seeds.tv} type="tv" isLoadingSeed={seeds.isLoading} />
 
       <MediaRow
-        heading={`Because you love ${getGenreNames(topMovieGenreId ? [topMovieGenreId] : [], 'movie')}`}
+        heading={`Because you love ${getGenreNames(topMovieGenreId ? [topMovieGenreId] : [], 'movie')} genre` }
         data={genreQuery.data}
         mediaType="movie"
-        isLoading={genreQuery.isLoading}
+        isLoading={isLoadingStats || genreQuery.isLoading}
         isError={genreQuery.isError}
         fetchNextPage={genreQuery.fetchNextPage}
         hasNextPage={genreQuery.hasNextPage}

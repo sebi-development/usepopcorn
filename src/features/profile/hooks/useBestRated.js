@@ -3,7 +3,7 @@ import { getBestRatedSince } from "@/services/profiles"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import { PERIODS } from "@/utils/periods"
 
-export default function useBestRated(userId, period = 'month') {
+export default function useBestRated(userId, period = 'month', { enabled = true } = {}) {
   const currentUser = useCurrentUser()
   const id = userId ?? currentUser?.id
 
@@ -11,7 +11,7 @@ export default function useBestRated(userId, period = 'month') {
     // Under the ['ratings'] prefix so rating/deleting a title refreshes it
     queryKey: ['ratings', 'bestRated', id, period],
     queryFn: () => getBestRatedSince(id, PERIODS[period].start().toISOString()),
-    enabled: !!id,
+    enabled: !!id && enabled,
     staleTime: 1000 * 60 * 15,
   })
 
