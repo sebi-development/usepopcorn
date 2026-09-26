@@ -1,7 +1,7 @@
 {
   "project": "usepopcorn",
   "audit_date": "2026-07-29",
-  "total_findings": 30,
+  "total_findings": 34,
   "findings": [
     {
       "id": "OPT-001",
@@ -361,7 +361,7 @@
       "category": "runtime-bug",
       "priority": 26,
       "severity": "medium",
-      "status": "pending",
+      "status": "done",
       "file": "src/pages/app/CommunityPage.jsx",
       "lines": [6],
       "problem": "Imports 'userSearchWidget' (lowercase) but the file on disk is 'UserSearchWidget.jsx'. Works on macOS but fails on case-sensitive filesystems (Linux CI/CD, Docker, Vercel).",
@@ -426,6 +426,65 @@
       "problem": "memberSince calls new Date().toLocaleDateString() with locale options on every render. toLocaleDateString is expensive due to Intl initialization.",
       "fix": "Wrap in useMemo(() => ..., [profileData?.created_at]).",
       "effort_minutes": 2
+    },
+    {
+      "id": "OPT-031",
+      "title": "Best-rated hook key never invalidated and ignores media type",
+      "category": "cache-bug",
+      "priority": 31,
+      "severity": "medium",
+      "status": "done",
+      "files": [
+        "src/features/profile/hooks/useBestRated.js",
+        "src/services/profiles.js",
+        "src/pages/app/HomePage.jsx"
+      ],
+      "problem": "useBestRatedRecent used the key ['bestRatedRecent', id, days], which no rating mutation invalidated, so the Home card stayed stale for its 15 minute staleTime after rating or deleting a title. The get_best_rated_in_window RPC also returned one title regardless of type and used a hard-coded rolling window.",
+      "fix": "Replaced with useBestRated(userId, period) under the ['ratings', 'bestRated', id, period] key, which the existing ['ratings'] invalidation in useUploadRating/useDeleteRating already covers. New get_best_rated_since(p_user_id, p_since) RPC returns { movie, tv } in one call, filtered in Postgres, with periods defined in src/utils/periods.js. Old service function, hook and RPC removed.",
+      "effort_minutes": 45
+    },
+    {
+      "id": "OPT-032",
+      "title": "ratings.updated_at never bumped on re-rating",
+      "category": "data-bug",
+      "priority": 32,
+      "severity": "medium",
+      "status": "done",
+      "file": "src/services/ratings.js",
+      "lines": [3, 12],
+      "problem": "uploadRating upserts without sending updated_at and the ratings table had no update trigger, so re-rating a title left updated_at equal to created_at. Nothing in src/ read it, so it went unnoticed, but any time-window feature keyed on updated_at would ignore re-rates.",
+      "fix": "Added a DB-side before update trigger (set_updated_at, ratings_set_updated_at) that sets updated_at = now(), instead of sending the column from the client, so every write path is covered. Added index ratings (user_id, updated_at desc) for the windowed best-rated query.",
+      "effort_minutes": 10
+    },
+    {
+      "id": "OPT-033",
+      "title": "Home recommendations need their own seed RPC and only cover one media type",
+      "category": "network",
+      "priority": 33,
+      "severity": "medium",
+      "status": "done",
+      "files": [
+        "src/features/browse/hooks/useRecommendations.js",
+        "src/features/browse/hooks/useRecommendationSeeds.js",
+        "src/features/browse/components/RecommendationRow.jsx",
+        "src/services/ratings.js",
+        "src/pages/app/HomePage.jsx"
+      ],
+      "problem": "The single 'Because you loved' row was seeded by a separate get_recommendation_seed RPC (any type, last 10 ratings) chained into TMDB /recommendations, on top of the get_best_rated_since call the Home cards already make. Two Supabase round trips for data that was already cached, and no series recommendations.",
+      "fix": "Seed one row per media type from the cached useBestRated month picks (same query key as the cards, zero extra requests), each row its own query so the two TMDB calls run in parallel. When a type has no pick this month, the 3, 6 and 12 month windows are enabled together (one extra round trip, only in that case) and the narrowest hit wins; the row labels the window used. Old seed service function and hook query removed. The get_recommendation_seed DB function still has to be dropped in Supabase: DROP FUNCTION public.get_recommendation_seed(uuid);",
+      "effort_minutes": 60
+    },
+    {
+      "id": "OPT-034",
+      "title": "Home genre row fetches /movie/popular before stats resolve",
+      "category": "network",
+      "priority": 34,
+      "severity": "low",
+      "status": "done",
+      "file": "src/pages/app/HomePage.jsx",
+      "problem": "useCategoryMedia('movies', ...) ran immediately with the placeholder 'popular' id because topMovieGenreId is null until useProfileStats resolves, then refetched /discover/movie for the real top genre. The first request was thrown away, and the row briefly showed popular movies under the heading 'Because you love '.",
+      "fix": "Pass { enabled: !isLoadingStats } so the row waits for stats, and keep its skeleton up with isLoading={isLoadingStats || genreQuery.isLoading}. Gating on isLoading rather than !stats keeps the popular fallback if the stats query errors.",
+      "effort_minutes": 5
     }
   ]
 }
