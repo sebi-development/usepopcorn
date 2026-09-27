@@ -29,6 +29,8 @@ export default function useDeleteRating() {
       queryClient.invalidateQueries({ queryKey: ['ratings'] })
       queryClient.invalidateQueries({ queryKey: ['profileStats', currentUser?.id] })
       queryClient.invalidateQueries({ queryKey: ['profileActivity', currentUser?.id, new Date().getFullYear()] })
+      queryClient.invalidateQueries({ queryKey: ['profileStreak', currentUser?.id] })
+      queryClient.invalidateQueries({ queryKey: ['extendedStreak', currentUser?.id] })
     }
   })
 

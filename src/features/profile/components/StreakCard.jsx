@@ -5,11 +5,12 @@ import SkeletonBox from "@/components/ui/SkeletonBox"
 import FeatureCard, { FeatureCardSkeleton } from "@/components/ui/FeatureCard"
 import Chip from "@/components/ui/Chip"
 import { bucketFor } from "@/utils/heatmapBuckets"
+import { getCountedWeeks } from "@/features/profile/hooks/useProfileStreak"
 
-function calculateStreak(completedWeeks) {
+function calculateStreak(countedWeeks) {
   let streak = 0
-  for (let i = completedWeeks.length - 1; i >= 0; i--) {
-    if (completedWeeks[i].count > 0) streak++
+  for (let i = countedWeeks.length - 1; i >= 0; i--) {
+    if (countedWeeks[i].count > 0) streak++
     else break
   }
   return streak
@@ -22,10 +23,11 @@ function formatWeekLabel(weekStart) {
 export default function StreakCard({ data, extendedStreak, isSaturated, isLoading, isLoadingExtended, isError }) {
   const { fastStreak, recentWeeks, maxCount } = useMemo(() => {
     if (!data?.length) return { fastStreak: 0, recentWeeks: [], maxCount: 0 }
-    const completedWeeks = data.slice(0, -1)
-    const recent = completedWeeks.slice(-6)
+    const countedWeeks = getCountedWeeks(data)
+    const streak = calculateStreak(countedWeeks)
+    const recent = countedWeeks.slice(-Math.min(streak, 6))
     return {
-      fastStreak: calculateStreak(completedWeeks),
+      fastStreak: streak,
       recentWeeks: recent,
       maxCount: Math.max(0, ...recent.map(w => w.count)),
     }
