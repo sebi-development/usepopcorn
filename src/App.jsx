@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react"
 import { createBrowserRouter, RouterProvider } from "react-router"
 import { Toaster } from 'react-hot-toast'
+import { LuLoaderCircle } from "react-icons/lu"
 
 import PublicLayout from "@/layout/PublicLayout"
 import AppLayout from "@/layout/AppLayout"
@@ -28,6 +29,12 @@ const ProfileStatsPage = lazy(() => import("@/pages/app/ProfileStatsPage"))
 const CommunityPage = lazy(() => import("@/pages/app/CommunityPage"))
 
 
+const routeFallback = (
+  <div className="flex items-center justify-center min-h-[50vh]">
+    <LuLoaderCircle className="animate-spin text-primary" size={28} />
+  </div>
+)
+
 const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -36,8 +43,8 @@ const router = createBrowserRouter([
       { path: '/', element: <LandingPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
-      { path: '/forgot-password', element: <Suspense fallback={null}><ForgotPasswordPage /></Suspense> },
-      { path: '/reset-password', element: <Suspense fallback={null}><ResetPasswordPage /></Suspense> },
+      { path: '/forgot-password', element: <Suspense fallback={routeFallback}><ForgotPasswordPage /></Suspense> },
+      { path: '/reset-password', element: <Suspense fallback={routeFallback}><ResetPasswordPage /></Suspense> },
       { path: '*', element: <NotFoundPage /> }
     ],
   },
@@ -45,12 +52,12 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     errorElement: <NotFoundPage />,
     children: [
-      { path: '/browse', element: <Suspense fallback={null}><BrowsePage /></Suspense> },
-      { path: '/browse/:id', element: <Suspense fallback={null}><DetailPage /></Suspense> },
-      { path: '/profile', element: <Suspense fallback={null}><ProfilePage /></Suspense> },
-      { path: '/community', element: <Suspense fallback={null}><CommunityPage /></Suspense> },
-      { path: '/profile/stats', element: <Suspense fallback={null}><ProfileStatsPage /></Suspense> },
-      { path: '/profile/:userId', element: <Suspense fallback={null}><ProfilePage /></Suspense> },
+      { path: '/browse', element: <Suspense fallback={routeFallback}><BrowsePage /></Suspense> },
+      { path: '/browse/:id', element: <Suspense fallback={routeFallback}><DetailPage /></Suspense> },
+      { path: '/profile', element: <Suspense fallback={routeFallback}><ProfilePage /></Suspense> },
+      { path: '/community', element: <Suspense fallback={routeFallback}><CommunityPage /></Suspense> },
+      { path: '/profile/stats', element: <Suspense fallback={routeFallback}><ProfileStatsPage /></Suspense> },
+      { path: '/profile/:userId', element: <Suspense fallback={routeFallback}><ProfilePage /></Suspense> },
       { path: '*', element: <NotFoundPage /> }
     ],
   }

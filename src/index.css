@@ -147,7 +147,7 @@ body {
   }
 
   .lp-hero__emoji {
-    @apply block text-7xl leading-none mb-6;
+    @apply block mx-auto text-7xl leading-none mb-6;
     filter: drop-shadow(0 0 2.4rem rgba(121, 80, 242, 0.5));
   }
 

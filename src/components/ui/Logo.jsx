@@ -1,10 +1,18 @@
 import { Link } from "react-router";
+import logo from "@/assets/logo.webp?no-inline";
 
+// Sized in em so the caller's text-* class controls the height (text-2xl → 24px, text-7xl → 72px)
 export function PopcornIcon({ className = "" }) {
   return (
-    <span className={`select-none ${className}`}>
-      🍿
-    </span>
+    <img
+      src={logo}
+      alt=""
+      width={113}
+      height={151}
+      decoding="async"
+      draggable={false}
+      className={`h-[1em] w-auto select-none ${className}`}
+    />
   );
 }
 
