@@ -95,7 +95,6 @@ export default function ProfileStats({ stats, isLoading, isError }) {
             </p>
           </div>
         </div>
-
       </div>
     </section>
   )
