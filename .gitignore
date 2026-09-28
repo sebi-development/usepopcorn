@@ -34,3 +34,4 @@ dist-ssr
 node_modules/
 agents.md
 CLAUDE.md
+.claude
