@@ -6,9 +6,10 @@ import useFeedRealtime from "@/features/social/hooks/useFeedRealtime"
 import UserSearchWidget from "@/features/social/components/UserSearchWidget"
 import SuggestedUsersWidget from "@/features/social/components/SuggestedUsersWidget"
 import useDelayedLoading from "@/hooks/useDelayedLoading"
+import LoadMoreFooter from "@/components/ui/LoadMoreFooter"
 
 export default function CommunityPage() {
-  const { data: feed, isLoading } = useFeed()
+  const { items: feed, isLoading, phase, pageCount, fetchMore, isFetchingNextPage } = useFeed()
   const showLoading = useDelayedLoading(isLoading)
 
   useFeedRealtime()
@@ -55,6 +56,16 @@ export default function CommunityPage() {
               <ActivityCard item={feedItem} />
             </TimelineRow>
           ))}
+
+          {!showLoading && feed && (
+            <LoadMoreFooter
+              phase={phase}
+              pageCount={pageCount}
+              onLoadMore={fetchMore}
+              isFetching={isFetchingNextPage}
+              cappedMessage={`Showing the latest ${feed.length} ratings. Visit a profile to see their full history.`}
+            />
+          )}
         </section>
 
       </div>

@@ -3,9 +3,12 @@ import FriendActivityTabSkeleton from "@/features/media_details/components/Frien
 import useDelayedLoading from "@/hooks/useDelayedLoading"
 import useFriendsRatings from "@/features/social/hooks/useFriendsRatings"
 import FriendActivityItem from "@/features/media_details/components/FriendActivityItem"
+import LoadMoreFooter from "@/components/ui/LoadMoreFooter"
 
 export default function FriendActivityTab({ tmdbId }) {
-  const { data: friends, isLoading, isError } = useFriendsRatings(tmdbId)
+  const {
+    items: friends, total, isLoading, isError, phase, pageCount, fetchMore, isFetchingNextPage,
+  } = useFriendsRatings(tmdbId)
   const showLoading = useDelayedLoading(isLoading)
 
   if (showLoading) {
@@ -24,11 +27,14 @@ export default function FriendActivityTab({ tmdbId }) {
     )
   }
 
+  // total comes from the RPC so the header counts every friend, not just loaded pages
+  const friendCount = total ?? friends.length
+
   return (
     <div className="flex flex-col gap-5 animate-in fade-in duration-300">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-text-muted bg-surface-900 px-2.5 py-1 rounded-full border border-white/5 shadow-sm">
-          {friends.length} Friend{friends.length > 1 ? 's' : ''} rated this
+          {friendCount} Friend{friendCount > 1 ? 's' : ''} rated this
         </span>
       </div>
 
@@ -37,6 +43,14 @@ export default function FriendActivityTab({ tmdbId }) {
           <FriendActivityItem key={friend.rating_id} friend={friend} />
         ))}
       </div>
+
+      <LoadMoreFooter
+        phase={phase}
+        pageCount={pageCount}
+        onLoadMore={fetchMore}
+        isFetching={isFetchingNextPage}
+        cappedMessage={`Showing ${friends.length} of ${friendCount} friends.`}
+      />
     </div>
   )
 }

@@ -1,5 +1,7 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { getRecommendations } from "@/services/tmdb"
+import usePagedGrid from "@/hooks/usePagedGrid"
+import { fromTmdb } from "@/utils/pagination"
 
 const STALE_TIME = 1000 * 60 * 15
 
@@ -16,13 +18,11 @@ export default function useRecommendations(pick, type) {
 
 // Grid mode — one TMDB page per query, only fetched while expanded.
 export function useRecommendationsGrid(pick, type, page, { enabled = true } = {}) {
-  const query = useQuery({
-    queryKey: ['recommendations', pick?.tmdb_id, type, 'grid', page],
-    queryFn: () => getRecommendations(pick.tmdb_id, type, page),
-    placeholderData: keepPreviousData,
+  return usePagedGrid({
+    queryKey: ['recommendations', pick?.tmdb_id, type],
+    fetchPage: fromTmdb((p) => getRecommendations(pick.tmdb_id, type, p)),
+    page,
     enabled: enabled && !!pick?.tmdb_id,
     staleTime: STALE_TIME,
   })
-
-  return { ...query, totalPages: query.data?.total_pages ?? 1 }
 }

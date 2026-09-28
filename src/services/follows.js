@@ -63,9 +63,15 @@ export async function getProfileRelationship(currentUserId, targetUserId) {
   return { isFollowing: following, followers, following: followingCount }
 }
 
-export async function getFeed(currentUserId) {
-  const { data, error } = await supabase
-    .rpc('get_user_feed', { current_user_id: currentUserId })
+// `cursor` is the { created_at, id } of the last row of the previous page,
+// or null for the first page (keyset paging, see the pagination migration).
+export async function getFeed(currentUserId, { limit, cursor }) {
+  const { data, error } = await supabase.rpc('get_user_feed', {
+    current_user_id: currentUserId,
+    p_limit: limit,
+    p_cursor_created_at: cursor?.created_at ?? null,
+    p_cursor_id: cursor?.id ?? null,
+  })
   if (error) throw new Error(error.message)
   return data ?? []
 }
@@ -76,9 +82,14 @@ export async function getSuggestedUsers(currentUserId) {
   return data ?? []
 }
 
-export async function getFriendsRatings(currentUserId, tmdbId) {
-  const { data, error } = await supabase
-    .rpc('get_friends_ratings', { current_user_id: currentUserId, p_tmdb_id: tmdbId })
+export async function getFriendsRatings(currentUserId, tmdbId, { limit, cursor }) {
+  const { data, error } = await supabase.rpc('get_friends_ratings', {
+    current_user_id: currentUserId,
+    p_tmdb_id: tmdbId,
+    p_limit: limit,
+    p_cursor_created_at: cursor?.created_at ?? null,
+    p_cursor_id: cursor?.id ?? null,
+  })
   if (error) throw new Error(error.message)
   return data ?? []
 }

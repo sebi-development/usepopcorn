@@ -39,10 +39,26 @@ export async function getUserRatings(limit = null, userId) {
     .select()
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
   if (limit) query = query.limit(limit)
   const { data, error } = await query
   if (error) throw new Error(error.message)
   return data
+}
+
+// One numbered page of a user's ratings (inclusive `from`..`to` range) plus
+// the total row count, in a single request. Same ordering as getUserRatings,
+// with id as tiebreaker so pages never overlap or skip on equal timestamps.
+export async function getUserRatingsPage(userId, from, to) {
+  const { data, error, count } = await supabase
+    .from('ratings')
+    .select('id, tmdb_id, title, poster_path, type, score, genre_ids', { count: 'exact' })
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
+    .range(from, to)
+  if (error) throw new Error(error.message)
+  return { items: data, count: count ?? 0 }
 }
 
 export async function getUserRatingsCount(userId) {

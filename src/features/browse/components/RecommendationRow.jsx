@@ -1,20 +1,15 @@
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useMemo } from 'react'
 import useRecommendations, { useRecommendationsGrid } from '@/features/browse/hooks/useRecommendations'
 import MediaRow from '@/components/media/MediaRow'
+import useExpandableGrid from '@/hooks/useExpandableGrid'
 
 const PLACEHOLDER_HEADINGS = { movie: 'Recommended movies', tv: 'Recommended series' }
 
 function RecommendationRow({ seed, type, isLoadingSeed, expandable = true }) {
   const { data, isLoading, isError } = useRecommendations(seed?.pick, type)
 
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [page, setPage] = useState(1)
+  const { isExpanded, page, setPage, toggle } = useExpandableGrid()
   const grid = useRecommendationsGrid(seed?.pick, type, page, { enabled: expandable && isExpanded })
-
-  const handleToggleExpand = useCallback(() => {
-    setIsExpanded((v) => !v)
-    setPage(1) // start fresh each time grid mode is entered or left
-  }, [])
 
   const heading = useMemo(() => {
     if (!seed) return PLACEHOLDER_HEADINGS[type]
@@ -43,8 +38,8 @@ function RecommendationRow({ seed, type, isLoadingSeed, expandable = true }) {
       expandable={expandable}
       isExpanded={isExpanded}
       isPending={grid.isPlaceholderData || (grid.isFetching && isExpanded)}
-      onToggleExpand={handleToggleExpand}
-      gridData={grid.data}
+      onToggleExpand={toggle}
+      gridItems={grid.items}
       gridError={grid.error}
       page={page}
       totalPages={grid.totalPages}

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, memo, useRef } from "react"
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi"
 import { HiOutlineSquares2X2, HiOutlineBars3 } from "react-icons/hi2"
-import useIntersectionObserver from "@/hooks/useIntersectionObserver"
+import { AutoSentinel } from "@/components/ui/LoadMoreFooter"
 import MediaCard from "@/components/media/MediaCard"
 import useScrollArrows from "@/hooks/useScrollArrows"
 import SkeletonBox from "@/components/ui/SkeletonBox"
@@ -67,7 +67,8 @@ function PaginationControls({ page, totalPages, onPageChange, isPending, contain
 
 function MediaRow({
   heading, data, isLoading, isError, limit = Infinity,
-  fetchNextPage, hasNextPage, isFetchingNextPage,
+  // Row infinite scroll: `hasMore` mounts the sentinel that calls `onLoadMore`
+  onLoadMore, hasMore = false,
   rank = true, showFavorite = false, favoritedSet,
   showWatchlist = false, watchlistedSet,
   showInfo = true,
@@ -76,17 +77,10 @@ function MediaRow({
   mediaType,
   // grid/expand additions — all optional, row-only usage is unaffected
   expandable = false, isExpanded = false, isPending = false, onToggleExpand,
-  gridData, gridError, page = 1, totalPages = 1, onPageChange,
+  gridItems, gridError, page = 1, totalPages = 1, onPageChange,
 }) {
-  // Row data (unchanged) — `p` avoids shadowing the `page` prop
-  const media = useMemo(() => {
-    if (!data) return []
-    if (data.pages) return data.pages.flatMap(p => p.results)
-    return Array.isArray(data) ? data.slice(0, limit) : []
-  }, [data, limit])
-
-  // Grid data — a single TMDB page, no flattening needed
-  const gridMedia = useMemo(() => gridData?.results ?? [], [gridData])
+  // Row data — an array of normalised items (see src/utils/pagination.js)
+  const media = useMemo(() => (Array.isArray(data) ? data.slice(0, limit) : []), [data, limit])
 
   const { showLeft, showRight, scrollRef, scrollByAmount } = useScrollArrows()
 
@@ -98,20 +92,14 @@ function MediaRow({
     scrollByAmount(400)
   }, [scrollByAmount])
 
-  const handleIntersect = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage()
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
-
-  const sentinelRef = useIntersectionObserver(handleIntersect)
-
   const containerRef = useRef(null)
 
   // isExpanded flips the moment the button is clicked (so it feels
   // responsive), but the layout itself only swaps once the first grid
   // page has actually arrived — otherwise toggling would flash an empty
   // grid. Until then we just keep showing the row a beat longer.
-  const showGrid = isExpanded && Boolean(gridData)
-  const isLoadingFirstPage = isExpanded && !gridData
+  const showGrid = isExpanded && Boolean(gridItems)
+  const isLoadingFirstPage = isExpanded && !gridItems
 
   function renderCard(item, rankValue) {
     return (
@@ -178,7 +166,7 @@ function MediaRow({
               <div
                 className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 transition-opacity duration-200 ${isPending ? "opacity-60" : "opacity-100"}`}
               >
-                {gridMedia.map((item) => (
+                {gridItems.map((item) => (
                   <div key={item.tmdb_id || item.id}>
                     {/* rank numbers don't mean much past page 1 of an
                         arbitrary genre browse, so grid mode never shows them */}
@@ -214,7 +202,13 @@ function MediaRow({
               </div>
             ))}
 
-            <div ref={sentinelRef} className="flex-none w-1 h-full" />
+            {hasMore && (
+              <AutoSentinel
+                key={media.length}
+                onIntersect={onLoadMore}
+                className="flex-none w-1 h-full"
+              />
+            )}
           </div>
 
           {/* Right arrow */}

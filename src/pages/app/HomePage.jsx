@@ -96,13 +96,12 @@ export default function HomePage() {
 
       <MediaRow
         heading={`Because you love ${getGenreNames(topMovieGenreId ? [topMovieGenreId] : [], 'movie')} genre` }
-        data={genreQuery.data}
+        data={genreQuery.items}
         mediaType="movie"
         isLoading={isLoadingStats || genreQuery.isLoading}
         isError={genreQuery.isError}
-        fetchNextPage={genreQuery.fetchNextPage}
-        hasNextPage={genreQuery.hasNextPage}
-        isFetchingNextPage={genreQuery.isFetchingNextPage}
+        onLoadMore={genreQuery.fetchMore}
+        hasMore={genreQuery.phase === 'auto'}
         showInfo={true}
         rank={false}
       />

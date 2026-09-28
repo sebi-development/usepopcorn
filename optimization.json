@@ -118,11 +118,11 @@
       "category": "bundle",
       "priority": 9,
       "severity": "high",
-      "status": "pending",
+      "status": "done",
       "file": "src/App.jsx",
       "lines": [7, 16],
       "problem": "All 10 page components are statically imported. The entire app ships as one JS bundle — auth pages, settings, detail page, etc. loaded upfront even if user never visits them.",
-      "fix": "Use React.lazy() + Suspense for route-level components. Wrap routes with appropriate skeleton fallbacks.",
+      "fix": "React.lazy() + Suspense now wrap every route-tier page in App.jsx (BrowsePage, DetailPage, ProfilePage, CommunityPage, ProfileStatsPage, ForgotPasswordPage, ResetPasswordPage), confirmed by the per-page chunks in the production build output. Suspense fallbacks are currently `null` — worth a real skeleton before launch, but the splitting itself is done.",
       "effort_minutes": 20
     },
     {
@@ -341,21 +341,6 @@
       "effort_minutes": 15
     },
     {
-      "id": "OPT-025",
-      "title": "No list virtualization for infinite scroll",
-      "category": "bundle",
-      "priority": 25,
-      "severity": "medium",
-      "status": "pending",
-      "files": [
-        "src/components/MediaRow.jsx",
-        "src/pages/app/CommunityPage.jsx"
-      ],
-      "problem": "Infinite scroll lists render all accumulated cards in the DOM. As pagination grows, DOM node count and memory increase linearly.",
-      "fix": "Implement virtualization with @tanstack/react-virtual when items exceed ~20.",
-      "effort_minutes": 30
-    },
-    {
       "id": "OPT-026",
       "title": "Case-sensitive import path bug — CommunityPage build failure on Linux",
       "category": "runtime-bug",
@@ -485,6 +470,21 @@
       "problem": "useCategoryMedia('movies', ...) ran immediately with the placeholder 'popular' id because topMovieGenreId is null until useProfileStats resolves, then refetched /discover/movie for the real top genre. The first request was thrown away, and the row briefly showed popular movies under the heading 'Because you love '.",
       "fix": "Pass { enabled: !isLoadingStats } so the row waits for stats, and keep its skeleton up with isLoading={isLoadingStats || genreQuery.isLoading}. Gating on isLoading rather than !stats keeps the popular fallback if the stats query errors.",
       "effort_minutes": 5
+    },
+    {
+      "id": "OPT-035",
+      "title": "No pagination on friend activity data — two unbounded RPC calls",
+      "category": "network",
+      "priority": 35,
+      "severity": "medium",
+      "status": "done",
+      "files": [
+        { "file": "src/features/social/hooks/useFriendsRatings.js", "rpc": "get_friends_ratings", "surface": "FriendActivityTab grid on DetailPage" },
+        { "file": "src/features/social/hooks/useFeed.js", "rpc": "get_user_feed", "surface": "Community feed" }
+      ],
+      "problem": "Both hooks are plain useQuery calls that fetch the full RPC result with no LIMIT/offset or cursor. FriendActivityTab renders every friend who rated a title in one grid; the Community feed renders every feed row. Neither is bounded, so both grow unboundedly as follow counts and rating history grow, and the fix should follow the pagination pattern already established for Browse (useInfiniteQuery + a page-size cap, see MAX_ROW_PAGES in useCategoryMedia.js) rather than being solved twice, differently.",
+      "fix": "Added one shared pagination system: src/utils/pagination.js (fromTmdb / fromCursorRpc / fromRange adapters, PAGE_SIZE / AUTO_PAGES / MAX_PAGES), usePagedList (capped infinite list with an auto -> manual -> capped phase) and usePagedGrid (numbered pages with prefetch), plus LoadMoreFooter. get_user_feed and get_friends_ratings now take p_limit + a (created_at, id) keyset cursor (p_limit clamped to 50 server-side; friends also return total_count), migration in supabase/migrations/20260928000000_paginate_feed_and_friends_ratings.sql, old signatures dropped. The feed loads 20 per page, 3 pages on scroll then a Load more button, hard cap 5 pages; the friend grid loads 12 per page by button only, cap 5 pages. Browse rows/grids and recommendation grids were migrated onto the same hooks, and the profile Recently rated row gained a View all numbered grid for full history. Removed the duplicated Browse/recommendation paging code and the unused useGetUserRatings hook. Note: get_user_feed already had LIMIT 50 (the original problem statement overstated it as unbounded); only get_friends_ratings was truly unbounded.",
+      "effort_minutes": 60
     }
   ]
 }

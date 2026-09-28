@@ -60,7 +60,13 @@ function ProfilePage() {
 
       <Watchlist watchlist={watchlist} isLoading={isWatchlistLoading} showInfo={false} />
       <Favorites favorites={favorites} isLoading={isFavoritesLoading} showInfo={false} />
-      <RecentlyRated recentlyRated={recentRatings} isLoading={isLoadingRatings} showInfo={false} />
+      <RecentlyRated
+        userId={targetUserId}
+        recentlyRated={recentRatings}
+        ratingsCount={ratingsCount}
+        isLoading={isLoadingRatings}
+        showInfo={false}
+      />
 
       {isOwnProfile && isModalOpen && (
         <Suspense fallback={null}>

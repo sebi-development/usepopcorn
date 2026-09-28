@@ -69,7 +69,10 @@ function MediaCard({
   return (
     <div
       onClick={() => navigate(`/browse/${id}`, { state: { type } })}
-      className="group/card relative overflow-hidden rounded-card cursor-pointer aspect-2/3 hover:scale-105 transition-transform duration-300 hover:z-10"
+      // content-visibility lets the browser skip layout/paint for cards scrolled
+      // out of view in long rows. Fixed width + aspect-2/3 give it a known size
+      // to reserve, so scrolling doesn't shift.
+      className="group/card relative overflow-hidden rounded-card cursor-pointer aspect-2/3 hover:scale-105 transition-transform duration-300 hover:z-10 [content-visibility:auto]"
     >
       <MoviePoster
         src={getTmdbImageUrl(posterPath, 'w342')}
