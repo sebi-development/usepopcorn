@@ -1,4 +1,5 @@
-import { memo, useState } from "react"
+import { memo, useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { HiOutlineFilm, HiOutlineTv, HiOutlineTag, HiChevronRight, HiChevronDown } from "react-icons/hi2"
 
 import { HOME_ITEM, MOVIE_CATEGORIES, SERIES_CATEGORIES } from "@/features/browse/constants/categories"
@@ -12,19 +13,37 @@ const TV_GENRE_ITEMS = Object.entries(TV_GENRES)
   .map(([tmdbId, label]) => ({ id: `genre-${tmdbId}`, tmdbId: Number(tmdbId), label }))
   .sort((a, b) => a.label.localeCompare(b.label))
 
+// Icon of the selected category, shown on the mobile trigger
+function getActiveIcon({ section, categoryId }) {
+  if (categoryId === "home") return HOME_ITEM.icon
+  if (categoryId.startsWith("genre-")) return HiOutlineTag
+  const list = section === "series" ? SERIES_CATEGORIES : MOVIE_CATEGORIES
+  return list.find((c) => c.id === categoryId)?.icon ?? (section === "series" ? HiOutlineTv : HiOutlineFilm)
+}
+
 // `active` is now { section: 'movies' | 'series', categoryId: string } —
 // bare category ids collide across sections (both have 'trending'), so the
 // active state has to carry which section it belongs to.
 //
-// Below md the rail is an in-flow dropdown opened by a pill (touch has no hover);
-// from md up it is the fixed, hover-expanding rail.
+// md+: the fixed, hover-expanding rail. Below md there is no hover, so a compact
+// trigger opens the same rail (icons + labels) as a floating panel over a dimmed page.
 const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect, onExpandChange }) {
   const [expanded, setExpandedState] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [movieGenresOpen, setMovieGenresOpen] = useState(false)
   const [seriesGenresOpen, setSeriesGenresOpen] = useState(false)
+  const panelRef = useRef(null)
 
   const showLabels = expanded || mobileOpen
+  const ActiveIcon = getActiveIcon(active)
+
+  useEffect(() => {
+    if (!mobileOpen) return
+    panelRef.current?.focus()
+    const onKeyDown = (e) => { if (e.key === "Escape") setMobileOpen(false) }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [mobileOpen])
 
   function setExpanded(value) {
     setExpandedState(value)
@@ -140,21 +159,32 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
     )
   }
 
+  function renderItems() {
+    return (
+      <>
+        {renderItem({ ...HOME_ITEM, section: "home" })}
+        {renderSection("movies", MOVIE_CATEGORIES, MOVIE_GENRE_ITEMS, "Movies", HiOutlineFilm, movieGenresOpen, setMovieGenresOpen)}
+        {renderSection("series", SERIES_CATEGORIES, TV_GENRE_ITEMS, "Series", HiOutlineTv, seriesGenresOpen, setSeriesGenresOpen)}
+      </>
+    )
+  }
+
   return (
-    <div className="flex flex-col gap-2 md:contents">
+    <>
+      {/* Mobile trigger: icon + current category, in flow (scrolls away with the page) */}
       <button
         type="button"
-        onClick={() => setMobileOpen((v) => !v)}
+        onClick={() => setMobileOpen(true)}
+        aria-haspopup="dialog"
         aria-expanded={mobileOpen}
-        className="md:hidden glass-panel flex items-center justify-between w-full h-12 px-4 text-sm text-text cursor-pointer"
+        className="md:hidden self-start max-w-full glass-panel flex items-center gap-2 h-11 px-3 text-sm text-text cursor-pointer"
       >
+        <ActiveIcon size={18} className="shrink-0 text-primary-light" />
         <span className="truncate">{activeLabel}</span>
-        <HiChevronDown
-          size={16}
-          className={`shrink-0 transition-transform duration-200 ${mobileOpen ? "rotate-180" : ""}`}
-        />
+        <HiChevronDown size={16} className="shrink-0 text-text-muted" />
       </button>
 
+      {/* Desktop rail — hidden below md */}
       <div
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
@@ -162,19 +192,47 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
         onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setExpanded(false) }}
         className={`
           glass-panel shadow-xl
-          ${mobileOpen ? "flex" : "hidden"} md:flex flex-col gap-1 py-4 px-2
-          w-full max-h-[60dvh]
-          md:fixed md:left-5 md:top-1/2 md:-translate-y-1/2 md:z-50 md:max-h-[calc(100dvh-4rem)]
+          hidden md:flex
+          fixed left-5 top-1/2 -translate-y-1/2 z-50
+          flex-col gap-1 py-4 px-2
           overflow-x-hidden overflow-y-auto scrollbar-hide
-          md:transition-[width] md:duration-300 ease-out
-          ${expanded ? "md:w-56" : "md:w-12"}
+          transition-[width] duration-300 ease-out
+          ${expanded ? "w-56" : "w-12"}
         `}
+        style={{ maxHeight: "calc(100vh - 4rem)" }}
       >
-        {renderItem({ ...HOME_ITEM, section: "home" })}
-        {renderSection("movies", MOVIE_CATEGORIES, MOVIE_GENRE_ITEMS, "Movies", HiOutlineFilm, movieGenresOpen, setMovieGenresOpen)}
-        {renderSection("series", SERIES_CATEGORIES, TV_GENRE_ITEMS, "Series", HiOutlineTv, seriesGenresOpen, setSeriesGenresOpen)}
+        {renderItems()}
       </div>
-    </div>
+
+      {/* Mobile overlay: the same rail, expanded, floating over a dimmed page. Portalled
+          to body so it also dims the navbar. touch-none stops the page scrolling behind it. */}
+      {mobileOpen && createPortal(
+        <>
+          <div
+            onClick={() => setMobileOpen(false)}
+            className="md:hidden fixed inset-0 z-50 bg-black/60 touch-none animate-[overlay-fade_200ms_ease-out_both]"
+          />
+          <div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Browse categories"
+            tabIndex={-1}
+            className="
+              md:hidden glass-panel shadow-xl outline-none
+              fixed left-3 top-1/2 -translate-y-1/2 z-50 w-56
+              max-h-[calc(100dvh-2rem)]
+              flex flex-col gap-1 py-4 px-2
+              overflow-x-hidden overflow-y-auto overscroll-contain scrollbar-hide
+              animate-[overlay-in_250ms_ease-out_both]
+            "
+          >
+            {renderItems()}
+          </div>
+        </>,
+        document.body
+      )}
+    </>
   )
 })
 
