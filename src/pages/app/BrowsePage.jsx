@@ -46,6 +46,8 @@ export default function BrowsePage() {
     [section, categoryId]
   )
 
+  const activeLabel = categoryId === 'home' ? 'Home' : getCategoryTitle(section, categoryId)
+
   const { data: favorites } = useInteractions('favorite')
   const favoriteSet = useMemo(
     () => new Set((favorites || []).map(f => Number(f.tmdb_id || f.id)).filter(Boolean)),
@@ -60,8 +62,8 @@ export default function BrowsePage() {
   )
 
   return (
-    <main className='flex flex-col gap-10 pb-12'>
-      <CategoryRail active={active} onSelect={handleSelect} />
+    <main className='flex flex-col gap-6 md:gap-10 pb-12'>
+      <CategoryRail active={active} activeLabel={activeLabel} onSelect={handleSelect} />
       {active.categoryId === 'home' ? (
         <HomePage />
       ) : active.categoryId === 'upcoming' ? (

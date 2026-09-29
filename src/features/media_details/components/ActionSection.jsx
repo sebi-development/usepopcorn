@@ -7,7 +7,7 @@ import Score from "@/features/media_details/components/Score"
 import FavoriteButton from "@/features/interactions/components/FavoritesButton"
 import ShareButton from "@/features/media_details/components/ShareButton"
 
-const dockBtnClass = "flex items-center justify-center w-10 h-10 rounded-xl bg-surface-500/50 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200 cursor-pointer"
+const dockBtnClass = "flex items-center justify-center w-11 h-11 md:w-10 md:h-10 rounded-xl bg-surface-500/50 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200 cursor-pointer"
 
 export default memo(function ActionSection({ media, userRating, averageScore, isWatchlisted, isFavorited, onRate, onDelete }) {
   const [isRatingMode, setIsRatingMode] = useState(false)
@@ -16,7 +16,7 @@ export default memo(function ActionSection({ media, userRating, averageScore, is
   const ratingPanelRef = useOutsideClick(() => setIsRatingMode(false))
 
   return (
-    <div className="[grid-area:rating] flex flex-col items-center justify-center py-6 gap-8 w-full">
+    <div className="[grid-area:rating] flex flex-col items-center justify-center py-2 md:py-6 gap-4 md:gap-8 w-full">
 
       <Score value={averageScore != null ? Math.round(averageScore * 10) : null} />
 
@@ -37,10 +37,10 @@ export default memo(function ActionSection({ media, userRating, averageScore, is
         </button>
 
         {isRatingMode && (
-          <div className="absolute animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute max-w-full animate-in fade-in zoom-in-95 duration-200">
             <div
               ref={ratingPanelRef}
-              className="flex items-center gap-4 bg-surface-900/50 border border-white/5 backdrop-blur-md shadow-inner px-6 py-3 rounded-xl"
+              className="flex flex-wrap items-center justify-center gap-2 md:gap-4 bg-surface-900/50 border border-white/5 backdrop-blur-md shadow-inner px-2 md:px-6 py-3 rounded-xl"
             >
               <StarRating
                 maxStars={10}
@@ -54,7 +54,7 @@ export default memo(function ActionSection({ media, userRating, averageScore, is
 
               {hasRated && (
                 <>
-                  <div className="w-[1px] h-6 bg-white/10" />
+                  <div className="hidden md:block w-[1px] h-6 bg-white/10" />
                   <DeleteRating
                     onClick={() => {
                       onDelete()

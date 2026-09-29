@@ -39,7 +39,7 @@ function UserMenu() {
       {/* Trigger */}
       <button
         onClick={toggleMenu}
-        className="flex items-center justify-center w-9 h-9 rounded-full bg-primary-light text-white cursor-pointer transition-colors hover:bg-primary shrink-0 overflow-hidden"
+        className="flex items-center justify-center w-11 h-11 md:w-9 md:h-9 rounded-full bg-primary-light text-white cursor-pointer transition-colors hover:bg-primary shrink-0 overflow-hidden"
       >
         {profileData?.avatar_url ? (
           <img

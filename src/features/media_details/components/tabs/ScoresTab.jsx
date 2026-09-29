@@ -7,16 +7,19 @@ import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
 import useDelayedLoading from "@/hooks/useDelayedLoading"
 
+// Below sm each platform is one compact row (label left, score right ≈ 56px) instead of a 140px tile
+const SCORE_CARD_CLASS = "flex flex-row-reverse items-center justify-between p-4 sm:flex-col sm:p-6 sm:min-h-35"
+
 function CriticScoresSkeleton() {
   return (
     <BentoGrid>
       {[1, 2, 3].map((i) => (
-        <BentoGrid.Card key={i} className="flex flex-col items-center justify-between p-6 min-h-35">
+        <BentoGrid.Card key={i} className={SCORE_CARD_CLASS}>
           <div className="flex items-center gap-2.5">
             <SkeletonBox className="w-6 h-6 rounded-md shrink-0" />
             <SkeletonBox className="w-20 h-4 rounded-md" />
           </div>
-          <SkeletonBox className="w-24 h-10 rounded-xl mt-5" />
+          <SkeletonBox className="w-24 h-10 rounded-xl sm:mt-5" />
         </BentoGrid.Card>
       ))}
     </BentoGrid>
@@ -76,15 +79,15 @@ function CriticScoresTab({ imdbId, prefetchedQuery }) {
         {platforms.map(({ id, name, icon: Icon, score, iconColor }) => (
           <BentoGrid.Card
             key={id}
-            className="flex flex-col items-center justify-between p-6 min-h-35"
+            className={SCORE_CARD_CLASS}
           >
-            <div className="flex items-center justify-center w-full mb-4">
+            <div className="flex items-center justify-center sm:w-full sm:mb-4">
               <div className="px-5 py-2 rounded-2xl bg-surface-900/60 border border-white/10 text-text font-bold text-base tracking-tight shadow-inner transition-colors hover:border-white/20">
                 {score}
               </div>
             </div>
 
-            <div className="flex items-center gap-2.5 text-text-muted mt-auto w-full justify-center">
+            <div className="flex items-center gap-2.5 text-text-muted sm:mt-auto sm:w-full sm:justify-center">
               <Icon className={`w-5 h-5 ${iconColor} shrink-0`} />
               <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
                 {name}

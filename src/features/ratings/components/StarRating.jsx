@@ -13,7 +13,7 @@ export default function StarRating({ maxStars = 10, rating = 0, onRate, size = 2
   return (
     <div className="flex flex-col items-center gap-3">
       <div
-        className="flex items-center gap-1"
+        className="flex items-center gap-0 sm:gap-1"
         onMouseLeave={() => setHoverRating(0)}
         role="radiogroup"
         aria-label="Rate this movie"
@@ -33,7 +33,7 @@ export default function StarRating({ maxStars = 10, rating = 0, onRate, size = 2
               onMouseEnter={() => setHoverRating(starValue)}
               onFocus={() => setHoverRating(starValue)}
               onBlur={() => setHoverRating(0)}
-              className="relative z-10 p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-light rounded-full transition-transform duration-200 ease-out hover:scale-125 active:scale-75"
+              className="relative z-10 p-[3px] sm:p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-light rounded-full transition-transform duration-200 ease-out hover:scale-125 active:scale-75"
             >
               {/* The CSS Ambient Glow */}
               {isCurrentHover && (

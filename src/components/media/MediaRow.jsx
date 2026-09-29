@@ -8,12 +8,17 @@ import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
 import Chip from "@/components/ui/Chip"
 
+// Below md the swipe row bleeds to the screen edge (-mx-4 cancels main's px-4) so a
+// cut-off card hints at scrolling; the page itself never scrolls sideways.
+const SCROLLER_CLASS = "flex gap-3 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-6 pb-2 scrollbar-hide"
+const CARD_SLOT_CLASS = "flex-none w-32 sm:w-40 md:w-44"
+
 function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
   return (
     <button
       type="button"
       onClick={onToggle}
-      className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text hover:bg-surface-500 px-3 py-1.5 rounded-md transition-colors duration-200 cursor-pointer"
+      className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text hover:bg-surface-500 px-3 py-2.5 md:py-1.5 rounded-md transition-colors duration-200 cursor-pointer"
     >
       {isLoadingFirstPage ? (
         <span className="w-3.5 h-3.5 border-2 border-text-muted/40 border-t-text-muted rounded-full animate-spin" />
@@ -44,7 +49,7 @@ function PaginationControls({ page, totalPages, onPageChange, isPending, contain
         type="button"
         onClick={() => handlePageClick(page - 1)}
         disabled={page <= 1}
-        className="w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex items-center justify-center text-text-muted hover:scale-110 hover:bg-surface-800 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200"
+        className="w-11 h-11 md:w-8 md:h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex items-center justify-center text-text-muted hover:scale-110 hover:bg-surface-800 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200"
       >
         <FiChevronLeft size={16} />
       </button>
@@ -57,7 +62,7 @@ function PaginationControls({ page, totalPages, onPageChange, isPending, contain
         type="button"
         onClick={() => handlePageClick(page + 1)}
         disabled={page >= totalPages}
-        className="w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex items-center justify-center text-text-muted hover:scale-110 hover:bg-surface-800 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200"
+        className="w-11 h-11 md:w-8 md:h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex items-center justify-center text-text-muted hover:scale-110 hover:bg-surface-800 disabled:opacity-30 disabled:pointer-events-none transition-all duration-200"
       >
         <FiChevronRight size={16} />
       </button>
@@ -125,10 +130,10 @@ function MediaRow({
 
   if (isLoading) return (
     <div>
-      <h2 className="text-text font-semibold text-xl mb-4 px-6">{heading}</h2>
-      <div className="flex gap-3 overflow-x-auto px-6 pb-2 scrollbar-hide">
+      <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>
+      <div className={SCROLLER_CLASS}>
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="flex-none w-36 sm:w-40 md:w-44">
+          <div key={i} className={CARD_SLOT_CLASS}>
             <SkeletonBox className="w-full aspect-2/3 rounded-card" />
           </div>
         ))}
@@ -138,7 +143,7 @@ function MediaRow({
 
   if (isError) return (
     <div>
-      <h2 className="text-text font-semibold text-xl mb-4 px-6">{heading}</h2>
+      <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>
       <AlertBanner variant="danger" message="Couldn't load this. Please try again." />
     </div>
   )
@@ -146,7 +151,7 @@ function MediaRow({
 
   return (
     <div ref={containerRef}>
-      <div className="flex items-center justify-between mb-4 px-6">
+      <div className="flex items-center justify-between mb-4 md:px-6">
         <h2 className="text-text font-semibold text-xl">{heading}</h2>
         {expandable && (
           <ExpandToggle
@@ -158,7 +163,7 @@ function MediaRow({
       </div>
 
       {showGrid ? (
-        <div className="px-6">
+        <div className="md:px-6">
           {gridError ? (
             <AlertBanner variant="danger" message="Couldn't load this. Please try again." />
           ) : (
@@ -195,9 +200,9 @@ function MediaRow({
           )}
 
           {/* Scrollable row */}
-          <div ref={scrollRef} className="flex gap-3 overflow-x-auto scroll-smooth px-6 pb-2 scrollbar-hide">
+          <div ref={scrollRef} className={`${SCROLLER_CLASS} scroll-smooth`}>
             {media.map((item, index) => (
-              <div key={item.tmdb_id || item.id} className="flex-none w-36 sm:w-40 md:w-44">
+              <div key={item.tmdb_id || item.id} className={CARD_SLOT_CLASS}>
                 {renderCard(item, rank ? index + 1 : undefined)}
               </div>
             ))}

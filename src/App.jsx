@@ -30,7 +30,7 @@ const CommunityPage = lazy(() => import("@/pages/app/CommunityPage"))
 
 
 const routeFallback = (
-  <div className="flex items-center justify-center min-h-[50vh]">
+  <div className="flex items-center justify-center min-h-[50dvh]">
     <LuLoaderCircle className="animate-spin text-primary" size={28} />
   </div>
 )
