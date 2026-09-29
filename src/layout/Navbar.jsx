@@ -20,17 +20,12 @@ const Navbar = memo(function Navbar({ isLoggedIn }) {
       glass-panel
       relative md:sticky md:top-4 z-50
       w-[calc(100%-2rem)] md:w-[90%] max-w-5xl mx-auto mt-3 md:mt-0
-      px-3 py-2 md:px-6 md:py-3
+      px-4 py-2 md:px-6 md:py-3
       flex items-center justify-between gap-3 md:gap-4
     ">
-      <Logo redirectTo={isLoggedIn ? '/browse' : '/'} />
-      {isLoggedIn ? (
-        // md:contents keeps the desktop three-way spread; on mobile the two group right
-        <div className="flex items-center gap-2 md:contents">
-          <Search />
-          <UserMenu />
-        </div>
-      ) : <GuestActions />}
+      <Logo className="shrink-0" redirectTo={isLoggedIn ? '/browse' : '/'} />
+      {isLoggedIn && <Search />}
+      {isLoggedIn ? <UserMenu /> : <GuestActions />}
     </nav>
   )
 })
