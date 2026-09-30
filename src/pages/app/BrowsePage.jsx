@@ -1,20 +1,23 @@
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
 import CategoryRail from '@/features/browse/components/CategoryRail'
 import CategoryMediaRow from '@/features/browse/components/CategoryMediaRow'
 import useInteractions from '@/features/interactions/hooks/useInteractions'
 import { MOVIE_GENRES, TV_GENRES } from '@/utils/genres'
+import InspirationPanel from '@/features/browse/components/InspirationPanel'
+import { INSPIRE_ITEM } from '@/features/browse/constants/categories'
+import { SECTION_TO_TYPE } from '@/features/browse/hooks/useCategoryMedia'
 import HomePage from '@/pages/app/HomePage'
 
 const CATEGORY_TITLES = {
   movies: {
     trending: 'Trending movies', popular: 'Popular movies', top_rated: 'Best rated movies',
-    upcoming: 'Upcoming movies', now_playing: 'In theatres',
+    upcoming: 'Upcoming movies', now_playing: 'In theatres', inspire: 'Movie inspiration',
   },
   series: {
     trending: 'Trending series', popular: 'Popular series', top_rated: 'Best rated series',
-    on_the_air: 'On the air',
+    on_the_air: 'On the air', inspire: 'Series inspiration',
   },
 }
 
@@ -54,6 +57,15 @@ export default function BrowsePage() {
     [favorites]
   )
 
+  // Titles picked in the rail's Inspire searches, one per media type ({ movie, tv }), so they
+  // survive switching categories and picking a series doesn't discard the movie
+  const [inspireSeeds, setInspireSeeds] = useState({})
+  const handleInspireSelect = useCallback(
+    (seed) => setInspireSeeds((prev) => ({ ...prev, [seed.type]: seed })),
+    []
+  )
+  const mediaType = SECTION_TO_TYPE[section] ?? 'movie'
+
   const handleSelect = useCallback(
     (section, categoryId) => {
       setSearchParams({ type: section, category: categoryId }, { replace: true })
@@ -63,9 +75,11 @@ export default function BrowsePage() {
 
   return (
     <main className='flex flex-col gap-6 md:gap-10 pb-12'>
-      <CategoryRail active={active} activeLabel={activeLabel} onSelect={handleSelect} />
+      <CategoryRail active={active} activeLabel={activeLabel} onSelect={handleSelect} onInspireSelect={handleInspireSelect} />
       {active.categoryId === 'home' ? (
         <HomePage />
+      ) : active.categoryId === INSPIRE_ITEM.id ? (
+        <InspirationPanel type={mediaType} seed={inspireSeeds[mediaType]} />
       ) : active.categoryId === 'upcoming' ? (
         <>
           <CategoryMediaRow section="movies" categoryId="upcoming" title="Upcoming this month" favoriteSet={favoriteSet} />

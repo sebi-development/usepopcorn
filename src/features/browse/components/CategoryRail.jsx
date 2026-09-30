@@ -1,8 +1,10 @@
-import { memo, useEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { HiOutlineFilm, HiOutlineTv, HiOutlineTag, HiChevronRight, HiChevronDown } from "react-icons/hi2"
 
-import { HOME_ITEM, MOVIE_CATEGORIES, SERIES_CATEGORIES } from "@/features/browse/constants/categories"
+import InspireSearch from "@/features/browse/components/InspireSearch"
+import { SECTION_TO_TYPE } from "@/features/browse/hooks/useCategoryMedia"
+import { HOME_ITEM, INSPIRE_ITEM, MOVIE_CATEGORIES, SERIES_CATEGORIES } from "@/features/browse/constants/categories"
 import { MOVIE_GENRES, TV_GENRES } from "@/utils/genres"
 
 const MOVIE_GENRE_ITEMS = Object.entries(MOVIE_GENRES)
@@ -16,6 +18,7 @@ const TV_GENRE_ITEMS = Object.entries(TV_GENRES)
 // Icon of the selected category, shown on the mobile trigger
 function getActiveIcon({ section, categoryId }) {
   if (categoryId === "home") return HOME_ITEM.icon
+  if (categoryId === INSPIRE_ITEM.id) return INSPIRE_ITEM.icon
   if (categoryId.startsWith("genre-")) return HiOutlineTag
   const list = section === "series" ? SERIES_CATEGORIES : MOVIE_CATEGORIES
   return list.find((c) => c.id === categoryId)?.icon ?? (section === "series" ? HiOutlineTv : HiOutlineFilm)
@@ -27,36 +30,73 @@ function getActiveIcon({ section, categoryId }) {
 //
 // md+: the fixed, hover-expanding rail. Below md there is no hover, so a compact
 // trigger opens the same rail (icons + labels) as a floating panel over a dimmed page.
-const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect, onExpandChange }) {
+//
+// Each section has an Inspire item: an accordion like Genres holding a title search for that
+// section's media type (`InspireSearch`). `onInspireSelect(seed)` receives the picked title.
+// It is a one-shot tool: the accordion folds (and the search clears) after a pick and whenever
+// the rail closes, so the next visit starts from the plain rail again.
+const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect, onInspireSelect, onExpandChange }) {
   const [expanded, setExpandedState] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [movieGenresOpen, setMovieGenresOpen] = useState(false)
   const [seriesGenresOpen, setSeriesGenresOpen] = useState(false)
+  const [inspireOpen, setInspireOpen] = useState(false)
   const panelRef = useRef(null)
 
   const showLabels = expanded || mobileOpen
   const ActiveIcon = getActiveIcon(active)
+  // Also follows the URL: leaving an Inspire page (e.g. browser back) folds its search away
+  const onInspirePage = active.categoryId === INSPIRE_ITEM.id
+
+  const closeMobile = useCallback(() => {
+    setMobileOpen(false)
+    setInspireOpen(false)
+  }, [])
 
   useEffect(() => {
     if (!mobileOpen) return
     panelRef.current?.focus()
-    const onKeyDown = (e) => { if (e.key === "Escape") setMobileOpen(false) }
+    const onKeyDown = (e) => { if (e.key === "Escape") closeMobile() }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [mobileOpen])
+  }, [mobileOpen, closeMobile])
 
   function setExpanded(value) {
     setExpandedState(value)
+    if (!value) setInspireOpen(false)
     onExpandChange?.(value)
   }
 
   function select(section, categoryId) {
     onSelect(section, categoryId)
-    setMobileOpen(false)
+    closeMobile()
   }
 
+  // Typing in an Inspire search keeps the rail open even when the pointer wanders off;
+  // it folds once focus leaves (see onBlur below)
+  function handleRailLeave(e) {
+    const el = document.activeElement
+    if (el?.tagName === "INPUT" && e.currentTarget.contains(el)) return
+    setExpanded(false)
+  }
+
+  // Inspire opens its search instead of closing the mobile overlay, so the user can type right away
+  function toggleInspire(section) {
+    if (onInspirePage && active.section === section) {
+      setInspireOpen((v) => !v)
+      return
+    }
+    onSelect(section, INSPIRE_ITEM.id)
+    setInspireOpen(true)
+  }
+
+  const pickSeed = useCallback((seed) => {
+    onInspireSelect(seed)
+    closeMobile()
+  }, [onInspireSelect, closeMobile])
+
   function renderItem({ id, label, icon: Icon, section, hasChevron, isOpen, onToggle }) {
-    const isActive = !hasChevron && active.section === section && active.categoryId === id
+    const isActive = active.section === section && active.categoryId === id
 
     return (
       <button
@@ -107,34 +147,58 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
     )
   }
 
-  function renderGenreList(genreItems, section, isOpen) {
+  // Height-animated fold shared by the Genres lists and the Inspire search. `inert` also keeps
+  // the folded-away controls out of the tab order.
+  function renderAccordion(isOpen, children) {
+    const isVisible = showLabels && isOpen
     return (
-      <div style={{ display: "grid", gridTemplateRows: showLabels && isOpen ? "1fr" : "0fr", transition: "grid-template-rows 300ms ease" }}>
-        <div className="overflow-hidden">
-          <div className="ml-4 mt-1 pl-3 border-l border-surface-100 flex flex-col gap-0.5">
-            {genreItems.map((genre) => {
-              const genreActive = active.section === section && active.categoryId === genre.id
-              return (
-                <button
-                  key={genre.id}
-                  type="button"
-                  onClick={() => select(section, genre.id)}
-                  aria-current={genreActive ? "page" : undefined}
-                  className={`
-                    text-left text-sm h-10 md:h-7 px-2 rounded-md whitespace-nowrap
-                    transition-colors duration-200 ease-out
-                    ${genreActive
-                      ? "bg-primary/15 text-primary-light font-medium"
-                      : "text-text-muted hover:bg-surface-300/60 hover:text-text"}
-                  `}
-                >
-                  {genre.label}
-                </button>
-              )
-            })}
-          </div>
+      <div style={{ display: "grid", gridTemplateRows: isVisible ? "1fr" : "0fr", transition: "grid-template-rows 300ms ease" }}>
+        <div className="overflow-hidden" inert={!isVisible}>
+          {children}
         </div>
       </div>
+    )
+  }
+
+  function renderGenreList(genreItems, section, isOpen) {
+    return renderAccordion(isOpen, (
+      <div className="ml-4 mt-1 pl-3 border-l border-surface-100 flex flex-col gap-0.5">
+        {genreItems.map((genre) => {
+          const genreActive = active.section === section && active.categoryId === genre.id
+          return (
+            <button
+              key={genre.id}
+              type="button"
+              onClick={() => select(section, genre.id)}
+              aria-current={genreActive ? "page" : undefined}
+              className={`
+                text-left text-sm h-10 md:h-7 px-2 rounded-md whitespace-nowrap
+                transition-colors duration-200 ease-out
+                ${genreActive
+                  ? "bg-primary/15 text-primary-light font-medium"
+                  : "text-text-muted hover:bg-surface-300/60 hover:text-text"}
+              `}
+            >
+              {genre.label}
+            </button>
+          )
+        })}
+      </div>
+    ))
+  }
+
+  function renderInspire(section) {
+    const isVisible = inspireOpen && onInspirePage && active.section === section
+    return (
+      <>
+        {renderItem({
+          ...INSPIRE_ITEM, section,
+          hasChevron: true, isOpen: isVisible, onToggle: () => toggleInspire(section),
+        })}
+        {renderAccordion(isVisible, (
+          <InspireSearch type={SECTION_TO_TYPE[section]} isOpen={isVisible} onSelect={pickSeed} />
+        ))}
+      </>
     )
   }
 
@@ -149,6 +213,7 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
           {sectionLabel}
         </div>
         {categories.map((cat) => renderItem({ ...cat, section: sectionKey }))}
+        {renderInspire(sectionKey)}
         {renderItem({
           id: "genres", label: "Genres", icon: HiOutlineTag,
           section: sectionKey, hasChevron: true,
@@ -187,14 +252,14 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
       {/* Desktop rail — hidden below md */}
       <div
         onMouseEnter={() => setExpanded(true)}
-        onMouseLeave={() => setExpanded(false)}
+        onMouseLeave={handleRailLeave}
         onFocus={() => setExpanded(true)}
         onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setExpanded(false) }}
         className={`
           glass-panel shadow-xl
           hidden md:flex
           fixed left-5 top-1/2 -translate-y-1/2 z-50
-          flex-col gap-1 py-4 px-2
+          flex-col gap-1 py-4 px-2 *:shrink-0
           overflow-x-hidden overflow-y-auto scrollbar-hide
           transition-[width] duration-300 ease-out
           ${expanded ? "w-56" : "w-12"}
@@ -209,7 +274,7 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
       {mobileOpen && createPortal(
         <>
           <div
-            onClick={() => setMobileOpen(false)}
+            onClick={closeMobile}
             className="md:hidden fixed inset-0 z-50 bg-black/60 touch-none animate-[overlay-fade_200ms_ease-out_both]"
           />
           <div
@@ -222,7 +287,7 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
               md:hidden glass-panel shadow-xl outline-none
               fixed left-3 top-1/2 -translate-y-1/2 z-50 w-56
               max-h-[calc(100dvh-2rem)]
-              flex flex-col gap-1 py-4 px-2
+              flex flex-col gap-1 py-4 px-2 *:shrink-0
               overflow-x-hidden overflow-y-auto overscroll-contain scrollbar-hide
               animate-[overlay-in_250ms_ease-out_both]
             "

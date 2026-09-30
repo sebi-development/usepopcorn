@@ -5,6 +5,7 @@ import {
   HiOutlineCalendar,
   HiOutlinePlay,
   HiOutlineSignal,
+  HiOutlineSparkles,
 } from "react-icons/hi2"
 import { IoTrendingUp } from "react-icons/io5";
 
@@ -12,6 +13,12 @@ export const HOME_ITEM = {
   id: "home",
   label: "Home",
   icon: HiOutlineHome,
+}
+
+export const INSPIRE_ITEM = {
+  id: "inspire",
+  label: "Inspire",
+  icon: HiOutlineSparkles,
 }
 
 export const MOVIE_CATEGORIES = [
