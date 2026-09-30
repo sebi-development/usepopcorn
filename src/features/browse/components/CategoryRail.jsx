@@ -2,6 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { HiOutlineFilm, HiOutlineTv, HiOutlineTag, HiChevronRight, HiChevronDown } from "react-icons/hi2"
 
+import { useScrollLock } from "@/hooks/useScrollLock"
 import InspireSearch from "@/features/browse/components/InspireSearch"
 import { SECTION_TO_TYPE } from "@/features/browse/hooks/useCategoryMedia"
 import { HOME_ITEM, INSPIRE_ITEM, MOVIE_CATEGORIES, SERIES_CATEGORIES } from "@/features/browse/constants/categories"
@@ -52,6 +53,9 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
     setMobileOpen(false)
     setInspireOpen(false)
   }, [])
+
+  // Freeze the page while the mobile panel is open so touch scrolling only moves the panel
+  useScrollLock(mobileOpen)
 
   useEffect(() => {
     if (!mobileOpen) return
@@ -270,7 +274,9 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
       </div>
 
       {/* Mobile overlay: the same rail, expanded, floating over a dimmed page. Portalled
-          to body so it also dims the navbar. touch-none stops the page scrolling behind it. */}
+          to body so it also dims the navbar. The page itself is scroll-locked while open (see
+          useScrollLock above); touch-none on the backdrop and overscroll-contain on the panel
+          keep gestures from leaking through. */}
       {mobileOpen && createPortal(
         <>
           <div
@@ -288,7 +294,7 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
               fixed left-3 top-1/2 -translate-y-1/2 z-50 w-56
               max-h-[calc(100dvh-2rem)]
               flex flex-col gap-1 py-4 px-2 *:shrink-0
-              overflow-x-hidden overflow-y-auto overscroll-contain scrollbar-hide
+              overflow-x-hidden overflow-y-auto overscroll-contain touch-pan-y scrollbar-hide
               animate-[overlay-in_250ms_ease-out_both]
             "
           >
