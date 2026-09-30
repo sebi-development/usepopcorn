@@ -8,9 +8,9 @@ function DetailCard({ media }) {
   const network = isTV ? media.networks?.[0]?.name : null;
 
   return (
-    <div className="[grid-area:info] flex flex-col gap-6">
+    <div className="[grid-area:info] flex flex-col gap-3 md:gap-6">
       {/* Title */}
-      <h1 className="text-4xl font-bold text-text leading-tight">
+      <h1 className="text-xl md:text-4xl font-bold text-text leading-tight break-words">
         {media.title}
       </h1>
 

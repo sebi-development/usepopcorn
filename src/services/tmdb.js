@@ -13,7 +13,7 @@ async function tmdbFetch(endpoint) {
 }
 
 export async function searchContent(query, type = 'movie') {
-  return tmdbFetch(`/search/${type}?query=${query}`)
+  return tmdbFetch(`/search/${type}?query=${encodeURIComponent(query)}`)
 }
 
 export async function getMediaDetails(id, type = 'movie') {

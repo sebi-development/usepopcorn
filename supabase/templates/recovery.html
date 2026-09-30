@@ -14,8 +14,14 @@
         <table role="presentation" width="480" cellpadding="0" cellspacing="0" border="0" bgcolor="#14171a" style="width:100%;max-width:480px;background-color:#14171a;border:1px solid #272c31;border-radius:14px;">
           <tr>
             <td align="center" style="padding:36px 32px 0;">
-              <img src="https://usepopcorn.sebik.me/email/logo.png" width="40" alt="usePopcorn" style="display:block;border:0;outline:none;height:auto;">
-              <div style="margin-top:10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:18px;font-weight:600;color:#dee2e6;">usePopcorn</div>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td valign="middle" style="padding-right:9px;">
+                    <img src="https://usepopcorn.sebik.me/email/logo.png" width="24" height="32" alt="" style="display:block;border:0;outline:none;">
+                  </td>
+                  <td valign="middle" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:22px;font-weight:600;letter-spacing:-0.02em;color:#dee2e6;">usePopcorn</td>
+                </tr>
+              </table>
             </td>
           </tr>
           <tr>
@@ -37,9 +43,15 @@
           </tr>
           <tr>
             <td style="padding:0 32px 32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.6;color:#adb5bd;text-align:center;">
-              <p style="margin:0 0 12px;">If the button doesn't work, copy and paste this link into your browser:</p>
-              <p style="margin:0 0 20px;word-break:break-all;"><a href="{{ .ConfirmationURL }}" style="color:#9775fa;text-decoration:underline;">{{ .ConfirmationURL }}</a></p>
-              <p style="margin:0;">If you didn't ask for this, you can safely ignore this email. Your password won't change. For your security, the link works once and expires soon.</p>
+              <p style="margin:0 0 10px;">Or copy and paste this link into your browser:</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#07090b" style="background-color:#07090b;border:1px solid #272c31;border-radius:10px;">
+                <tr>
+                  <td align="left" style="padding:12px 14px;font-family:SFMono-Regular,Menlo,Consolas,'Courier New',monospace;font-size:12px;line-height:1.5;word-break:break-all;">
+                    <a href="{{ .ConfirmationURL }}" style="color:#9775fa;text-decoration:none;">{{ .ConfirmationURL }}</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:20px 0 0;">If you didn't ask for this, you can safely ignore this email. Your password won't change. For your security, the link works once and expires soon.</p>
             </td>
           </tr>
         </table>

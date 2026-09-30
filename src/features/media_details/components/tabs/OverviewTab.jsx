@@ -70,10 +70,10 @@ export default function OverviewTab({ data }) {
             {activeInfoItems.map((item) => (
               <div
                 key={item.label}
-                className="grid grid-cols-[120px_1fr] py-3 border-b border-surface-100/30 last:border-0"
+                className="grid grid-cols-[6.5rem_minmax(0,1fr)] sm:grid-cols-[120px_minmax(0,1fr)] py-3 border-b border-surface-100/30 last:border-0"
               >
                 <span className="text-sm text-white/40">{item.label}</span>
-                <span className="text-sm text-text font-medium">{item.value}</span>
+                <span className="text-sm text-text font-medium break-words">{item.value}</span>
               </div>
             ))}
           </div>

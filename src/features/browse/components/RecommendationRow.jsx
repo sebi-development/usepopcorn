@@ -5,13 +5,16 @@ import useExpandableGrid from '@/hooks/useExpandableGrid'
 
 const PLACEHOLDER_HEADINGS = { movie: 'Recommended movies', tv: 'Recommended series' }
 
-function RecommendationRow({ seed, type, isLoadingSeed, expandable = true }) {
+// `heading` replaces the default "Because you loved…" copy and `emptyNote` is shown
+// when TMDB has no recommendations for the seed.
+function RecommendationRow({ seed, type, isLoadingSeed, expandable = true, heading: customHeading, emptyNote }) {
   const { data, isLoading, isError } = useRecommendations(seed?.pick, type)
 
   const { isExpanded, page, setPage, toggle } = useExpandableGrid()
   const grid = useRecommendationsGrid(seed?.pick, type, page, { enabled: expandable && isExpanded })
 
   const heading = useMemo(() => {
+    if (customHeading) return customHeading
     if (!seed) return PLACEHOLDER_HEADINGS[type]
     return (
       <>
@@ -21,9 +24,13 @@ function RecommendationRow({ seed, type, isLoadingSeed, expandable = true }) {
         )}
       </>
     )
-  }, [seed, type])
+  }, [customHeading, seed, type])
 
   if (!seed && !isLoadingSeed) return null
+
+  if (emptyNote && data?.length === 0) {
+    return <p className="text-sm text-text-muted md:px-6">{emptyNote}</p>
+  }
 
   return (
     <MediaRow

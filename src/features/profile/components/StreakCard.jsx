@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { Link } from "react-router"
 import { HiFire } from "react-icons/hi2"
 import Tooltip from "@/components/ui/Tooltip"
 import SkeletonBox from "@/components/ui/SkeletonBox"
@@ -59,7 +60,9 @@ export default function StreakCard({ data, extendedStreak, isSaturated, isLoadin
       </Chip>
 
       {recentWeeks.length > 0 && (
-        <div className="mt-auto flex w-full justify-center gap-0.5 sm:gap-1">
+        // With a mouse the dots sit above the card link so their hover tooltips work; on
+        // touch (no hover, 8px targets) they sit below it, so a tap anywhere opens the link
+        <div className="relative z-30 pointer-coarse:z-10 mt-auto flex w-full justify-center gap-0.5 sm:gap-1">
           {recentWeeks.map((week) => (
             <Tooltip
               key={week.weekStart}
@@ -70,6 +73,13 @@ export default function StreakCard({ data, extendedStreak, isSaturated, isLoadin
           ))}
         </div>
       )}
+
+      {/* Stretched link over the whole card, same pattern as BestRatedCard. Streak → stats; no streak yet → go rate something. */}
+      <Link
+        to={displayStreak > 0 ? '/profile/stats' : '/browse?type=movies&category=trending'}
+        aria-label={displayStreak > 0 ? 'View your statistics' : 'Start rating'}
+        className="absolute inset-0 z-20 rounded-[1.75rem] sm:rounded-4xl"
+      />
     </FeatureCard>
   )
 }

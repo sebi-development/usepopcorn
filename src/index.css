@@ -24,6 +24,8 @@ body {
   color: var(--color-text);
   background-color: var(--color-surface-900);
   padding: 0;
+  /* Safety net: `clip` (unlike `hidden`) doesn't create a scroll container, so sticky still works */
+  overflow-x: clip;
 }
 
 .scrollbar-hide {
@@ -208,12 +210,23 @@ body {
   /* ── Page Layouts ── */
   .media-detail-grid {
     display: grid;
-    grid-template-columns: min(300px, 30%) 1fr min(240px, 20%);
+    grid-template-columns: 6.5rem minmax(0, 1fr);
     grid-template-areas:
-      "poster info rating"
-      "about about about";
-    gap: 2rem;
+      "poster info"
+      "rating rating"
+      "about about";
+    gap: 1rem;
     align-items: start;
+  }
+
+  @media (min-width: 768px) {
+    .media-detail-grid {
+      grid-template-columns: min(300px, 30%) minmax(0, 1fr) min(240px, 20%);
+      grid-template-areas:
+        "poster info rating"
+        "about about about";
+      gap: 2rem;
+    }
   }
 
   /* ── Skeleton Shimmer ── */

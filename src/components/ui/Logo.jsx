@@ -24,7 +24,7 @@ export default function Logo({ redirectTo = "/", className = "" }) {
     >
       <PopcornIcon className="text-2xl transition-transform duration-200 group-hover:scale-110" />
 
-      <span className="font-semibold text-lg tracking-tight transition-colors duration-200">
+      <span className="font-semibold text-base sm:text-lg tracking-tight whitespace-nowrap transition-colors duration-200">
         usePopcorn
       </span>
     </Link>

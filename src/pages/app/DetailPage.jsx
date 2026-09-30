@@ -50,12 +50,12 @@ export default function DetailPage() {
 
   const DETAIL_TABS = useMemo(() => {
     const base = [
-      { id: "overview", label: "Overview", icon: <HiOutlineInformationCircle size={18} /> },
-      { id: "scores", label: "Critic Scores", icon: <HiOutlineStar size={18} /> },
-      { id: "social", label: "Friend Activity", icon: <HiOutlineUsers size={18} /> },
+      { id: "overview", label: "Overview", shortLabel: "Overview", icon: <HiOutlineInformationCircle size={18} /> },
+      { id: "scores", label: "Critic Scores", shortLabel: "Scores", icon: <HiOutlineStar size={18} /> },
+      { id: "social", label: "Friend Activity", shortLabel: "Friends", icon: <HiOutlineUsers size={18} /> },
     ]
     return type === 'tv'
-      ? [...base, { id: "seasons", label: "Episodes", icon: <HiOutlineListBullet size={18} /> }]
+      ? [...base, { id: "seasons", label: "Episodes", shortLabel: "Episodes", icon: <HiOutlineListBullet size={18} /> }]
       : base
   }, [type])
 
@@ -97,16 +97,17 @@ export default function DetailPage() {
       <ActionSectionContainer media={data} tmdbId={tmdbId} type={type} />
 
       {/* Tabbed Content Area */}
-      <div className="[grid-area:about] flex flex-col gap-5 mb-14">
+      <div className="[grid-area:about] flex flex-col gap-5 mb-8 md:mb-14">
 
         {/* The Sliding Tabs Header */}
         <SlidingTabs
           tabs={DETAIL_TABS}
           activeTab={activeTab}
           onChange={handleTabChange}
+          fill
         />
 
-        <div className="bg-surface-500 border border-surface-100 rounded-card p-6 min-h-62.5">
+        <div className="bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5">
 
           <TabPanel id="overview" activeTab={activeTab}>
             <OverviewTab data={data}></OverviewTab>

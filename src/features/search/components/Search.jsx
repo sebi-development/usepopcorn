@@ -10,10 +10,11 @@ function Search() {
     <>
       <button
         onClick={() => setIsSearchOpen(true)}
-        className="flex justify-center items-center w-3xs gap-2 px-7 py-2 rounded-lg text-sm text-text-muted bg-surface-100 hover:text-text transition-colors cursor-pointer"
+        aria-label="Search"
+        className="flex justify-center items-center flex-1 min-w-0 h-10 sm:flex-none sm:w-3xs sm:h-auto gap-2 sm:px-7 sm:py-2 rounded-lg text-sm text-text-muted bg-surface-100 hover:text-text transition-colors cursor-pointer"
       >
         <FiSearch size={15} />
-        <span>Search...</span>
+        <span className="hidden sm:inline">Search...</span>
       </button>
 
       {isSearchOpen && (

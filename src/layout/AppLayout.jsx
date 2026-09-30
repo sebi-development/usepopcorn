@@ -69,7 +69,7 @@ function AppLayout() {
   // still loading
   if (session === undefined) {
     return (
-      <div className="min-h-screen flex items-center justify-center relative">
+      <div className="min-h-dvh flex items-center justify-center relative">
         <BackgroundMesh />
         <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin z-10" />
       </div>
@@ -79,10 +79,10 @@ function AppLayout() {
   if (session === null) return <Navigate to='/login' replace />
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-dvh relative">
       <BackgroundMesh />
       <Navbar isLoggedIn={isLoggedIn} />
-      <main className="pt-24 px-6 max-w-7xl mx-auto w-full relative z-10">
+      <main className="pt-4 px-4 md:pt-24 md:px-6 max-w-7xl mx-auto w-full relative z-10">
         <Outlet context={outletContext} />
       </main>
     </div>

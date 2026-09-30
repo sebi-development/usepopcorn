@@ -49,7 +49,7 @@ function SeasonEpisodes({ tvId, seasonNumber }) {
   // Data should already be in cache from the bulk fetch.
   // If somehow it's still loading, show skeleton.
   if (isLoading && !data) return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-x-6 gap-y-1 px-2 pb-4 pt-1">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-x-6 gap-y-1 px-2 pb-4 pt-1">
       {Array.from({ length: 8 }).map((_, i) => (
         <EpisodeSkeleton key={i} />
       ))}
@@ -64,7 +64,7 @@ function SeasonEpisodes({ tvId, seasonNumber }) {
   const todayISO = new Date().toISOString().split('T')[0]
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-x-6 gap-y-1 px-2 pb-4 pt-1">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-x-6 gap-y-1 px-2 pb-4 pt-1">
       {data.episodes.map((ep) => (
         <EpisodeRow key={ep.id} episode={ep} seasonNumber={seasonNumber} todayISO={todayISO} />
       ))}
@@ -102,8 +102,8 @@ const SeasonAccordion = memo(function SeasonAccordion({ tvId, season, defaultOpe
     <div>
       <button onClick={() => setIsOpen(!isOpen)} className="w-full flex items-center gap-3 py-4 text-left hover:bg-surface-100/10 transition-colors rounded-lg px-2">
         <HiChevronDown className={`text-text-muted transition-transform duration-200 ${isOpen ? 'rotate-0' : '-rotate-90'}`} />
-        <span className="font-bold text-text">{season.name}</span>
-        <span className="text-sm text-text-muted">{season.episode_count} episodes • {season.air_date?.slice(0, 4) || 'TBA'}</span>
+        <span className="font-bold text-text min-w-0 truncate">{season.name}</span>
+        <span className="text-sm text-text-muted shrink-0 whitespace-nowrap">{season.episode_count} episodes • {season.air_date?.slice(0, 4) || 'TBA'}</span>
       </button>
       {isOpen && <SeasonEpisodes tvId={tvId} seasonNumber={season.season_number} />}
     </div>
@@ -119,7 +119,7 @@ export default function SeasonsTab({ tvId, seasons, isBulkLoading }) {
   if (isBulkLoading) return <SeasonsLoadingSkeleton />
 
   return (
-    <div className="bg-surface-500 rounded-card p-6">
+    <div className="bg-surface-500 rounded-card p-1 md:p-6">
       {filteredSeasons.map((season, index) => (
         <SeasonAccordion
           key={season.id}
@@ -130,7 +130,7 @@ export default function SeasonsTab({ tvId, seasons, isBulkLoading }) {
       ))}
 
       {/* Legend */}
-      <div className="flex items-center gap-5 pt-4 mt-2 border-t border-surface-100/20">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 md:gap-x-5 pt-4 mt-2 border-t border-surface-100/20">
         {RATING_LEGEND.map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <span className={`block shrink-0 w-2 h-2 rounded-full ${color}`} />

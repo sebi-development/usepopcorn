@@ -56,7 +56,7 @@ export default function HomePage() {
 
   return (
     <main className="flex flex-col gap-8 md:gap-10 pb-12">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 px-4 sm:px-8 pt-6 w-full max-w-4xl mx-auto">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 px-0 sm:px-8 pt-2 sm:pt-6 w-full max-w-4xl mx-auto">
         <StreakCard
           data={streakData}
           isLoading={isLoadingStreak}

@@ -35,11 +35,13 @@ function UserMenu() {
 
 
   return (
-    <div ref={ref} className="relative">
+    // Below md this wrapper is static so the menu anchors to the navbar and spans its
+    // full width (it can't hang off-screen); from md up it anchors under the avatar.
+    <div ref={ref} className="md:relative">
       {/* Trigger */}
       <button
         onClick={toggleMenu}
-        className="flex items-center justify-center w-9 h-9 rounded-full bg-primary-light text-white cursor-pointer transition-colors hover:bg-primary shrink-0 overflow-hidden"
+        className="flex items-center justify-center w-10 h-10 md:w-9 md:h-9 rounded-full bg-primary-light text-white cursor-pointer transition-colors hover:bg-primary shrink-0 overflow-hidden"
       >
         {profileData?.avatar_url ? (
           <img
@@ -55,7 +57,7 @@ function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="glass-panel bg-surface-500/95! absolute top-[calc(100%+0.6rem)] left-1/2 -translate-x-1/2 w-52 shadow-2xl flex flex-col overflow-hidden z-50">
+        <div className="glass-panel bg-surface-500/95! absolute top-[calc(100%+0.5rem)] left-0 right-0 md:top-[calc(100%+0.6rem)] md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-52 shadow-2xl flex flex-col overflow-hidden z-50">
           <div className="px-4 py-3 border-b border-surface-100 mt-1">
             <p className="text-xs text-text-muted">Signed in as {profileData?.username} </p>
           </div>
@@ -65,7 +67,7 @@ function UserMenu() {
             <Link
               to="/profile"
               onClick={closeMenu}
-              className="flex items-center gap-3 px-3 h-8 mx-2 rounded-md text-sm text-text hover:bg-surface-100 transition-colors"
+              className="flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm text-text hover:bg-surface-100 transition-colors"
             >
               <FiUser size={15} className="text-text-muted shrink-0" />
               Profile
@@ -74,7 +76,7 @@ function UserMenu() {
             <Link
               to="/profile/stats"
               onClick={closeMenu}
-              className="flex items-center gap-3 px-3 h-8 mx-2 rounded-md text-sm text-text hover:bg-surface-100 transition-colors"
+              className="flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm text-text hover:bg-surface-100 transition-colors"
             >
               <FiBarChart2 size={15} className="text-text-muted shrink-0" />
               Statistics
@@ -83,7 +85,7 @@ function UserMenu() {
             <Link
               to="/community"
               onClick={closeMenu}
-              className="flex items-center gap-3 px-3 h-8 mx-2 rounded-md text-sm text-text hover:bg-surface-100 transition-colors"
+              className="flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm text-text hover:bg-surface-100 transition-colors"
             >
               <HiMiniUserGroup size={15} className="text-text-muted shrink-0" />
               Friends
@@ -97,7 +99,7 @@ function UserMenu() {
             <button
               onClick={logout}
               disabled={isLoggingOut}
-              className="flex items-center gap-3 px-3 h-8 mx-2 rounded-md text-sm text-danger cursor-pointer hover:bg-surface-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm text-danger cursor-pointer hover:bg-surface-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isLoggingOut
                 ? <LuLoaderCircle size={15} className="animate-spin shrink-0" />
