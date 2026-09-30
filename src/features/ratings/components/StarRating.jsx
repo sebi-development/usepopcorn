@@ -11,9 +11,11 @@ export default function StarRating({ maxStars = 10, rating = 0, onRate, size = 2
   const displayRating = hoverRating > 0 ? hoverRating : rating;
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-3 w-full min-w-0">
+      {/* Fluid row: stars shrink to fit the container (the md+ rating column is only ~140–240px) */}
       <div
-        className="flex items-center gap-0 sm:gap-1"
+        className="flex items-center w-full"
+        style={{ maxWidth: maxStars * (size + 10) }}
         onMouseLeave={() => setHoverRating(0)}
         role="radiogroup"
         aria-label="Rate this movie"
@@ -33,7 +35,7 @@ export default function StarRating({ maxStars = 10, rating = 0, onRate, size = 2
               onMouseEnter={() => setHoverRating(starValue)}
               onFocus={() => setHoverRating(starValue)}
               onBlur={() => setHoverRating(0)}
-              className="relative z-10 p-[3px] sm:p-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-light rounded-full transition-transform duration-200 ease-out hover:scale-125 active:scale-75"
+              className="relative z-10 flex flex-1 min-w-0 justify-center p-px sm:p-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-light rounded-full transition-transform duration-200 ease-out hover:scale-125 active:scale-75"
             >
               {/* The CSS Ambient Glow */}
               {isCurrentHover && (
@@ -42,7 +44,8 @@ export default function StarRating({ maxStars = 10, rating = 0, onRate, size = 2
 
               <HiStar
                 size={size}
-                className={`transition-colors duration-200 ${isActive
+                style={{ maxWidth: size }}
+                className={`w-full h-auto transition-colors duration-200 ${isActive
                     ? 'text-amber-400 drop-shadow-sm'
                     : 'text-white/20 hover:text-white/40'
                   }`}

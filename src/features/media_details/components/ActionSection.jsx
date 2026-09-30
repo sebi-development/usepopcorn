@@ -37,10 +37,10 @@ export default memo(function ActionSection({ media, userRating, averageScore, is
         </button>
 
         {isRatingMode && (
-          <div className="absolute max-w-full animate-in fade-in zoom-in-95 duration-200">
+          <div className="absolute inset-x-0 flex justify-center animate-in fade-in zoom-in-95 duration-200">
             <div
               ref={ratingPanelRef}
-              className="flex flex-wrap items-center justify-center gap-2 md:gap-4 bg-surface-900/50 border border-white/5 backdrop-blur-md shadow-inner px-2 md:px-6 py-3 rounded-xl"
+              className="flex flex-wrap items-center justify-center gap-2 md:gap-4 w-full max-w-xs bg-surface-900/50 border border-white/5 backdrop-blur-md shadow-inner px-2 md:px-6 py-3 rounded-xl"
             >
               <StarRating
                 maxStars={10}

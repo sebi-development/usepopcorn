@@ -37,7 +37,7 @@ export default function CommunityPage() {
         <section className="relative flex flex-col gap-6 overflow-hidden min-w-0 lg:col-start-1 lg:row-start-2">
 
           {/* Background Line */}
-          <div className="absolute top-10 bottom-10 left-[19px] w-[2px] bg-surface-100 rounded-full" />
+          <div className="absolute top-10 bottom-10 left-4.75 w-0.5 bg-surface-100 rounded-full" />
 
           {showLoading && Array.from({ length: 3 }).map((_, i) => (
             <TimelineRow key={i}>
