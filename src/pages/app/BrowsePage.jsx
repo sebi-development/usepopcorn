@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router'
 
 import CategoryRail from '@/features/browse/components/CategoryRail'
 import CategoryMediaRow from '@/features/browse/components/CategoryMediaRow'
-import useInteractions from '@/features/interactions/hooks/useInteractions'
 import { MOVIE_GENRES, TV_GENRES } from '@/utils/genres'
 import InspirationPanel from '@/features/browse/components/InspirationPanel'
 import { INSPIRE_ITEM } from '@/features/browse/constants/categories'
@@ -51,12 +50,6 @@ export default function BrowsePage() {
 
   const activeLabel = categoryId === 'home' ? 'Home' : getCategoryTitle(section, categoryId)
 
-  const { data: favorites } = useInteractions('favorite')
-  const favoriteSet = useMemo(
-    () => new Set((favorites || []).map(f => Number(f.tmdb_id || f.id)).filter(Boolean)),
-    [favorites]
-  )
-
   // Titles picked in the rail's Inspire searches, one per media type ({ movie, tv }), so they
   // survive switching categories and picking a series doesn't discard the movie
   const [inspireSeeds, setInspireSeeds] = useState({})
@@ -82,8 +75,8 @@ export default function BrowsePage() {
         <InspirationPanel type={mediaType} seed={inspireSeeds[mediaType]} />
       ) : active.categoryId === 'upcoming' ? (
         <>
-          <CategoryMediaRow section="movies" categoryId="upcoming" title="Upcoming this month" favoriteSet={favoriteSet} />
-          <CategoryMediaRow section="movies" categoryId="upcoming_next_month" title="Upcoming next month" favoriteSet={favoriteSet} />
+          <CategoryMediaRow section="movies" categoryId="upcoming" title="Upcoming this month" />
+          <CategoryMediaRow section="movies" categoryId="upcoming_next_month" title="Upcoming next month" />
         </>
       ) : (
         <CategoryMediaRow
@@ -91,7 +84,7 @@ export default function BrowsePage() {
           section={active.section}
           categoryId={active.categoryId}
           title={getCategoryTitle(active.section, active.categoryId)}
-          favoriteSet={favoriteSet}
+         
         />
       )}
 

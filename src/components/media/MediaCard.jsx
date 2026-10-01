@@ -2,10 +2,10 @@ import { useMemo, useState, memo } from "react"
 import { useNavigate } from "react-router"
 import { HiChevronDown } from "react-icons/hi2"
 import { TbRating18Plus } from "react-icons/tb"
-import useInteractions from "@/features/interactions/hooks/useInteractions"
 import FavoriteButton from "@/features/interactions/components/FavoritesButton"
 import WatchlistButton from "@/features/interactions/components/WatchlistButton"
 import MoviePoster from "@/components/media/MoviePoster"
+import Score from "@/features/media_details/components/Score"
 import { getGenreNames } from "@/utils/genres"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
@@ -23,37 +23,18 @@ function MediaCard({
   isAdult = false,
   rank,
   userRating,
+  userScore,
   showFavorite = false,
   showWatchlist = false,
   showInfo = true,
-  isFavorited: isFavoritedProp,
-  isWatchlisted: isWatchlistedProp,
+  isFavorited = false,
+  isWatchlisted = false,
 }) {
   const navigate = useNavigate()
   const [infoOpen, setInfoOpen] = useState(false)
   const [infoOpened, setInfoOpened] = useState(false)
 
-  // Skip the query subscription entirely when the parent already provides
-  // the boolean — avoids N×2 redundant observers in browse grids.
-  const needsFavoriteHook = showFavorite && isFavoritedProp === undefined
-  const needsWatchlistHook = showWatchlist && isWatchlistedProp === undefined
-
-  const { data: favorites } = useInteractions('favorite', undefined, { enabled: needsFavoriteHook })
-  const { data: watchlist } = useInteractions('watchlist', undefined, { enabled: needsWatchlistHook })
-
-  const favoritedSet = useMemo(() => {
-    if (!needsFavoriteHook || !favorites) return null
-    return new Set(favorites.map(item => Number(item.tmdb_id ?? item.id)))
-  }, [favorites, needsFavoriteHook])
-
-  const watchlistedSet = useMemo(() => {
-    if (!needsWatchlistHook || !watchlist) return null
-    return new Set(watchlist.map(item => Number(item.tmdb_id ?? item.id)))
-  }, [watchlist, needsWatchlistHook])
-
-  const isFavorited = isFavoritedProp !== undefined ? isFavoritedProp : (showFavorite && !!id && favoritedSet?.has(Number(id)))
-  const isWatchlisted = isWatchlistedProp !== undefined ? isWatchlistedProp : (showWatchlist && !!id && watchlistedSet?.has(Number(id)))
-  const activeFavorite = Boolean(isFavorited)
+  const activeFavorite = isFavorited
 
   const releaseYear = releaseDate?.slice(0, 4)
   const displayScore = voteAverage != null ? voteAverage.toFixed(1) : null
@@ -108,6 +89,14 @@ function MediaCard({
               />
             </div>
           )}
+        </div>
+      )}
+
+      {/* Own rating, top-left on the heart's row. Hidden when the row already shows a score chip
+          (profile "Recently rated") so it isn't shown twice. */}
+      {userScore != null && !userRating && (
+        <div className="absolute top-2 left-2 z-20 pointer-events-none">
+          <Score size="xs" value={userScore * 10} display={userScore} />
         </div>
       )}
 

@@ -1,34 +1,23 @@
 import { useMemo, useCallback } from "react"
-import useGetRating from "@/features/ratings/hooks/useGetRating"
 import useUploadRating from "@/features/ratings/hooks/useUploadRating"
 import useDeleteRating from "@/features/ratings/hooks/useDeleteRating"
-import useInteractions from "@/features/interactions/hooks/useInteractions"
+import useMediaState from "@/features/interactions/hooks/useMediaState"
 import useGetAverageRating from "@/features/ratings/hooks/useGetAverageRating"
 import useAverageRatingRealtime from "@/features/ratings/hooks/useAverageRatingRealtime"
 import ActionSection from "@/features/media_details/components/ActionSection"
 
-// OPT-020: isolates all interaction/rating hooks so background refetches
-// of watchlist/favorites/ratings only re-render this subtree, not the entire DetailPage.
 export default function ActionSectionContainer({ media, tmdbId, type }) {
+  // ── User state (rating, favorite, watchlist) — one cached read model ──
+  const { favorites, watchlist, ratings } = useMediaState()
+  const userScore = ratings.get(tmdbId)
+  const isWatchlisted = watchlist.has(tmdbId)
+  const isFavorited = favorites.has(tmdbId)
+
   // ── Ratings ────────────────────────────────────────────────
-  const { data: userRating } = useGetRating(tmdbId)
   const { data: averageRating } = useGetAverageRating(tmdbId)
   const averageScore = averageRating != null ? averageRating : null
 
   useAverageRatingRealtime(tmdbId)
-
-  // ── Interactions ───────────────────────────────────────────
-  const { data: watchlist } = useInteractions('watchlist')
-  const { data: favorites } = useInteractions('favorite')
-
-  const isWatchlisted = useMemo(
-    () => watchlist?.some(item => item.tmdb_id === tmdbId) ?? false,
-    [watchlist, tmdbId]
-  )
-  const isFavorited = useMemo(
-    () => favorites?.some(item => item.tmdb_id === tmdbId) ?? false,
-    [favorites, tmdbId]
-  )
 
   // ── Mutations & Callbacks ──────────────────────────────────
   const { mutate: mutateUploadRating } = useUploadRating()
@@ -60,7 +49,7 @@ export default function ActionSectionContainer({ media, tmdbId, type }) {
   return (
     <ActionSection
       media={media}
-      userRating={userRating}
+      userScore={userScore}
       averageScore={averageScore}
       isWatchlisted={isWatchlisted}
       isFavorited={isFavorited}

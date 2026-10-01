@@ -3,6 +3,7 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi"
 import { HiOutlineSquares2X2, HiOutlineBars3 } from "react-icons/hi2"
 import { AutoSentinel } from "@/components/ui/LoadMoreFooter"
 import MediaCard from "@/components/media/MediaCard"
+import useMediaState from "@/features/interactions/hooks/useMediaState"
 import useScrollArrows from "@/hooks/useScrollArrows"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
@@ -74,8 +75,8 @@ function MediaRow({
   heading, data, isLoading, isError, limit = Infinity,
   // Row infinite scroll: `hasMore` mounts the sentinel that calls `onLoadMore`
   onLoadMore, hasMore = false,
-  rank = true, showFavorite = false, favoritedSet,
-  showWatchlist = false, watchlistedSet,
+  rank = true, showFavorite = false,
+  showWatchlist = false,
   showInfo = true,
   // Fallback media type for items that don't carry their own media_type/type
   // (e.g. TMDB category endpoints like /tv/popular omit media_type on items).
@@ -86,6 +87,9 @@ function MediaRow({
 }) {
   // Row data — an array of normalised items (see src/utils/pagination.js)
   const media = useMemo(() => (Array.isArray(data) ? data.slice(0, limit) : []), [data, limit])
+
+  // One subscription per row; cards receive primitives so only the affected card re-renders
+  const { favorites, watchlist, ratings } = useMediaState()
 
   const { showLeft, showRight, scrollRef, scrollByAmount } = useScrollArrows()
 
@@ -107,9 +111,10 @@ function MediaRow({
   const isLoadingFirstPage = isExpanded && !gridItems
 
   function renderCard(item, rankValue) {
+    const cardId = item.tmdb_id || item.id
     return (
       <MediaCard
-        id={item.tmdb_id || item.id}
+        id={cardId}
         type={item.media_type || item.type || mediaType}
         title={item.title || item.name}
         posterPath={item.poster_path}
@@ -118,12 +123,13 @@ function MediaRow({
         genreIds={item.genre_ids}
         isAdult={item.adult}
         userRating={item.score}
+        userScore={ratings.get(Number(cardId))}
         rank={rankValue}
         showFavorite={showFavorite}
         showInfo={showInfo}
-        isFavorited={favoritedSet?.has(item.tmdb_id || item.id)}
+        isFavorited={favorites.has(Number(cardId))}
         showWatchlist={showWatchlist}
-        isWatchlisted={watchlistedSet?.has(item.tmdb_id || item.id)}
+        isWatchlisted={watchlist.has(Number(cardId))}
       />
     )
   }

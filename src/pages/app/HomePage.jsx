@@ -1,6 +1,7 @@
 import useRecommendationSeeds from '@/features/browse/hooks/useRecommendationSeeds'
 import RecommendationRow from '@/features/browse/components/RecommendationRow'
 import useInteractions from '@/features/interactions/hooks/useInteractions'
+import useMediaState from '@/features/interactions/hooks/useMediaState'
 import useProfileStats from '@/features/profile/hooks/useProfileStats'
 import useCurrentUser from '@/features/auth/hooks/useCurrentUser'
 import useCategoryMedia from '@/features/browse/hooks/useCategoryMedia'
@@ -24,7 +25,7 @@ export default function HomePage() {
 
   const seeds = useRecommendationSeeds(currentUser?.id)
   const { data: watchlist, isLoading: isLoadingWatchlist, isError: isErrorWatchlist } = useInteractions('watchlist')
-  const { data: favorites } = useInteractions('favorite', undefined, { staleTime: Infinity })
+  const { favorites } = useMediaState()
   const { data: streakData, isLoading: isLoadingStreak, isError: isErrorStreak, isLoadingExtended, extendedStreak, isSaturated } = useProfileStreak(currentUser?.id)
   const { movie: bestMovie, tv: bestSeries, isLoading: isLoadingBestRated } = useBestRated(currentUser?.id)
 
@@ -80,7 +81,7 @@ export default function HomePage() {
               <span className="truncate">Favorites</span>
             </Chip>
             <p className="text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2">
-              You've loved {favorites?.length ?? 0} titles.
+              You've loved {favorites.size} titles.
             </p>
             <div className="mt-auto">
               <ArrowLink to="/profile" className="text-primary-light text-xs sm:text-sm font-semibold">
