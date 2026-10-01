@@ -105,6 +105,9 @@ export default function HomePage() {
         hasMore={genreQuery.phase === 'auto'}
         showInfo={true}
         rank={false}
+        showRating
+        showFavorite
+        showWatchlist
       />
 
       <MediaRow

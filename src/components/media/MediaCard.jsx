@@ -2,10 +2,8 @@ import { useMemo, useState, memo } from "react"
 import { useNavigate } from "react-router"
 import { HiChevronDown } from "react-icons/hi2"
 import { TbRating18Plus } from "react-icons/tb"
-import FavoriteButton from "@/features/interactions/components/FavoritesButton"
-import WatchlistButton from "@/features/interactions/components/WatchlistButton"
+import InteractionMenu from "@/features/interactions/components/InteractionMenu"
 import MoviePoster from "@/components/media/MoviePoster"
-import Score from "@/features/media_details/components/Score"
 import { getGenreNames } from "@/utils/genres"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
@@ -23,7 +21,6 @@ function MediaCard({
   isAdult = false,
   rank,
   userRating,
-  userScore,
   showFavorite = false,
   showWatchlist = false,
   showInfo = true,
@@ -33,8 +30,6 @@ function MediaCard({
   const navigate = useNavigate()
   const [infoOpen, setInfoOpen] = useState(false)
   const [infoOpened, setInfoOpened] = useState(false)
-
-  const activeFavorite = isFavorited
 
   const releaseYear = releaseDate?.slice(0, 4)
   const displayScore = voteAverage != null ? voteAverage.toFixed(1) : null
@@ -62,46 +57,22 @@ function MediaCard({
       />
 
       {(showFavorite || showWatchlist) && (
-        <div className="absolute top-2 right-2 z-20 flex flex-col gap-2">
-          {showFavorite && (
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className={`transition-opacity duration-300 ${activeFavorite ? 'opacity-100' : 'opacity-60 md:opacity-0 md:group-hover/card:opacity-100'}`}
-            >
-              <FavoriteButton
-                media={{ id, type, title, poster_path: posterPath }}
-                isFavorited={activeFavorite}
-                hideTooltip={true}
-                className="w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-lg hover:bg-surface-500 text-base flex items-center justify-center"
-              />
-            </div>
-          )}
-          {showWatchlist && (
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className={`transition-opacity duration-300 ${isWatchlisted ? 'opacity-100' : 'opacity-60 md:opacity-0 md:group-hover/card:opacity-100'}`}
-            >
-              <WatchlistButton
-                media={{ id, type, title, poster_path: posterPath }}
-                isWatchlisted={isWatchlisted}
-                hideTooltip={true}
-                className="w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-lg hover:bg-surface-500 text-base"
-              />
-            </div>
-          )}
-        </div>
+        <InteractionMenu
+          id={id}
+          type={type}
+          title={title}
+          posterPath={posterPath}
+          showFavorite={showFavorite}
+          showWatchlist={showWatchlist}
+          isFavorited={isFavorited}
+          isWatchlisted={isWatchlisted}
+        />
       )}
 
-      {/* Own rating, top-left on the heart's row. Hidden when the row already shows a score chip
-          (profile "Recently rated") so it isn't shown twice. */}
-      {userScore != null && !userRating && (
-        <div className="absolute top-2 left-2 z-20 pointer-events-none">
-          <Score size="xs" value={userScore * 10} display={userScore} />
-        </div>
-      )}
-
+      {/* Score chip, top-left on the heart's row. In "Recently rated" it is that row's score,
+          everywhere else the signed-in user's own rating of the title. */}
       {userRating && (
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 left-2 z-10 h-[30px] flex items-center">
           <Chip variant="ghost" size="sm" className="shadow-lg font-semibold">
             <RatingBadge text={userRating} size={14} />
           </Chip>

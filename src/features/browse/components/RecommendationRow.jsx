@@ -42,6 +42,9 @@ function RecommendationRow({ seed, type, isLoadingSeed, expandable = true, headi
       isError={isError}
       showInfo={true}
       rank={false}
+      showRating
+      showFavorite
+      showWatchlist
       expandable={expandable}
       isExpanded={isExpanded}
       isPending={grid.isPlaceholderData || (grid.isFetching && isExpanded)}

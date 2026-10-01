@@ -4,7 +4,7 @@ import Tooltip from '@/components/ui/Tooltip'
 import { IoMdHeart } from 'react-icons/io'
 import toast from 'react-hot-toast'
 
-export default function FavoriteButton({ media, className = '', isFavorited, hideTooltip = false }) {
+export default function FavoriteButton({ media, className = '', isFavorited, hideTooltip = false, tooltipSide = 'bottom', tooltipLabel }) {
   const { mutate } = useToggleInteractions('favorite')
   const activeFavorite = Boolean(isFavorited)
 
@@ -27,7 +27,7 @@ export default function FavoriteButton({ media, className = '', isFavorited, hid
   if (!media?.id && !media?.tmdb_id) return null
 
   return (
-    <Tooltip label={activeFavorite ? 'Remove from favorites' : 'Add to favorites'} side="bottom" disabled={hideTooltip}>
+    <Tooltip label={tooltipLabel ?? (activeFavorite ? 'Remove from favorites' : 'Add to favorites')} side={tooltipSide} disabled={hideTooltip}>
       <button
         onClick={handleClick}
         className={`relative flex items-center justify-center transition-all duration-300 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed group/btn active:scale-90 ${className}`}

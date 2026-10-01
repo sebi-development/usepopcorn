@@ -1,6 +1,7 @@
 import { useCallback, useMemo, memo, useRef } from "react"
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi"
-import { HiOutlineSquares2X2, HiOutlineBars3 } from "react-icons/hi2"
+import { HiOutlineBars3 } from "react-icons/hi2"
+import { TbGridDots } from "react-icons/tb"
 import { AutoSentinel } from "@/components/ui/LoadMoreFooter"
 import MediaCard from "@/components/media/MediaCard"
 import useMediaState from "@/features/interactions/hooks/useMediaState"
@@ -9,8 +10,6 @@ import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
 import Chip from "@/components/ui/Chip"
 
-// Below md the swipe row bleeds to the screen edge (-mx-4 cancels main's px-4) so a
-// cut-off card hints at scrolling; the page itself never scrolls sideways.
 const SCROLLER_CLASS = "flex gap-3 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-6 pb-2 scrollbar-hide"
 const CARD_SLOT_CLASS = "flex-none w-32 sm:w-40 md:w-44"
 
@@ -26,7 +25,7 @@ function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
       ) : isExpanded ? (
         <HiOutlineBars3 size={16} />
       ) : (
-        <HiOutlineSquares2X2 size={16} />
+        <TbGridDots size={16} />
       )}
       {isLoadingFirstPage ? "Loading" : isExpanded ? "Collapse" : "View all"}
     </button>
@@ -76,6 +75,8 @@ function MediaRow({
   // Row infinite scroll: `hasMore` mounts the sentinel that calls `onLoadMore`
   onLoadMore, hasMore = false,
   rank = true, showFavorite = false,
+  // Star chip with the title's score: the row's own `score` (ratings rows) or the signed-in user's rating
+  showRating = false,
   showWatchlist = false,
   showInfo = true,
   // Fallback media type for items that don't carry their own media_type/type
@@ -122,8 +123,7 @@ function MediaRow({
         voteAverage={item.vote_average}
         genreIds={item.genre_ids}
         isAdult={item.adult}
-        userRating={item.score}
-        userScore={ratings.get(Number(cardId))}
+        userRating={showRating ? (item.score ?? ratings.get(Number(cardId))) : undefined}
         rank={rankValue}
         showFavorite={showFavorite}
         showInfo={showInfo}

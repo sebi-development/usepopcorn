@@ -20,9 +20,6 @@ export default function useUploadRating() {
       }))
       return { previousState, queryKey }
     },
-    onSuccess: () => {
-      toast.success('Rating added successfully')
-    },
     onError: (err, variables, context) => {
       if (context?.previousState) {
         queryClient.setQueryData(context.queryKey, context.previousState)

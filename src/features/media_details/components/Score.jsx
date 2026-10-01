@@ -14,24 +14,12 @@ const SCORE_TIERS = [
   { min: -Infinity, classes: "border-white/5 text-white/40", icon: null }
 ];
 
-// `display` overrides the shown text while `value` (0-100) still picks the tier, so the card badge can
-// show the 1-10 score someone gave and still use the shared tier colours.
-function Score({ value, size = 'md', display }) {
-  const hasValue = value !== undefined && value !== null
-  const displayValue = display ?? (hasValue ? value : "--");
+function Score({ value, size = 'md' }) {
+  const displayValue = value !== undefined && value !== null ? value : "--";
 
   const activeTier = SCORE_TIERS.find(tier =>
-    hasValue ? value >= tier.min : tier.min === -Infinity
+    displayValue === "--" ? tier.min === -Infinity : displayValue >= tier.min
   );
-
-  // Compact card badge: no icon, no blur, no transition (rendered on many cards)
-  if (size === 'xs') {
-    return (
-      <div className={`flex items-center justify-center w-8 h-8 rounded-full bg-surface-900/80 border text-xs font-bold ${activeTier.classes}`}>
-        {displayValue}
-      </div>
-    )
-  }
 
   const { icon } = activeTier
   const isSm = size === 'sm'

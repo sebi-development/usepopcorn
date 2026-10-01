@@ -23,7 +23,6 @@ export default function ActionSectionContainer({ media, tmdbId, type }) {
   const { mutate: mutateUploadRating } = useUploadRating()
   const { mutate: mutateDeleteRating } = useDeleteRating()
 
-  // OPT-019: extract primitives so handleRate doesn't depend on the full media object
   const mediaTitle = media?.title
   const mediaPoster = media?.poster_path
   const mediaRuntime = type === 'movie' ? media?.runtime : media?.episode_run_time?.[0] ?? null

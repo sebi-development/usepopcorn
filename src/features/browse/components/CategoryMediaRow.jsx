@@ -23,7 +23,9 @@ export default function CategoryMediaRow({ section, categoryId, title }) {
       isError={list.isError}
       onLoadMore={list.fetchMore}
       hasMore={list.phase === 'auto'}
-      showFavorite={true}
+      showFavorite
+      showWatchlist
+      showRating
       expandable
       isExpanded={isExpanded}
       // isPlaceholderData is true exactly while keepPreviousData is

@@ -39,7 +39,7 @@ export async function getFollowingIds(userId) {
 export async function getFollowersCount(userId) {
   const { count, error } = await supabase
     .from('follows')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('following_id', userId)
   if (error) throw new Error(error.message)
   return count
@@ -48,7 +48,7 @@ export async function getFollowersCount(userId) {
 export async function getFollowingCount(userId) {
   const { count, error } = await supabase
     .from('follows')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('follower_id', userId)
   if (error) throw new Error(error.message)
   return count
