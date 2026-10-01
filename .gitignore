@@ -27,6 +27,10 @@ dist-ssr
 .env.*
 !.env.example
 
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
 # AI Agent / CLI Local Artifacts & Cache
 .antigravity/
 .agy/

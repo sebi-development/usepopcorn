@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:query": "supabase db query --linked",
+    "db:new": "supabase migration new",
+    "db:dry": "supabase db push --linked --dry-run",
+    "db:push": "supabase db push --linked"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.1",
