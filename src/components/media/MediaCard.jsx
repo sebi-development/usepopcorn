@@ -2,9 +2,7 @@ import { useMemo, useState, memo } from "react"
 import { useNavigate } from "react-router"
 import { HiChevronDown } from "react-icons/hi2"
 import { TbRating18Plus } from "react-icons/tb"
-import useInteractions from "@/features/interactions/hooks/useInteractions"
-import FavoriteButton from "@/features/interactions/components/FavoritesButton"
-import WatchlistButton from "@/features/interactions/components/WatchlistButton"
+import InteractionMenu from "@/features/interactions/components/InteractionMenu"
 import MoviePoster from "@/components/media/MoviePoster"
 import { getGenreNames } from "@/utils/genres"
 import getTmdbImageUrl from "@/utils/tmdbImage"
@@ -26,34 +24,12 @@ function MediaCard({
   showFavorite = false,
   showWatchlist = false,
   showInfo = true,
-  isFavorited: isFavoritedProp,
-  isWatchlisted: isWatchlistedProp,
+  isFavorited = false,
+  isWatchlisted = false,
 }) {
   const navigate = useNavigate()
   const [infoOpen, setInfoOpen] = useState(false)
   const [infoOpened, setInfoOpened] = useState(false)
-
-  // Skip the query subscription entirely when the parent already provides
-  // the boolean — avoids N×2 redundant observers in browse grids.
-  const needsFavoriteHook = showFavorite && isFavoritedProp === undefined
-  const needsWatchlistHook = showWatchlist && isWatchlistedProp === undefined
-
-  const { data: favorites } = useInteractions('favorite', undefined, { enabled: needsFavoriteHook })
-  const { data: watchlist } = useInteractions('watchlist', undefined, { enabled: needsWatchlistHook })
-
-  const favoritedSet = useMemo(() => {
-    if (!needsFavoriteHook || !favorites) return null
-    return new Set(favorites.map(item => Number(item.tmdb_id ?? item.id)))
-  }, [favorites, needsFavoriteHook])
-
-  const watchlistedSet = useMemo(() => {
-    if (!needsWatchlistHook || !watchlist) return null
-    return new Set(watchlist.map(item => Number(item.tmdb_id ?? item.id)))
-  }, [watchlist, needsWatchlistHook])
-
-  const isFavorited = isFavoritedProp !== undefined ? isFavoritedProp : (showFavorite && !!id && favoritedSet?.has(Number(id)))
-  const isWatchlisted = isWatchlistedProp !== undefined ? isWatchlistedProp : (showWatchlist && !!id && watchlistedSet?.has(Number(id)))
-  const activeFavorite = Boolean(isFavorited)
 
   const releaseYear = releaseDate?.slice(0, 4)
   const displayScore = voteAverage != null ? voteAverage.toFixed(1) : null
@@ -81,38 +57,22 @@ function MediaCard({
       />
 
       {(showFavorite || showWatchlist) && (
-        <div className="absolute top-2 right-2 z-20 flex flex-col gap-2">
-          {showFavorite && (
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className={`transition-opacity duration-300 ${activeFavorite ? 'opacity-100' : 'opacity-60 md:opacity-0 md:group-hover/card:opacity-100'}`}
-            >
-              <FavoriteButton
-                media={{ id, type, title, poster_path: posterPath }}
-                isFavorited={activeFavorite}
-                hideTooltip={true}
-                className="w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-lg hover:bg-surface-500 text-base flex items-center justify-center"
-              />
-            </div>
-          )}
-          {showWatchlist && (
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className={`transition-opacity duration-300 ${isWatchlisted ? 'opacity-100' : 'opacity-60 md:opacity-0 md:group-hover/card:opacity-100'}`}
-            >
-              <WatchlistButton
-                media={{ id, type, title, poster_path: posterPath }}
-                isWatchlisted={isWatchlisted}
-                hideTooltip={true}
-                className="w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-lg hover:bg-surface-500 text-base"
-              />
-            </div>
-          )}
-        </div>
+        <InteractionMenu
+          id={id}
+          type={type}
+          title={title}
+          posterPath={posterPath}
+          showFavorite={showFavorite}
+          showWatchlist={showWatchlist}
+          isFavorited={isFavorited}
+          isWatchlisted={isWatchlisted}
+        />
       )}
 
+      {/* Score chip, top-left on the heart's row. In "Recently rated" it is that row's score,
+          everywhere else the signed-in user's own rating of the title. */}
       {userRating && (
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 left-2 z-10 h-[30px] flex items-center">
           <Chip variant="ghost" size="sm" className="shadow-lg font-semibold">
             <RatingBadge text={userRating} size={14} />
           </Chip>

@@ -9,9 +9,9 @@ import ShareButton from "@/features/media_details/components/ShareButton"
 
 const dockBtnClass = "flex items-center justify-center w-11 h-11 md:w-10 md:h-10 rounded-xl bg-surface-500/50 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all duration-200 cursor-pointer"
 
-export default memo(function ActionSection({ media, userRating, averageScore, isWatchlisted, isFavorited, onRate, onDelete }) {
+export default memo(function ActionSection({ media, userScore, averageScore, isWatchlisted, isFavorited, onRate, onDelete }) {
   const [isRatingMode, setIsRatingMode] = useState(false)
-  const hasRated = !!userRating?.score
+  const hasRated = !!userScore
 
   const ratingPanelRef = useOutsideClick(() => setIsRatingMode(false))
 
@@ -29,7 +29,7 @@ export default memo(function ActionSection({ media, userRating, averageScore, is
         >
           {hasRated ? (
             <span className="flex items-center gap-2">
-              Your rating: <strong className="text-amber-400">{userRating?.score}/10</strong>
+              Your rating: <strong className="text-amber-400">{userScore}/10</strong>
             </span>
           ) : (
             "Add rating"
@@ -45,7 +45,7 @@ export default memo(function ActionSection({ media, userRating, averageScore, is
               <StarRating
                 maxStars={10}
                 size={18}
-                rating={userRating?.score || 0}
+                rating={userScore || 0}
                 onRate={(score) => {
                   onRate(score)
                   setIsRatingMode(false)

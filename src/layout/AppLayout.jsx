@@ -4,6 +4,7 @@ import supabase from '@/lib/supabase'
 import Navbar from '@/layout/Navbar'
 import { useQueryClient } from '@tanstack/react-query'
 import BackgroundMesh from '@/components/ui/BackgroundMesh'
+import { mediaStateQuery } from '@/features/interactions/hooks/useMediaState'
 
 // Prefetch a lazy chunk without blocking — resolves the dynamic import so
 // the module is cached by the time the user navigates to it.
@@ -49,6 +50,8 @@ function AppLayout() {
 
     // T1: BrowsePage — first authenticated screen, needs to be ready instantly.
     prefetch(() => import('@/pages/app/BrowsePage'))
+    // Favorite/watchlist/own-rating state every card reads, warm before the first cards render.
+    queryClient.prefetchQuery(mediaStateQuery(session.user.id))
 
     // T2: ProfilePage and DetailPage — commonly visited but not immediate.
     onIdle(() => {
@@ -61,7 +64,7 @@ function AppLayout() {
       prefetch(() => import('@/pages/app/CommunityPage'))
       prefetch(() => import('@/pages/app/ProfileStatsPage'))
     })
-  }, [session])
+  }, [session, queryClient])
 
   const outletContext = useMemo(() => ({ session }), [session])
   const isLoggedIn = Boolean(session)

@@ -19,6 +19,7 @@ function RecentlyRated({ userId, recentlyRated, ratingsCount, isLoading, showInf
         heading="Recently rated"
         data={recentlyRated}
         rank={false}
+        showRating
         showInfo={showInfo}
         expandable={ratingsCount > ROW_LIMIT}
         isExpanded={isExpanded}

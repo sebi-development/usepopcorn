@@ -1,29 +1,17 @@
 import supabase from '@/lib/supabase'
 
+// Columns a rating card renders (poster, title, own score, genres for the info overlay)
+const RATING_CARD_COLUMNS = 'id, tmdb_id, title, poster_path, type, score, genre_ids'
+
 export async function uploadRating(ratingData, currentUserId) {
   const { score, tmdb_id, title, poster_path, type, runtime, genre_ids } = ratingData
   if (!score || !tmdb_id || !title || !type) {
     throw new Error('Missing required rating data')
   }
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('ratings')
     .upsert({ user_id: currentUserId, score, tmdb_id, title, poster_path, type, runtime, genre_ids }, { onConflict: 'user_id,tmdb_id' })
-    .select()
-    .maybeSingle()
   if (error) throw new Error(error.message)
-  return data
-}
-
-export async function getRating(tmdb_id, currentUserId) {
-  if (!tmdb_id) throw new Error('Missing id')
-  const { data, error } = await supabase
-    .from('ratings')
-    .select()
-    .eq('user_id', currentUserId)
-    .eq('tmdb_id', tmdb_id)
-    .maybeSingle()
-  if (error) throw new Error(error.message)
-  return data
 }
 
 export async function getAverageRating(tmdbId) {
@@ -36,7 +24,7 @@ export async function getAverageRating(tmdbId) {
 export async function getUserRatings(limit = null, userId) {
   let query = supabase
     .from('ratings')
-    .select()
+    .select(RATING_CARD_COLUMNS)
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
@@ -52,7 +40,7 @@ export async function getUserRatings(limit = null, userId) {
 export async function getUserRatingsPage(userId, from, to) {
   const { data, error, count } = await supabase
     .from('ratings')
-    .select('id, tmdb_id, title, poster_path, type, score, genre_ids', { count: 'exact' })
+    .select(RATING_CARD_COLUMNS, { count: 'exact' })
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
@@ -64,7 +52,7 @@ export async function getUserRatingsPage(userId, from, to) {
 export async function getUserRatingsCount(userId) {
   const { count, error } = await supabase
     .from('ratings')
-    .select('*', { count: 'exact', head: true })
+    .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
   if (error) throw new Error(error.message)
   return count ?? 0

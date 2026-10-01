@@ -3,7 +3,7 @@ import MediaRow from '@/components/media/MediaRow'
 import useDelayedLoading from '@/hooks/useDelayedLoading'
 import useExpandableGrid from '@/hooks/useExpandableGrid'
 
-export default function CategoryMediaRow({ section, categoryId, title, favoriteSet }) {
+export default function CategoryMediaRow({ section, categoryId, title }) {
   const { isExpanded, page, setPage, toggle } = useExpandableGrid()
 
   // Row query only fetches while collapsed; grid query only fetches while
@@ -23,8 +23,9 @@ export default function CategoryMediaRow({ section, categoryId, title, favoriteS
       isError={list.isError}
       onLoadMore={list.fetchMore}
       hasMore={list.phase === 'auto'}
-      showFavorite={true}
-      favoritedSet={favoriteSet}
+      showFavorite
+      showWatchlist
+      showRating
       expandable
       isExpanded={isExpanded}
       // isPlaceholderData is true exactly while keepPreviousData is
