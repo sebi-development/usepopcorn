@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react"
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query"
 import { DEFAULT_STALE_TIME, DEFAULT_GC_TIME } from "@/utils/pagination"
+import queryKeys from "@/lib/queryKeys"
 
 /**
  * Numbered-page grid over any source adapted by src/utils/pagination.js
- * (`fetchPage(page) → { items, totalPages }`). One page per query, keyed by
- * page number, so only one page (two with prefetch) is ever resident.
+ * (`fetchPage(page) → { items, totalPages }`). One page per query, keyed
+ * `queryKeys.gridPage(queryKey, page)`, so only one page (two with prefetch)
+ * is ever resident.
  *
  * `keepPreviousData` keeps the old page rendered while the next loads — drive
  * "refreshing" UI off this hook's own `isPlaceholderData` / `isFetching`.
@@ -34,7 +36,7 @@ export default function usePagedGrid({
   })
 
   const query = useQuery({
-    queryKey: [...queryKey, 'grid', page],
+    queryKey: queryKeys.gridPage(queryKey, page),
     queryFn: () => fetchPage(page),
     placeholderData: keepPreviousData,
     staleTime,
@@ -51,11 +53,13 @@ export default function usePagedGrid({
 
     const { queryKey: key, fetchPage: fetcher } = latest.current
     queryClient.prefetchQuery({
-      queryKey: [...key, 'grid', page + 1],
+      queryKey: queryKeys.gridPage(key, page + 1),
       queryFn: () => fetcher(page + 1),
       staleTime,
+      // Without it a prefetched page nobody opens would outlive the grid's own pages
+      gcTime,
     })
-  }, [enabled, prefetchNext, data, page, totalPages, staleTime, queryClient])
+  }, [enabled, prefetchNext, data, page, totalPages, staleTime, gcTime, queryClient])
 
   // `items` is undefined until the first page lands
   return { ...query, items: data?.items, totalPages }

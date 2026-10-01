@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import supabase from "@/lib/supabase"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import useFollowingIds from "@/features/social/hooks/useFollowingIds"
+import queryKeys from "@/lib/queryKeys"
 
 // Subscribes to ratings from everyone the user follows (not just authors already in the feed).
 export default function useFeedRealtime() {
@@ -28,7 +29,7 @@ export default function useFeedRealtime() {
       filter: `user_id=in.(${followingKey})`
     },
     () => {
-      queryClient.invalidateQueries({queryKey: ['feed', currentUser?.id]})
+      queryClient.invalidateQueries({ queryKey: queryKeys.feed(currentUser?.id) })
     }
     ).subscribe()
     

@@ -5,6 +5,7 @@ import Navbar from '@/layout/Navbar'
 import { useQueryClient } from '@tanstack/react-query'
 import BackgroundMesh from '@/components/ui/BackgroundMesh'
 import { mediaStateQuery } from '@/features/interactions/hooks/useMediaState'
+import queryKeys from '@/lib/queryKeys'
 
 // Prefetch a lazy chunk without blocking — resolves the dynamic import so
 // the module is cached by the time the user navigates to it.
@@ -28,14 +29,14 @@ function AppLayout() {
       setSession(data.session)
       // Seed the cache immediately — no extra network call
       if (data.session?.user) {
-        queryClient.setQueryData(['currentUser'], data.session.user)
+        queryClient.setQueryData(queryKeys.currentUser, data.session.user)
       }
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       // Keep cache in sync on auth changes
-      queryClient.setQueryData(['currentUser'], session?.user ?? null)
+      queryClient.setQueryData(queryKeys.currentUser, session?.user ?? null)
     })
 
     return () => subscription.unsubscribe()

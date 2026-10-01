@@ -17,9 +17,10 @@ export async function searchContent(query, type = 'movie') {
 }
 
 export async function getMediaDetails(id, type = 'movie') {
+  // credits is only read for a movie's director, so series don't request it
   const append = type === 'movie'
     ? '?append_to_response=release_dates,watch%2Fproviders,credits' // movies endpoint
-    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids,credits'; // series endpoint
+    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids'; // series endpoint
   return tmdbFetch(`/${type}/${id}${append}`);
 }
 

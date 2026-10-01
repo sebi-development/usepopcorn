@@ -21,22 +21,9 @@ export async function getAverageRating(tmdbId) {
   return data ?? null
 }
 
-export async function getUserRatings(limit = null, userId) {
-  let query = supabase
-    .from('ratings')
-    .select(RATING_CARD_COLUMNS)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .order('id', { ascending: false })
-  if (limit) query = query.limit(limit)
-  const { data, error } = await query
-  if (error) throw new Error(error.message)
-  return data
-}
-
 // One numbered page of a user's ratings (inclusive `from`..`to` range) plus
-// the total row count, in a single request. Same ordering as getUserRatings,
-// with id as tiebreaker so pages never overlap or skip on equal timestamps.
+// the total row count, in a single request. Newest first, with id as
+// tiebreaker so pages never overlap or skip on equal timestamps.
 export async function getUserRatingsPage(userId, from, to) {
   const { data, error, count } = await supabase
     .from('ratings')
@@ -47,15 +34,6 @@ export async function getUserRatingsPage(userId, from, to) {
     .range(from, to)
   if (error) throw new Error(error.message)
   return { items: data, count: count ?? 0 }
-}
-
-export async function getUserRatingsCount(userId) {
-  const { count, error } = await supabase
-    .from('ratings')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId)
-  if (error) throw new Error(error.message)
-  return count ?? 0
 }
 
 export async function deleteRating(tmdb_id, currentUserId) {

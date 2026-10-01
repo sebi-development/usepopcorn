@@ -17,5 +17,12 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Query keys come from one factory so a query and its invalidations can't drift apart
+      'no-restricted-syntax': ['error', {
+        selector: "Property[key.name='queryKey'] > ArrayExpression",
+        message: 'Build query keys with queryKeys (src/lib/queryKeys.js) instead of an inline array.',
+      }],
+    },
   },
 ])

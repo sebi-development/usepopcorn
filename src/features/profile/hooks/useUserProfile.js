@@ -1,19 +1,20 @@
 import { useQuery } from "@tanstack/react-query"
 import { getProfile } from "@/services/profiles"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
+import queryKeys from "@/lib/queryKeys"
+import { CACHE } from "@/lib/queryClient"
 
-// Lightweight hook for components that only need profile identity (avatar, username).
-// Uses the same ['profile', id] cache key as useProfileData, so navigating to the
-// profile page will find this data already cached — zero wasted fetches.
+// Profile identity (avatar, username, country, join date). The only definition of the
+// profile query: the navbar menu and the profile page both read it through this hook.
 export default function useUserProfile(userId) {
   const currentUser = useCurrentUser()
   const id = userId ?? currentUser?.id
 
   const { data: profileData, isLoading } = useQuery({
-    queryKey: ['profile', id],
+    queryKey: queryKeys.profile(id),
     queryFn: () => getProfile(id),
     enabled: !!id,
-    staleTime: 1000 * 60 * 5,
+    ...CACHE.user,
   })
 
   return { profileData, isLoading }

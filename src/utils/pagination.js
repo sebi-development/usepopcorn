@@ -6,6 +6,9 @@
 //
 // `nextCursor === undefined` means there is nothing after this page.
 
+import { CACHE } from "@/lib/queryClient"
+import { toMediaItem } from "@/utils/tmdbItem"
+
 // TMDB pages are a fixed 20 items, so PAGE_SIZE matches it and one page size
 // works for every list and grid in the app.
 export const PAGE_SIZE = 20
@@ -18,24 +21,25 @@ export const MAX_PAGES = 5
 // "Load more", up to MAX_PAGES.
 export const AUTO_PAGES = 3
 
-// Explicit cache defaults for the paging hooks (they mirror the global
-// defaults in main.jsx). Passing `staleTime: undefined` to React Query would
+// Explicit cache defaults for the paging hooks (the global defaults in
+// src/lib/queryClient.js). Passing `staleTime: undefined` to React Query would
 // override the global default rather than fall back to it, so the hooks
 // always resolve to a real value.
-export const DEFAULT_STALE_TIME = 1000 * 60 * 5
-export const DEFAULT_GC_TIME = 1000 * 60 * 10
+export const DEFAULT_STALE_TIME = CACHE.user.staleTime
+export const DEFAULT_GC_TIME = CACHE.user.gcTime
 
 // TMDB refuses to serve past page 500 on any endpoint regardless of how many
 // total_pages it reports.
 const TMDB_MAX_PAGE = 500
 
-// `fetchFn(page)` returns a raw TMDB paginated response.
+// `fetchFn(page)` returns a raw TMDB paginated response. Items are trimmed to
+// the fields the UI reads before they are cached.
 export function fromTmdb(fetchFn) {
   return async (page) => {
     const response = await fetchFn(page)
     const totalPages = Math.min(response.total_pages ?? 1, TMDB_MAX_PAGE)
     return {
-      items: response.results ?? [],
+      items: (response.results ?? []).map(toMediaItem),
       nextCursor: page < totalPages ? page + 1 : undefined,
       totalPages,
     }

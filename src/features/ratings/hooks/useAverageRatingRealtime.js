@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
 import supabase from "@/lib/supabase"
+import queryKeys from "@/lib/queryKeys"
 
 export default function useAverageRatingRealtime(tmdbId) {
   const queryClient = useQueryClient()
@@ -15,7 +16,7 @@ export default function useAverageRatingRealtime(tmdbId) {
         table: 'ratings',
         filter: `tmdb_id=eq.${tmdbId}`
       }, () => {
-        queryClient.invalidateQueries({ queryKey: ['ratings', 'average', tmdbId] })
+        queryClient.invalidateQueries({ queryKey: queryKeys.ratings.average(tmdbId) })
       })
       .subscribe()
 

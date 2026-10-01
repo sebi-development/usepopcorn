@@ -2,6 +2,8 @@ import { addDays, addMonths, format } from 'date-fns'
 import usePagedList from "@/hooks/usePagedList"
 import usePagedGrid from "@/hooks/usePagedGrid"
 import { MAX_PAGES, fromTmdb } from "@/utils/pagination"
+import queryKeys from "@/lib/queryKeys"
+import { CACHE } from "@/lib/queryClient"
 import {
   getTrending, getPopular, getTopRated,
   getUpcoming, getNowPlaying, getOnTheAir,
@@ -45,12 +47,6 @@ const FETCH_MAP = {
 // Maps browse-page section names to TMDB's media-type path segments.
 export const SECTION_TO_TYPE = { movies: 'movie', series: 'tv' }
 
-// Shared across row and grid so the two don't drift. Matching gcTime to
-// staleTime — data past staleTime refetches anyway, so a longer gcTime
-// just keeps stale objects in memory for no benefit during rapid browsing.
-const STALE_TIME = 1000 * 60 * 15
-const GC_TIME = 1000 * 60 * 15
-
 // Shared between the row (infinite) and grid (paginated) hooks — one place
 // that knows how to turn a section + categoryId into a paged TMDB fetcher
 // and a base query key, including genre detection. CategoryRail emits
@@ -62,13 +58,13 @@ function resolveCategoryFetch(section, categoryId) {
   if (isGenre) {
     const genreId = categoryId.slice(6)
     return {
-      queryKeyBase: ['browse', 'genre', type, genreId],
+      queryKeyBase: queryKeys.media.genre(type, genreId),
       fetchPage: fromTmdb((page) => getMediaByGenre(type, genreId, page)),
     }
   }
 
   return {
-    queryKeyBase: ['browse', categoryId, type],
+    queryKeyBase: queryKeys.media.category(type, categoryId),
     fetchPage: fromTmdb(FETCH_MAP[section]?.[categoryId]),
   }
 }
@@ -88,8 +84,7 @@ export default function useCategoryMedia(section, categoryId, { enabled = true }
     queryKey: queryKeyBase,
     fetchPage,
     autoPages: MAX_PAGES,
-    staleTime: STALE_TIME,
-    gcTime: GC_TIME,
+    ...CACHE.mediaList,
     enabled,
   })
 }
@@ -106,7 +101,6 @@ export function useCategoryMediaGrid(section, categoryId, page, { enabled = true
     fetchPage,
     page,
     enabled,
-    staleTime: STALE_TIME,
-    gcTime: GC_TIME,
+    ...CACHE.mediaList,
   })
 }

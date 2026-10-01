@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toggleInteraction } from "@/services/interactions"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
-import { mediaStateKey, patchMediaState } from "@/features/interactions/hooks/useMediaState"
+import { patchMediaState } from "@/features/interactions/hooks/useMediaState"
+import queryKeys from "@/lib/queryKeys"
 import toast from "react-hot-toast"
 
 // interaction type -> field of the media-state payload
@@ -10,8 +11,8 @@ const STATE_FIELD = { favorite: 'favorites', watchlist: 'watchlist' }
 export default function useToggleInteractions(type) {
   const queryClient = useQueryClient()
   const currentUser = useCurrentUser()
-  const queryKey = ['interactions', type, currentUser?.id]
-  const stateKey = mediaStateKey(currentUser?.id)
+  const queryKey = queryKeys.interactions(type, currentUser?.id)
+  const stateKey = queryKeys.mediaState(currentUser?.id)
   const stateField = STATE_FIELD[type]
 
   const { mutate, isPending } = useMutation({

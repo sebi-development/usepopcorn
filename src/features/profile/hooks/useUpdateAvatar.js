@@ -3,6 +3,7 @@ import { uploadAvatarImage } from "@/services/files"
 import { updateProfile } from "@/services/profiles"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import toast from "react-hot-toast"
+import queryKeys from "@/lib/queryKeys"
 
 export default function useUpdateAvatar() {
   const queryClient = useQueryClient()
@@ -15,7 +16,7 @@ export default function useUpdateAvatar() {
     },
     onSuccess: () => {
       toast.success('Avatar added successfully')
-      queryClient.invalidateQueries({ queryKey: ['profile', currentUser?.id] })
+      queryClient.invalidateQueries({ queryKey: queryKeys.profile(currentUser?.id) })
     },
     onError: (err) => toast.error(`Failed uploading avatar: ${err.message}`)
   })

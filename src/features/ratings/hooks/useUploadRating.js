@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { uploadRating } from "@/services/ratings"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
-import { mediaStateKey, patchMediaState } from "@/features/interactions/hooks/useMediaState"
+import { patchMediaState } from "@/features/interactions/hooks/useMediaState"
+import invalidateRatingQueries from "@/features/ratings/hooks/invalidateRatingQueries"
+import queryKeys from "@/lib/queryKeys"
 import toast from "react-hot-toast"
 
 export default function useUploadRating() {
@@ -11,7 +13,7 @@ export default function useUploadRating() {
   const { mutate, isPending, error } = useMutation({
     mutationFn: (data) => uploadRating(data, currentUser?.id),
     onMutate: async (data) => {
-      const queryKey = mediaStateKey(currentUser?.id)
+      const queryKey = queryKeys.mediaState(currentUser?.id)
       await queryClient.cancelQueries({ queryKey })
       const previousState = queryClient.getQueryData(queryKey)
       patchMediaState(queryClient, currentUser?.id, (old) => ({
@@ -26,14 +28,7 @@ export default function useUploadRating() {
       }
       toast.error(`Error adding rating (${err.message})`)
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['ratings'] })
-      queryClient.invalidateQueries({ queryKey: mediaStateKey(currentUser?.id) })
-      queryClient.invalidateQueries({ queryKey: ['profileStats', currentUser?.id] })
-      queryClient.invalidateQueries({ queryKey: ['profileActivity', currentUser?.id, new Date().getFullYear()] })
-      queryClient.invalidateQueries({ queryKey: ['profileStreak', currentUser?.id] })
-      queryClient.invalidateQueries({ queryKey: ['extendedStreak', currentUser?.id] })
-    }
+    onSettled: () => invalidateRatingQueries(queryClient, currentUser?.id),
   })
 
   return { mutate, isPending, error }

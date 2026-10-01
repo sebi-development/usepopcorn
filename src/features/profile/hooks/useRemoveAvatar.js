@@ -3,6 +3,7 @@ import { deleteAvatarImage } from "@/services/files"
 import { updateProfile } from "@/services/profiles"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import toast from "react-hot-toast"
+import queryKeys from "@/lib/queryKeys"
 
 export default function useRemoveAvatar() {
   const queryClient = useQueryClient()
@@ -15,7 +16,7 @@ export default function useRemoveAvatar() {
     },
     onSuccess: () => {
       toast.success('Avatar deleted successfully')
-      queryClient.setQueryData(['profile', currentUser?.id], (oldData) => {
+      queryClient.setQueryData(queryKeys.profile(currentUser?.id), (oldData) => {
         if (!oldData) return oldData;
         return { ...oldData, avatar_url: null };
       });

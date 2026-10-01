@@ -1,32 +1,30 @@
 import { useQuery } from "@tanstack/react-query"
-import { getProfile } from "@/services/profiles"
-import { getUserRatings, getUserRatingsCount } from "@/services/ratings"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
+import useUserProfile from "@/features/profile/hooks/useUserProfile"
+import { userRatingsFetcher } from "@/features/profile/hooks/useUserRatingsGrid"
+import queryKeys from "@/lib/queryKeys"
+import { CACHE } from "@/lib/queryClient"
 
 export default function useProfileData(userId) {
   const currentUser = useCurrentUser()
   const id = userId ?? currentUser?.id
 
-  const { data: profileData, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ['profile', id],
-    queryFn: () => getProfile(id),
+  const { profileData, isLoading: isLoadingProfile } = useUserProfile(id)
+
+  // Page 1 of the "View all" grid (same cache entry), which already carries the exact total:
+  // one request feeds the row and the ratings count, and expanding the row is a cache hit.
+  const { data: firstPage, isLoading: isLoadingRatings } = useQuery({
+    queryKey: queryKeys.gridPage(queryKeys.ratings.byUser(id), 1),
+    queryFn: () => userRatingsFetcher(id)(1),
     enabled: !!id,
-    staleTime: 1000 * 60 * 5
+    ...CACHE.user,
   })
 
-  const { data: recentRatings, isLoading: isLoadingRatings } = useQuery({
-    queryKey: ['ratings', 'user', id],
-    queryFn: () => getUserRatings(15, id),
-    enabled: !!id,
-    staleTime: 1000 * 60 * 5
-  })
-
-  const { data: ratingsCount } = useQuery({
-    queryKey: ['ratings', 'user', 'count', id],
-    queryFn: () => getUserRatingsCount(id),
-    enabled: !!id,
-    staleTime: 1000 * 60 * 5
-  })
-
-  return { profileData, recentRatings, ratingsCount, isLoadingProfile, isLoadingRatings }
+  return {
+    profileData,
+    recentRatings: firstPage?.items,
+    ratingsCount: firstPage?.total,
+    isLoadingProfile,
+    isLoadingRatings,
+  }
 }

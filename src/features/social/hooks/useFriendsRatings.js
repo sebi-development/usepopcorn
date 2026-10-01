@@ -3,6 +3,7 @@ import { getFriendsRatings } from "@/services/follows"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import usePagedList from "@/hooks/usePagedList"
 import { fromCursorRpc } from "@/utils/pagination"
+import queryKeys from "@/lib/queryKeys"
 
 const PAGE_SIZE = 12
 // Friends' rows carry the id as `rating_id`, not `id`
@@ -15,7 +16,7 @@ export default function useFriendsRatings(tmdb_id) {
   const userId = currentUser?.id
 
   return usePagedList({
-    queryKey: ['userFriendsRating', tmdb_id, userId],
+    queryKey: queryKeys.friendsRatings.byTitle(userId, tmdb_id),
     fetchPage: fromCursorRpc(
       ({ limit, cursor }) => getFriendsRatings(userId, tmdb_id, { limit, cursor }),
       PAGE_SIZE,

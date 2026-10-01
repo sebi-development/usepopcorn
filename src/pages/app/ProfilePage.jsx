@@ -7,13 +7,16 @@ import Button from "@/components/ui/Button"
 import ProfileHeroSkeleton from "@/features/profile/components/ProfileHeroSkeleton"
 import useProfileData from "@/features/profile/hooks/useProfileData"
 import useInteractions from "@/features/interactions/hooks/useInteractions"
-import useProfileRelationship from "@/features/social/hooks/useProfileRelationship"
+import useFollowingIds from "@/features/social/hooks/useFollowingIds"
 import useFollow from "@/features/social/hooks/useFollow"
 import { useParams } from "react-router"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import useDelayedLoading from "@/hooks/useDelayedLoading"
 
 const EditProfileModal = lazy(() => import("../../features/profile/components/EditProfileModal"))
+
+// The hero's one action: a 44px tap target on phones, the compact button from md up
+const HERO_ACTION_CLASS = "min-h-11 min-w-36 md:min-h-0 md:min-w-0"
 
 function ProfilePage() {
   const { userId } = useParams() // get other user data 
@@ -23,26 +26,29 @@ function ProfilePage() {
 
   const { profileData, recentRatings, ratingsCount, isLoadingProfile, isLoadingRatings } = useProfileData(targetUserId)
   const showLoadingProfile = useDelayedLoading(isLoadingProfile)
-  const { data: watchlist, isLoading: isWatchlistLoading } = useInteractions("watchlist", targetUserId)
-  const { data: favorites, isLoading: isFavoritesLoading } = useInteractions("favorite", targetUserId)
-  const { data: relationship } = useProfileRelationship(
-    isOwnProfile ? null : targetUserId,
-    currentUser?.id
-  )
+  // Watchlist and favorites are private (RLS returns them to their owner only), so on someone
+  // else's profile the two requests would always come back empty
+  const { data: watchlist, isLoading: isWatchlistLoading } = useInteractions("watchlist", targetUserId, { enabled: isOwnProfile })
+  const { data: favorites, isLoading: isFavoritesLoading } = useInteractions("favorite", targetUserId, { enabled: isOwnProfile })
+  const { followingSet, isLoading: isLoadingFollowing } = useFollowingIds({ enabled: !isOwnProfile })
+  const isFollowing = followingSet.has(targetUserId)
   const { mutate: toggleFollow, isPending: isFollowPending } = useFollow(targetUserId)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
 
   const action = isOwnProfile
-    ? <Button variant="secondary" size="sm" onClick={() => setIsModalOpen(true)}>Edit Profile</Button>
+    ? <Button variant="secondary" size="sm" className={HERO_ACTION_CLASS} onClick={() => setIsModalOpen(true)}>Edit Profile</Button>
     : <Button
-      variant={relationship?.isFollowing ? "secondary" : "solid"}
+      variant={isFollowing ? "secondary" : "solid"}
       size="sm"
+      className={HERO_ACTION_CLASS}
       isLoading={isFollowPending}
-      onClick={() => toggleFollow(relationship?.isFollowing)}
+      // Until the list has loaded, "not following" is only a guess
+      disabled={isLoadingFollowing}
+      onClick={() => toggleFollow(isFollowing)}
     >
-      {relationship?.isFollowing ? "Unfollow" : "Follow"}
+      {isFollowing ? "Unfollow" : "Follow"}
     </Button>
 
   return (

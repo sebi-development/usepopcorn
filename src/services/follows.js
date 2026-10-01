@@ -16,17 +16,6 @@ export async function unfollowUser(currentUserId, followingId) {
   if (error) throw new Error(error.message)
 }
 
-export async function isFollowing(currentUserId, followingId) {
-  const { data, error } = await supabase
-    .from('follows')
-    .select('id')
-    .eq('follower_id', currentUserId)
-    .eq('following_id', followingId)
-    .maybeSingle()
-  if (error) throw new Error(error.message)
-  return data !== null
-}
-
 export async function getFollowingIds(userId) {
   const { data, error } = await supabase
     .from('follows')
@@ -34,33 +23,6 @@ export async function getFollowingIds(userId) {
     .eq('follower_id', userId)
   if (error) throw new Error(error.message)
   return data.map(row => row.following_id)
-}
-
-export async function getFollowersCount(userId) {
-  const { count, error } = await supabase
-    .from('follows')
-    .select('id', { count: 'exact', head: true })
-    .eq('following_id', userId)
-  if (error) throw new Error(error.message)
-  return count
-}
-
-export async function getFollowingCount(userId) {
-  const { count, error } = await supabase
-    .from('follows')
-    .select('id', { count: 'exact', head: true })
-    .eq('follower_id', userId)
-  if (error) throw new Error(error.message)
-  return count
-}
-
-export async function getProfileRelationship(currentUserId, targetUserId) {
-  const [following, followers, followingCount] = await Promise.all([
-    isFollowing(currentUserId, targetUserId),
-    getFollowersCount(targetUserId),
-    getFollowingCount(targetUserId)
-  ])
-  return { isFollowing: following, followers, following: followingCount }
 }
 
 // `cursor` is the { created_at, id } of the last row of the previous page,

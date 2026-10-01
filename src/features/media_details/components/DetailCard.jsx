@@ -4,8 +4,7 @@ import Chip from '@/components/ui/Chip'
 
 function DetailCard({ media }) {
   const isTV = media.type === 'tv'
-  const director = !isTV ? media.credits?.crew?.find(c => c.job === 'Director')?.name : null;
-  const network = isTV ? media.networks?.[0]?.name : null;
+  const { director, network } = media
 
   return (
     <div className="[grid-area:info] flex flex-col gap-3 md:gap-6">

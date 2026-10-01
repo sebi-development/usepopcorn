@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { getProfileStreakData, getExtendedStreak } from "@/services/profiles"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
+import queryKeys from "@/lib/queryKeys"
+import { CACHE } from "@/lib/queryClient"
 
 // The last week in the RPC's window is always the current, in-progress one.
 // It only counts once it already has activity; otherwise it's excluded, same
@@ -16,10 +18,10 @@ export default function useProfileStreak(userId) {
   const id = userId ?? currentUser?.id
 
   const streakQuery = useQuery({
-    queryKey: ['profileStreak', id],
+    queryKey: queryKeys.profileStreak(id),
     queryFn: () => getProfileStreakData(id),
     enabled: !!id,
-    staleTime: 1000 * 60 * 15,
+    ...CACHE.aggregate,
   })
 
   const countedWeeks = getCountedWeeks(streakQuery.data)
@@ -27,10 +29,10 @@ export default function useProfileStreak(userId) {
     countedWeeks.every(week => week.count > 0)
 
   const extendedQuery = useQuery({
-    queryKey: ['extendedStreak', id],
+    queryKey: queryKeys.extendedStreak(id),
     queryFn: () => getExtendedStreak(id),
     enabled: !!id && isSaturated,
-    staleTime: 1000 * 60 * 15,
+    ...CACHE.aggregate,
   })
 
   return {
