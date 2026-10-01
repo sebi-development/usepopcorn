@@ -1,7 +1,7 @@
 {
   "project": "usepopcorn",
   "audit_date": "2026-07-29",
-  "total_findings": 34,
+  "total_findings": 49,
   "findings": [
     {
       "id": "OPT-001",
@@ -485,6 +485,268 @@
       "problem": "Both hooks are plain useQuery calls that fetch the full RPC result with no LIMIT/offset or cursor. FriendActivityTab renders every friend who rated a title in one grid; the Community feed renders every feed row. Neither is bounded, so both grow unboundedly as follow counts and rating history grow, and the fix should follow the pagination pattern already established for Browse (useInfiniteQuery + a page-size cap, see MAX_ROW_PAGES in useCategoryMedia.js) rather than being solved twice, differently.",
       "fix": "Added one shared pagination system: src/utils/pagination.js (fromTmdb / fromCursorRpc / fromRange adapters, PAGE_SIZE / AUTO_PAGES / MAX_PAGES), usePagedList (capped infinite list with an auto -> manual -> capped phase) and usePagedGrid (numbered pages with prefetch), plus LoadMoreFooter. get_user_feed and get_friends_ratings now take p_limit + a (created_at, id) keyset cursor (p_limit clamped to 50 server-side; friends also return total_count), migration in supabase/migrations/20260928000000_paginate_feed_and_friends_ratings.sql, old signatures dropped. The feed loads 20 per page, 3 pages on scroll then a Load more button, hard cap 5 pages; the friend grid loads 12 per page by button only, cap 5 pages. Browse rows/grids and recommendation grids were migrated onto the same hooks, and the profile Recently rated row gained a View all numbered grid for full history. Removed the duplicated Browse/recommendation paging code and the unused useGetUserRatings hook. Note: get_user_feed already had LIMIT 50 (the original problem statement overstated it as unbounded); only get_friends_ratings was truly unbounded.",
       "effort_minutes": 60
+    },
+    {
+      "id": "OPT-036",
+      "title": "Adding a series to the watchlist or favorites is rejected by the database",
+      "category": "data-bug",
+      "priority": 36,
+      "severity": "critical",
+      "status": "pending",
+      "files": [
+        "supabase/migrations/20261001215847_interactions_media_type_tv.sql",
+        "src/features/interactions/components/WatchlistButton.jsx",
+        "src/features/interactions/components/FavoritesButton.jsx"
+      ],
+      "problem": "user_media_interactions_media_type_check only accepts 'movie' | 'series', but the app's media types are 'movie' | 'tv' everywhere (TMDB paths, ratings.type). The buttons send media_type = 'tv' for a series, so the insert fails: the card flips optimistically, shows the success toast, then rolls back with an error toast. Production confirms it: all 19 interaction rows are 'movie', none are series, while there are 21 series ratings.",
+      "fix": "Migration replaces the check with media_type in ('movie', 'tv'). No row uses 'series'. Not applied until `pnpm db:push`.",
+      "verify": "pnpm db:query \"select pg_get_constraintdef(oid) from pg_constraint where conname = 'user_media_interactions_media_type_check'\"  -- expect ARRAY['movie','tv']; then add a series to the watchlist in the app"
+    },
+    {
+      "id": "OPT-037",
+      "title": "SECURITY DEFINER read RPCs return any user's data to anonymous callers",
+      "category": "security",
+      "priority": 37,
+      "severity": "critical",
+      "status": "pending",
+      "files": [
+        "supabase/migrations/20261001211132_rpc_hardening.sql"
+      ],
+      "problem": "get_profile_stats, get_profile_heatmap, get_recent_weekly_activity, get_extended_streak and get_recommendation_seed were SECURITY DEFINER (bypassing RLS) with EXECUTE granted to anon. Run as role anon with no JWT, a direct read of ratings returns 0 rows but the RPCs returned a real user's stats (188 rated), heatmap and streak for a given uuid. The anon key ships in the JS bundle and user uuids appear in /profile/<uuid> URLs.",
+      "fix": "Switched the four live RPCs to SECURITY INVOKER (RLS already lets every signed-in user read ratings and profiles, so the app sees the same rows and anon sees none), dropped the unused get_recommendation_seed, revoked anon's EXECUTE on delete_user, and gave the handle_new_user trigger function an explicit empty search_path. Not applied until `pnpm db:push`.",
+      "verify": "pnpm db:query \"select proname, prosecdef, provolatile, proconfig from pg_proc where pronamespace = 'public'::regnamespace and prolang <> (select oid from pg_language where lanname = 'c') order by 1\"  -- prosecdef true only for delete_user and handle_new_user, both with a search_path"
+    },
+    {
+      "id": "OPT-038",
+      "title": "Read-only RPCs left VOLATILE; get_profile_stats.seriesRated always 0",
+      "category": "database",
+      "priority": 38,
+      "severity": "low",
+      "status": "pending",
+      "files": [
+        "supabase/migrations/20261001211132_rpc_hardening.sql"
+      ],
+      "problem": "Five read-only functions kept the default VOLATILE marker (get_suggested_users and the four in OPT-037). get_profile_stats counted series with type = 'series', which ratings_type_check never allows ('movie' | 'tv'), so seriesRated was always 0 (19 expected for the test user). Nothing in src/ reads seriesRated yet.",
+      "fix": "Marked them STABLE and fixed the filter to type = 'tv'. Honest scale note: these are top-level RPC calls on a 215-row table, so the marker changes no measurable timing today; it is correctness (read-only transaction) and planner hygiene.",
+      "verify": "pnpm db:query \"select public.get_profile_stats('<user uuid>') ->> 'seriesRated'\""
+    },
+    {
+      "id": "OPT-039",
+      "title": "RLS predicates run per row and block index use for user search and media state",
+      "category": "database",
+      "priority": 39,
+      "severity": "high",
+      "status": "pending",
+      "files": [
+        "supabase/migrations/20261001211130_rls_initplan_and_roles.sql",
+        "supabase/migrations/20261001211132_rpc_hardening.sql"
+      ],
+      "problem": "Every policy called auth.uid() / auth.role() bare and applied to role public. EXPLAIN as an authenticated user shows the predicate as a per-row Filter. Worse, as a security qual it stops non-leakproof user filters from being index conditions: get_my_media_state's `user_id = auth.uid()` on ratings could only seq-scan the whole table (even with enable_seqscan = off), and `username ilike '%x%'` can never use idx_profiles_username_trgm (0 scans; usable as soon as RLS is bypassed). get_my_media_state runs on every app load and after every toggle.",
+      "fix": "alter policy on all 12 policies: scoped to role authenticated; own-row predicates use (select auth.uid()) (InitPlan, once per statement); the three read-for-every-signed-in-user policies become using (true). get_my_media_state uses (select auth.uid()), which plans as an Index Scan on ratings. At 215 rows every query is already under 10 ms, so this is about how the plans scale, not today's latency. Storage policies were left alone (storage.objects is owned by supabase_storage_admin). Not applied until `pnpm db:push`.",
+      "verify": "pnpm db:query \"select tablename, policyname, roles, qual, with_check from pg_policies where schemaname = 'public' order by 1, 2\"  -- roles {authenticated}, no bare auth.uid()"
+    },
+    {
+      "id": "OPT-040",
+      "title": "Duplicate unique index and check constraint; follows not indexed by following_id",
+      "category": "database",
+      "priority": 40,
+      "severity": "medium",
+      "status": "pending",
+      "files": [
+        "supabase/migrations/20261001211134_index_cleanup.sql"
+      ],
+      "problem": "user_media_interactions had two identical unique constraints on (user_id, tmdb_id, interaction_type), so every toggle maintained both indexes. follows had the same self-follow check twice. follows was indexed (follower_id, following_id) only: lookups by following_id (mutual friends in get_suggested_users, the follows_following_fkey cascade on profile delete) walk the whole index.",
+      "fix": "Dropped the duplicates, added follows_following_id_idx. The remaining ratings indexes were each matched to a query by EXPLAIN and kept.",
+      "verify": "pnpm db:query \"select indexrelid::regclass, idx_scan from pg_stat_user_indexes where schemaname = 'public' order by 1\""
+    },
+    {
+      "id": "OPT-041",
+      "title": "Query cache held raw TMDB payloads (2.1 MB after a short session)",
+      "category": "memory",
+      "priority": 41,
+      "severity": "high",
+      "status": "done",
+      "files": [
+        "src/features/media_details/hooks/useMediaDetails.js",
+        "src/features/media_details/hooks/useSeasonDetails.js",
+        "src/features/media_details/hooks/useAllSeasonDetails.js",
+        "src/features/media_details/hooks/useExternalApis.js",
+        "src/utils/tmdbItem.js",
+        "src/utils/pagination.js",
+        "src/features/search/hooks/useSearch.js",
+        "src/services/tmdb.js"
+      ],
+      "problem": "The detail and season hooks trimmed TMDB responses in `select`, which runs after caching: the cache kept the full payload (cast and crew, every country's release dates and providers; every episode's crew and guest stars) and the selector re-ran on each render. Fight Club is 169 KB to show 0.7 KB of fields; Game of Thrones' 8 seasons are 793 KB (kept for an hour) to show 10 KB. List items carried overview, backdrop and other unused fields.",
+      "fix": "Normalise in the queryFn so the cache stores what the UI reads; list items go through toMediaItem; series no longer request credits (18-27% smaller response). Same scripted session (Home, 3 browse rows, 3 movies, 2 series with episodes, a search, profile): cached data 2090 KB -> 108 KB.",
+      "verify": "pnpm audit:cache"
+    },
+    {
+      "id": "OPT-042",
+      "title": "Cache lifetimes were ad-hoc numbers per hook",
+      "category": "memory",
+      "priority": 42,
+      "severity": "medium",
+      "status": "done",
+      "files": [
+        "src/lib/queryClient.js",
+        "src/main.jsx",
+        "src/features/search/hooks/useSearch.js",
+        "src/features/search/hooks/useUserSearch.js"
+      ],
+      "problem": "Search kept one entry per typed term for 5 min (title search) or 10 min (user search). Season data was kept for an hour, stats and suggestions had staleTime: Infinity (never refreshed while cached unless this device mutated them), and four hooks had no explicit staleTime.",
+      "fix": "CACHE tiers in src/lib/queryClient.js (ephemeral 0 / 1 min, user 5 / 10, aggregate 15 / 10, media 15 / 30, mediaList 15 / 15), spread into every query. OMDb scores keep their 1 h on purpose (daily request cap). Trade-off: retyping a search term within a minute now refetches it.",
+      "verify": "pnpm audit:cache  # search entries report gc=60s"
+    },
+    {
+      "id": "OPT-043",
+      "title": "Query keys were inline arrays; invalidation gaps and duplicate requests",
+      "category": "cache-bug",
+      "priority": 43,
+      "severity": "medium",
+      "status": "done",
+      "files": [
+        "src/lib/queryKeys.js",
+        "eslint.config.js",
+        "src/features/social/hooks/useFollow.js",
+        "src/features/profile/hooks/useProfileData.js",
+        "src/features/browse/hooks/useRecommendations.js",
+        "src/features/ratings/hooks/invalidateRatingQueries.js",
+        "src/pages/app/ProfilePage.jsx",
+        "src/services/follows.js",
+        "src/services/ratings.js"
+      ],
+      "problem": "Found while moving keys to one factory: (1) following / unfollowing never refreshed friend activity on detail pages; (2) deleting a rating only refreshed the current year's heatmap; (3) useFollow invalidated ['isFollowing', ...], a key no query used (useIsFollowing was dead code); (4) a friend's profile made 3 requests for follow state and counts that are never rendered, plus 2 for a watchlist and favorites RLS always returns empty; (5) the profile fetched the latest ratings and their count separately, then page 1 again on \"View all\"; (6) the recommendation row and its grid each fetched page 1.",
+      "fix": "queryKeys factory with an ESLint rule rejecting inline `queryKey: [...]`. Follow state comes from the followed-ids list, patched optimistically (the community follow buttons are now optimistic too). Rows share page 1 with their grid. Removed useIsFollowing, useProfileRelationship and five unused service functions. Friend's profile: 9 -> 4 Supabase requests; own profile: one fewer.",
+      "verify": "pnpm lint && pnpm audit:checks"
+    },
+    {
+      "id": "OPT-044",
+      "title": "Each MediaRow built its own Sets/Map from the media state",
+      "category": "rerender",
+      "priority": 44,
+      "severity": "low",
+      "status": "done",
+      "files": [
+        "src/features/interactions/hooks/useMediaState.js",
+        "src/pages/app/HomePage.jsx"
+      ],
+      "problem": "`select` runs per observer and every row is one, so each row derived and held its own favorites/watchlist/ratings lookups from the same payload. HomePage subscribed to the whole state to show one number, re-rendering on every toggle.",
+      "fix": "The derivation is memoised on the payload, so all observers share one set of lookups. HomePage uses useFavoritesCount (a `select` returning the number).",
+      "verify": "pnpm audit:checks"
+    },
+    {
+      "id": "OPT-045",
+      "title": "TMDB rows rendered the same title twice (duplicate React keys)",
+      "category": "runtime-bug",
+      "priority": 45,
+      "severity": "medium",
+      "status": "done",
+      "files": [
+        "src/components/media/MediaRow.jsx"
+      ],
+      "problem": "Popularity-sorted TMDB lists shift between page requests, so a title can come back on two pages: Trending at 5 pages returned 100 items, 93 unique. MediaRow keyed cards by id, so React logged duplicate-key errors and could duplicate or drop cards.",
+      "fix": "MediaRow drops repeats before rendering.",
+      "verify": "pnpm audit:checks  # 'row renders each title once'"
+    },
+    {
+      "id": "OPT-046",
+      "title": "Inspire search never showed its loading state",
+      "category": "runtime-bug",
+      "priority": 46,
+      "severity": "low",
+      "status": "done",
+      "files": [
+        "src/features/search/hooks/useSearch.js",
+        "src/features/browse/components/InspireSearch.jsx"
+      ],
+      "problem": "InspireSearch read `isFetching` from useSearch, which did not return it, so the spinner never rendered and 'No titles found' could show while a request was in flight.",
+      "fix": "useSearch returns isFetching.",
+      "verify": "Open Browse > Inspire and type: the search icon turns into a spinner while loading"
+    },
+    {
+      "id": "OPT-047",
+      "title": "Tap targets under 32px across the app (24 distinct at 375px)",
+      "category": "mobile",
+      "priority": 47,
+      "severity": "high",
+      "status": "done",
+      "files": [
+        "src/components/media/MediaCard.jsx",
+        "src/features/interactions/components/InteractionMenu.jsx",
+        "src/components/ui/ArrowLink.jsx",
+        "src/components/ui/Modal.jsx",
+        "src/features/ratings/components/StarRating.jsx",
+        "src/features/ratings/components/DeleteRating.jsx",
+        "src/features/social/components/UserResultItem.jsx",
+        "src/features/social/components/CommunityCard.jsx",
+        "src/features/profile/components/ActivityHeatmap.jsx",
+        "src/layout/Navbar.jsx",
+        "src/pages/app/ProfilePage.jsx",
+        "src/pages/app/HomePage.jsx",
+        "src/index.css"
+      ],
+      "problem": "On every card: the actions dots (28px) and the details chevron (24px). Also the rating stars (28x20), delete rating (29px), modal close (30px), follow (30px), profile action (28px tall), text links (16-24px tall), the logo, year arrows, and the Home favorites card whose only target was a 68x16 text link.",
+      "fix": "Controls reach 44px below md, either by size or by an invisible ::before that pads the tap area without moving anything (the two card controls keep their look). Controls also get touch-action: manipulation and no tap highlight. 375px: 44 undersized (24 under 32px) -> 22 (0 under 32px). At 320px one remains under 32px: ten stars across 272px are 27px wide (44px tall).",
+      "verify": "pnpm audit:mobile  (and W=320 H=568 pnpm audit:mobile)"
+    },
+    {
+      "id": "OPT-048",
+      "title": "iOS zooms the page on every form input; submit buttons 40px",
+      "category": "mobile",
+      "priority": 48,
+      "severity": "high",
+      "status": "done",
+      "files": [
+        "src/components/ui/Form.jsx",
+        "src/features/profile/components/CountrySelect.jsx",
+        "src/features/social/components/UserSearchWidget.jsx",
+        "src/pages/public/LandingPage.jsx",
+        "src/features/media_details/components/ActionSection.jsx"
+      ],
+      "problem": "Login, register, password reset, edit profile and the friend search used 14px inputs; iOS Safari zooms the page when a focused input is under 16px. Primary actions (form submit, landing CTAs, Add rating) were 40-44px tall.",
+      "fix": "Inputs are 16px below md (same pattern the Inspire search already used) and 46px tall. Primary actions are 52px below md. Desktop is unchanged.",
+      "verify": "pnpm audit:mobile  # no IOS-ZOOM lines"
+    },
+    {
+      "id": "OPT-049",
+      "title": "Mobile layout defects: clipped profile header, overlapping rating panel, unscrollable modal, CTA below the fold",
+      "category": "mobile",
+      "priority": 49,
+      "severity": "high",
+      "status": "done",
+      "files": [
+        "src/features/profile/components/ProfileHero.jsx",
+        "src/features/media_details/components/ActionSection.jsx",
+        "src/components/ui/Modal.jsx",
+        "src/index.css",
+        "src/layout/PublicLayout.jsx",
+        "src/features/profile/components/ProfileStats.jsx",
+        "src/pages/app/ProfileStatsPage.jsx",
+        "src/pages/app/CommunityPage.jsx",
+        "src/components/media/MediaRow.jsx"
+      ],
+      "problem": "(1) A long username pushed the profile header to 738px on a 375px screen, clipping the name, the meta line and the action. (2) The open rating panel covered the score and sat on the watchlist/favorite buttons, with the delete icon 10px above the heart. (3) At 320x568 the edit-profile modal was taller than the screen and could not scroll, so its title and Delete Account were unreachable. (4) The landing page's buttons were below the fold at 375x667. (5) The avatar's hover-only edit/remove buttons were invisible but tappable. (6) The row scroll arrows, also hover-only, sat invisibly over cards on touch. (7) Stats tiles stacked full-width; Community and Stats had doubled side gutters.",
+      "fix": "Header wraps and centres; the rating panel is in flow below md; the modal scrolls within the screen; landing spacing and headline sized for phones; the avatar overlay is not clickable until visible; arrows are hidden for coarse pointers; stat tiles sit two per row. Desktop geometry was diffed against main at 1280x800 on 14 screens: identical apart from the padded tap areas.",
+      "verify": "pnpm audit:checks"
+    },
+    {
+      "id": "OPT-050",
+      "title": "vh units and nested links",
+      "category": "mobile",
+      "priority": 50,
+      "severity": "low",
+      "status": "done",
+      "files": [
+        "src/layout/PublicLayout.jsx",
+        "src/pages/public/NotFoundPage.jsx",
+        "src/features/search/components/SearchOverlay.jsx",
+        "src/features/search/components/SearchResults.jsx",
+        "src/features/browse/components/CategoryRail.jsx",
+        "src/components/ui/Avatar.jsx"
+      ],
+      "problem": "min-h-screen / vh sizes are measured against the largest viewport, so they overshoot while the mobile address bar is showing. Avatar rendered its own <a> inside rows that are already links (invalid nesting, React hydration warnings on Community and Friend Activity).",
+      "fix": "dvh units; the search results list is capped to the viewport; Avatar is presentational.",
+      "verify": "grep -rnE \"h-screen|[0-9]vh\" src  # no matches; pnpm audit:mobile reports no consoleErrors"
     }
   ]
 }

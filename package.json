@@ -11,7 +11,10 @@
     "db:query": "supabase db query --linked",
     "db:new": "supabase migration new",
     "db:dry": "supabase db push --linked --dry-run",
-    "db:push": "supabase db push --linked"
+    "db:push": "supabase db push --linked",
+    "audit:mobile": "node scripts/audit/mobile.mjs",
+    "audit:cache": "node scripts/audit/cache.mjs",
+    "audit:checks": "node scripts/audit/checks.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.1",
