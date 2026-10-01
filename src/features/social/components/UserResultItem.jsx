@@ -30,7 +30,6 @@ const UserResultItem = memo(function UserResultItem({ user, subtitle, isFollowin
       className="flex items-center gap-3 p-2 rounded-xl border-b border-surface-100 last:border-transparent hover:bg-surface-100 transition-colors duration-200 cursor-pointer group/row"
     >
       <Avatar
-        userId={user.id}
         avatarUrl={user.avatar_url}
         username={user.username}
         sizeClass="w-9 h-9"
@@ -54,7 +53,7 @@ const UserResultItem = memo(function UserResultItem({ user, subtitle, isFollowin
         <button
           onClick={handleToggleFollow}
           disabled={isBusy}
-          className="relative flex items-center justify-center p-1.5 rounded-full transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
+          className="relative flex items-center justify-center w-11 h-11 md:w-auto md:h-auto md:p-1.5 rounded-full transition-transform active:scale-95 disabled:opacity-50 cursor-pointer"
           aria-label={isFollowing ? "Following" : "Follow user"}
         >
           {isFollowing ? (

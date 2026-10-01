@@ -15,7 +15,7 @@ export default function CommunityPage() {
   useFeedRealtime()
 
   return (
-    <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10 pb-12">
+    <main className="max-w-5xl w-full mx-auto sm:px-6 lg:px-8 py-6 md:py-10 pb-12">
       {/* DOM order is header, widgets, feed so mobile shows the widgets before the feed.
           On lg the widgets move to a right column spanning both rows. */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr] gap-x-8 gap-y-8 md:gap-y-10 items-start">

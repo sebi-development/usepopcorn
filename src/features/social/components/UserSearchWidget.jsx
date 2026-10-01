@@ -32,7 +32,7 @@ export default function UserSearchWidget() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search by username..."
-          className="w-full bg-surface-900 border border-white/5 rounded-xl h-10 pl-9 pr-3 text-text text-sm placeholder:text-text-muted outline-none focus:border-primary-light/50 focus:ring-1 focus:ring-primary-light/50 transition-all"
+          className="w-full bg-surface-900 border border-white/5 rounded-xl h-11 md:h-10 pl-9 pr-3 text-text text-base md:text-sm placeholder:text-text-muted outline-none focus:border-primary-light/50 focus:ring-1 focus:ring-primary-light/50 transition-all"
         />
       </div>
 

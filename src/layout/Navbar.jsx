@@ -29,7 +29,7 @@ const Navbar = memo(function Navbar({ isLoggedIn }) {
       px-4 py-2 md:px-6 md:py-3
       flex items-center justify-between gap-3 md:gap-4
     `}>
-      <Logo className="shrink-0" redirectTo={isLoggedIn ? '/browse' : '/'} />
+      <Logo className="shrink-0 py-2 -my-2" redirectTo={isLoggedIn ? '/browse' : '/'} />
       {isLoggedIn && <Search />}
       {isLoggedIn ? <UserMenu /> : <GuestActions />}
     </nav>

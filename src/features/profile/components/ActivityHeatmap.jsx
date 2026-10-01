@@ -104,7 +104,7 @@ export default function ActivityHeatmap({ data, year, onYearChange, minYear, isE
           <button
             onClick={() => onYearChange(year - 1)}
             disabled={!canGoBack}
-            className="p-1 rounded-md text-text-muted hover:bg-surface-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+            className="flex items-center justify-center w-11 h-11 md:w-auto md:h-auto md:p-1 rounded-md text-text-muted hover:bg-surface-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           >
             <HiChevronLeft size={16} />
           </button>
@@ -112,7 +112,7 @@ export default function ActivityHeatmap({ data, year, onYearChange, minYear, isE
           <button
             onClick={() => onYearChange(year + 1)}
             disabled={!canGoForward}
-            className="p-1 rounded-md text-text-muted hover:bg-surface-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+            className="flex items-center justify-center w-11 h-11 md:w-auto md:h-auto md:p-1 rounded-md text-text-muted hover:bg-surface-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
           >
             <HiChevronRight size={16} />
           </button>

@@ -5,7 +5,7 @@ const MAX_STAGGERED_ITEMS = 6
 
 function SearchResults({ results, media_type, onClose }) {
   return (
-    <div className="max-h-[28rem] overflow-y-auto divide-y divide-surface-100/60">
+    <div className="max-h-[min(28rem,65dvh)] overflow-y-auto overscroll-contain divide-y divide-surface-100/60">
       {!results?.length && (
         <p className="text-text-muted text-sm px-4 py-6 text-center">No results found</p>
       )}

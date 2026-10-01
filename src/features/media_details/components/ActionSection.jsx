@@ -20,10 +20,12 @@ export default memo(function ActionSection({ media, userScore, averageScore, isW
 
       <Score value={averageScore != null ? Math.round(averageScore * 10) : null} />
 
-      <div className="w-full relative flex items-center justify-center h-14">
+      {/* md+: a fixed 56px slot the star panel floats over. Below md the open panel is in flow
+          instead, so it pushes the dock down rather than covering the score and the buttons. */}
+      <div className="w-full relative flex items-center justify-center min-h-14 md:h-14">
         <button
           onClick={() => setIsRatingMode(true)}
-          className={`absolute px-6 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 hover:border-white/20 transition-all duration-200 cursor-pointer ${
+          className={`absolute min-h-[52px] md:min-h-0 px-6 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 hover:border-white/20 transition-all duration-200 cursor-pointer ${
             isRatingMode ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'
           }`}
         >
@@ -37,10 +39,10 @@ export default memo(function ActionSection({ media, userScore, averageScore, isW
         </button>
 
         {isRatingMode && (
-          <div className="absolute inset-x-0 flex justify-center animate-in fade-in zoom-in-95 duration-200">
+          <div className="w-full md:absolute md:inset-x-0 flex justify-center animate-in fade-in zoom-in-95 duration-200">
             <div
               ref={ratingPanelRef}
-              className="flex flex-wrap items-center justify-center gap-2 md:gap-4 w-full max-w-xs bg-surface-900/50 border border-white/5 backdrop-blur-md shadow-inner px-2 md:px-6 py-3 rounded-xl"
+              className="flex flex-wrap items-center justify-center gap-2 md:gap-4 w-full max-w-sm md:max-w-xs bg-surface-900/50 border border-white/5 backdrop-blur-md shadow-inner px-2 md:px-6 py-3 rounded-xl"
             >
               <StarRating
                 maxStars={10}

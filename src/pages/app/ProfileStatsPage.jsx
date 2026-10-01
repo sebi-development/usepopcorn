@@ -14,7 +14,7 @@ export default function ProfileStatsPage() {
   const { data: activity, isLoading: isActivityLoading, isError: isActivityError } = useProfileActivityData(userId, year)
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-12 w-full">
+    <main className="max-w-4xl mx-auto py-6 sm:px-6 sm:py-12 w-full">
 
       <ArrowLink to="/profile" direction="left" className="text-text-muted hover:text-white mb-8">
         Back to Profile

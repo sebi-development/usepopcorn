@@ -13,7 +13,7 @@ const CountrySelect = React.forwardRef(function CountrySelect({ ...props }, ref)
         <select
           ref={ref}
           {...props}
-          className="appearance-none w-full py-2 pl-4 pr-10 rounded-lg text-sm bg-surface-100 text-text border border-white/5 outline-none ring-0 transition-all duration-200 focus:border-primary focus:bg-surface-900/40 focus:shadow-inner cursor-pointer"
+          className="appearance-none w-full py-2.5 md:py-2 pl-4 pr-10 rounded-lg text-base md:text-sm bg-surface-100 text-text border border-white/5 outline-none ring-0 transition-all duration-200 focus:border-primary focus:bg-surface-900/40 focus:shadow-inner cursor-pointer"
         >
           <option value="" disabled>Select a country...</option>
           {options.map(({ code, name }) => (

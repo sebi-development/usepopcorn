@@ -72,7 +72,7 @@ function MediaCard({
       {/* Score chip, top-left on the heart's row. In "Recently rated" it is that row's score,
           everywhere else the signed-in user's own rating of the title. */}
       {userRating && (
-        <div className="absolute top-2 left-2 z-10 h-[30px] flex items-center">
+        <div className="absolute top-2 left-2 z-10 h-[34px] md:h-[30px] flex items-center">
           <Chip variant="ghost" size="sm" className="shadow-lg font-semibold">
             <RatingBadge text={userRating} size={14} />
           </Chip>
@@ -91,7 +91,8 @@ function MediaCard({
           <button
             type="button"
             onClick={(e) => { e.stopPropagation(); setInfoOpen((v) => !v); setInfoOpened(true) }}
-            className="absolute bottom-2 right-2 z-20 w-6 h-6 rounded-full cursor-pointer bg-surface-900/70 backdrop-blur-sm flex items-center justify-center text-text-muted transition-opacity duration-200 opacity-60 md:opacity-0 md:group-hover/card:opacity-100"
+            // The 24px chevron keeps its size; below md an invisible ::before makes the tap area 44px
+            className="absolute bottom-2 right-2 z-20 w-6 h-6 before:absolute before:-inset-2.5 md:before:hidden rounded-full cursor-pointer bg-surface-900/70 backdrop-blur-sm flex items-center justify-center text-text-muted transition-opacity duration-200 opacity-60 md:opacity-0 md:group-hover/card:opacity-100"
             aria-expanded={infoOpen}
             aria-label="Show details"
           >

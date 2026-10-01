@@ -10,7 +10,7 @@ const SEARCH_TABS = [
 
 function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 border-b border-surface-100">
+    <div className="flex items-center gap-3 px-4 py-2 border-b border-surface-100">
       {isLoading
         ? <LuLoaderCircle className="text-text-muted shrink-0 animate-spin" size={20} />
         : <FiSearch className="text-text-muted shrink-0" size={20} />
@@ -21,7 +21,7 @@ function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
         onChange={onChange}
         autoFocus
         placeholder="Search movies & series..."
-        className="w-full bg-transparent text-text text-lg placeholder:text-text-muted outline-none"
+        className="w-full h-11 bg-transparent text-text text-lg placeholder:text-text-muted outline-none"
       />
       <SlidingTabs
         tabs={SEARCH_TABS}

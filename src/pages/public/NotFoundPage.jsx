@@ -5,7 +5,7 @@ import Button from "@/components/ui/Button"
 export default function NotFoundPage() {
 
   return (
-    <main className="min-h-[80vh] flex flex-col items-center justify-center px-6 text-center">
+    <main className="min-h-[80dvh] flex flex-col items-center justify-center px-6 text-center">
       {/* Semantic Screen Reader Fallback */}
       <h1 className="sr-only">404 - Oops! Page Not Found</h1>
 

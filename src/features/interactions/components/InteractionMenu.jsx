@@ -3,9 +3,12 @@ import { PiDotsThreeVerticalBold } from "react-icons/pi"
 import FavoriteButton from "@/features/interactions/components/FavoritesButton"
 import WatchlistButton from "@/features/interactions/components/WatchlistButton"
 
-const ITEM_CLASS = "w-7 h-7 rounded-full flex items-center justify-center"
+// Below md the controls are 32px and an invisible ::before widens each tap area to 44px. It only
+// grows sideways (and upwards for the dots), so the stacked targets never overlap.
+const TAP_AREA = "before:absolute before:-inset-x-1.5 md:before:hidden"
+const ITEM_CLASS = `w-8 h-8 md:w-7 md:h-7 rounded-full flex items-center justify-center before:inset-y-0 ${TAP_AREA}`
 // The dots are the pill's raised capsule, visibly distinct from the plain action icons
-const DOTS_CLASS = "w-7 h-7 rounded-full flex items-center justify-center cursor-pointer bg-white/10 text-text hover:bg-white/20 transition-colors"
+const DOTS_CLASS = `relative w-8 h-8 md:w-7 md:h-7 rounded-full flex items-center justify-center cursor-pointer bg-white/10 text-text hover:bg-white/20 transition-colors before:-top-1.5 before:bottom-0 ${TAP_AREA}`
 
 // Height fold (grid rows 0fr <-> 1fr, same technique as the category rail). clip-y, not hidden, so
 // tooltips can still open sideways; `inert` keeps folded items out of hover and tab order.

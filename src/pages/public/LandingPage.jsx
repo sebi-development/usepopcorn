@@ -25,8 +25,8 @@ export default function LandingPage() {
           Search any film and series. Rate and keep track what you've seen, and store what you you will use in the future.
         </p>
         <div className="lp-cta-group">
-          <Button as={Link} to="/register" variant="solid" size="lg">Get started free</Button>
-          <Button as={Link} to="/login" variant="outline" size="lg">Sign in</Button>
+          <Button as={Link} to="/register" variant="solid" size="lg" className="h-[52px] md:h-auto">Get started free</Button>
+          <Button as={Link} to="/login" variant="outline" size="lg" className="h-[52px] md:h-auto">Sign in</Button>
         </div>
       </div>
 

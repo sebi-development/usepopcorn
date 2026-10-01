@@ -26,8 +26,9 @@ const Input = React.forwardRef(function Input({ name, type = 'text', label, erro
           type={type}
           ref={ref}
           {...props}
+          // text-base below md: iOS zooms the page when a focused input is under 16px
           className={`
-            w-full py-2 rounded-lg text-sm
+            w-full py-2.5 md:py-2 rounded-lg text-base md:text-sm
             bg-surface-100 text-text 
             border border-white/5
             outline-none ring-0
@@ -47,7 +48,7 @@ const Input = React.forwardRef(function Input({ name, type = 'text', label, erro
 
 function FormButton({ children, ...props }) {
   return (
-    <Button type='submit' className="w-full mt-2 py-2.5 text-sm font-semibold" {...props}>
+    <Button type='submit' className="w-full mt-2 h-[52px] md:h-auto py-2.5 text-sm font-semibold" {...props}>
       {children}
     </Button>
   )

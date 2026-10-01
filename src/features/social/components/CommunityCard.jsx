@@ -29,7 +29,7 @@ const ActivityCard = memo(function ActivityCard({ item }) {
         <div className="flex-1 min-w-0 leading-tight">
           <Link 
             to={`/profile/${item.user_id}`} 
-            className="font-bold text-text hover:text-primary-light transition-colors block truncate"
+            className="font-bold text-text hover:text-primary-light transition-colors block truncate py-2 -my-2"
           >
             {item.username}
           </Link>

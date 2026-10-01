@@ -7,7 +7,7 @@ export default function ProfileStats({ stats, isLoading, isError }) {
 
   if (isLoading) {
     return (
-      <div className="bento-grid">
+      <div className="bento-grid bento-grid--stats">
         <BentoCardSkeleton className="h-32" />
         <BentoCardSkeleton className="h-32" />
         <BentoCardSkeleton className="h-32" />
@@ -27,9 +27,9 @@ export default function ProfileStats({ stats, isLoading, isError }) {
 
   return (
     <section className="w-full">
-      <h2 className="text-text font-semibold text-xl mb-6 px-6 md:px-0">Your Cinematic Stats</h2>
+      <h2 className="text-text font-semibold text-xl mb-6">Your Cinematic Stats</h2>
 
-      <div className="bento-grid">
+      <div className="bento-grid bento-grid--stats">
 
         {/* Card 1: Total Rated */}
         <div className="bento-card">
@@ -90,7 +90,7 @@ export default function ProfileStats({ stats, isLoading, isError }) {
         <div className="bento-card bento-card--accent flex items-center justify-center text-center">
           <div>
             <p className="text-white/60 text-sm tracking-widest uppercase mb-2">Current Rank</p>
-            <p className="text-3xl font-black text-white leading-tight">
+            <p className="text-xl sm:text-3xl font-black text-white leading-tight break-words">
               {stats.totalRated > 250 ? 'Total Cinematist' : stats.totalRated > 150 ? 'Cinephile' : stats.totalRated > 100 ? 'Popcorn Enthusiast' : 'Casual Viewer'}
             </p>
           </div>

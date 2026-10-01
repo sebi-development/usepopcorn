@@ -10,6 +10,7 @@ function DeleteRating({ onClick, hasRating, className = '' }) {
         onClick={onClick}
         aria-label="Delete rating"
         className={`
+          inline-flex items-center justify-center min-w-11 min-h-11 md:min-w-0 md:min-h-0
           p-2 rounded-lg transition-colors duration-200 cursor-pointer
           text-text-muted hover:text-red-400/70 hover:bg-red-400/8
           ${className}

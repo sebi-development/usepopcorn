@@ -14,7 +14,6 @@ const FriendActivityItem = memo(function FriendActivityItem({ friend }) {
         className="flex items-center gap-2.5 shrink-0 min-w-[120px] group cursor-pointer"
       >
         <Avatar
-          userId={friend.user_id}
           username={friend.username}
           avatarUrl={friend.avatar_url}
           sizeClass="w-10 h-10"

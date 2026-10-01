@@ -268,7 +268,7 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
           transition-[width] duration-300 ease-out
           ${expanded ? "w-56" : "w-12"}
         `}
-        style={{ maxHeight: "calc(100vh - 4rem)" }}
+        style={{ maxHeight: "calc(100dvh - 4rem)" }}
       >
         {renderItems()}
       </div>

@@ -39,10 +39,10 @@ function ProfileHero({ profileData, ratingsCount, action, isOwnProfile = false }
 	}
 
 	return (
-		<div className="flex flex-col sm:flex-row items-center gap-8">
+		<div className="flex flex-col sm:flex-row items-center gap-5 sm:gap-8">
 			<div
 				onClick={() => isOwnProfile && fileInputRef.current?.click()}
-				className="relative w-40 h-40 rounded-full overflow-hidden bg-surface-500 border-2 border-surface-100 flex items-center justify-center cursor-pointer group transition-all"
+				className="relative shrink-0 w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden bg-surface-500 border-2 border-surface-100 flex items-center justify-center cursor-pointer group transition-all"
 			>
 				{isBusy && (
 					<div className="absolute inset-0 bg-surface-900/60 backdrop-blur-sm flex items-center justify-center z-20">
@@ -50,8 +50,10 @@ function ProfileHero({ profileData, ratingsCount, action, isOwnProfile = false }
 					</div>
 				)}
 
+				{/* Not clickable until it is visible: on touch there is no hover, and an invisible
+				    "remove avatar" button under the thumb would delete the photo on a stray tap */}
 				{isOwnProfile && !isBusy && (
-					<div className="absolute inset-0 bg-black/50 flex flex-row items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+					<div className="absolute inset-0 bg-black/50 flex flex-row items-center justify-center gap-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-200 z-10">
 						<button
 							onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
 							className="p-2 text-white cursor-pointer"
@@ -80,9 +82,10 @@ function ProfileHero({ profileData, ratingsCount, action, isOwnProfile = false }
 				)}
 			</div>
 
-			<div className="flex flex-col gap-3">
-				<h1 className="text-5xl font-bold text-text">{profileData?.username}</h1>
-				<div className="flex items-center gap-3 text-text-muted text-sm">
+			{/* min-w-0 + break-words: a long username wraps instead of pushing the column off-screen */}
+			<div className="flex flex-col gap-3 min-w-0 max-w-full items-center text-center sm:items-stretch sm:text-left">
+				<h1 className="max-w-full text-3xl sm:text-5xl font-bold text-text break-words">{profileData?.username}</h1>
+				<div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1 text-text-muted text-sm">
 					<span>{ratingsCount ?? 0} ratings</span>
 					<span>•</span>
 					{memberSince && <span>Member since {memberSince}</span>}

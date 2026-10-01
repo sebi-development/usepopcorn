@@ -10,7 +10,8 @@ import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
 import Chip from "@/components/ui/Chip"
 
-const SCROLLER_CLASS = "flex gap-3 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-6 pb-2 scrollbar-hide"
+// overscroll-x-contain: reaching the end of a row must not turn into the browser's swipe-back
+const SCROLLER_CLASS = "flex gap-3 overflow-x-auto overscroll-x-contain -mx-4 px-4 md:mx-0 md:px-6 pb-2 scrollbar-hide"
 const CARD_SLOT_CLASS = "flex-none w-32 sm:w-40 md:w-44"
 
 function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
@@ -18,7 +19,7 @@ function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
     <button
       type="button"
       onClick={onToggle}
-      className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text hover:bg-surface-500 px-3 py-2.5 md:py-1.5 rounded-md transition-colors duration-200 cursor-pointer"
+      className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text hover:bg-surface-500 px-3 py-3 md:py-1.5 rounded-md transition-colors duration-200 cursor-pointer"
     >
       {isLoadingFirstPage ? (
         <span className="w-3.5 h-3.5 border-2 border-text-muted/40 border-t-text-muted rounded-full animate-spin" />
@@ -87,7 +88,20 @@ function MediaRow({
   gridItems, gridError, page = 1, totalPages = 1, onPageChange,
 }) {
   // Row data — an array of normalised items (see src/utils/pagination.js)
-  const media = useMemo(() => (Array.isArray(data) ? data.slice(0, limit) : []), [data, limit])
+  // TMDB's popularity-sorted lists shift between page requests, so a title can come back on two
+  // pages. Rendering it twice would also give two cards the same key.
+  const media = useMemo(() => {
+    if (!Array.isArray(data)) return []
+    const seen = new Set()
+    return data
+      .filter((item) => {
+        const id = item.tmdb_id || item.id
+        if (seen.has(id)) return false
+        seen.add(id)
+        return true
+      })
+      .slice(0, limit)
+  }, [data, limit])
 
   // One subscription per row; cards receive primitives so only the affected card re-renders
   const { favorites, watchlist, ratings } = useMediaState()
@@ -198,9 +212,10 @@ function MediaRow({
         </div>
       ) : (
         <div className="relative group/row">
-          {/* Left arrow */}
+          {/* Left arrow. Hover-revealed, so on touch (no hover) it would be an invisible button
+              stealing taps from the card under it: there the row is swiped instead. */}
           {showLeft && (
-            <button onClick={handleScrollLeft} className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex items-center justify-center text-text-muted opacity-0 group-hover/row:opacity-100 hover:scale-110 hover:bg-surface-800 transition-all duration-200">
+            <button onClick={handleScrollLeft} className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex pointer-coarse:hidden items-center justify-center text-text-muted opacity-0 group-hover/row:opacity-100 hover:scale-110 hover:bg-surface-800 transition-all duration-200">
               <FiChevronLeft size={16} />
             </button>
           )}
@@ -224,7 +239,7 @@ function MediaRow({
 
           {/* Right arrow */}
           {showRight && (
-            <button onClick={handleScrollRight} className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex items-center justify-center text-text-muted opacity-0 group-hover/row:opacity-100 hover:scale-110 hover:bg-surface-800 transition-all duration-200">
+            <button onClick={handleScrollRight} className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex pointer-coarse:hidden items-center justify-center text-text-muted opacity-0 group-hover/row:opacity-100 hover:scale-110 hover:bg-surface-800 transition-all duration-200">
               <FiChevronRight size={16} />
             </button>
           )}
