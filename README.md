@@ -2,6 +2,21 @@
 
 A movie and series discovery and social tracking platform. Users browse TMDB catalogues, rate titles, follow other users, and get analytics on their own viewing history. Analytics, aggregation and social-graph queries run inside PostgreSQL as 12 custom PL/pgSQL / SQL functions. The client receives pre-shaped `jsonb` or scalar results, not raw rows to reduce.
 
+**Live demo:** [https://usepopcorn.sebik.me/](https://usepopcorn.sebik.me/) · **Demo account:** [DEMO_EMAIL] / [DEMO_PASSWORD]
+
+<p align="center"><img src="docs/screenshots/demo.gif" width="800" alt="Short demo: expanding a row into a paginated grid with no layout flash"></p>
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/hero-page.jpg" alt="Landing page with the headline 'Your personal cinema companion', Get started free and Sign in buttons, and feature cards for search and watch stats"></td>
+    <td><img src="docs/screenshots/homepage.jpg" alt="Signed-in home page with a weekly streak card, movie and series of the month, a favorites card, and a 'Because you loved The Odyssey' recommendation row"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/detail-page.jpg" alt="Title page for Marty Supreme with poster, genres, popcorn score badge, the user's own 10/10 rating, and Overview, Critic Scores and Friend Activity tabs"></td>
+    <td><img src="docs/screenshots/stats-page.jpg" alt="Stats page with titles rated, average rating, watch time, most watched genres, current rank and a yearly activity heatmap"></td>
+  </tr>
+</table>
+
 - **Client:** React 19, Vite, Tailwind CSS v4, TanStack Query v5, React Router v7 (data router)
 - **Backend:** Supabase (Auth, PostgreSQL, Realtime, Storage). There is no application server. The browser talks to Supabase (PostgREST and RPC) and to TMDB / OMDb directly.
 - **Language:** plain JavaScript / JSX, no TypeScript, no test suite. Lint: ESLint 10 flat config.
