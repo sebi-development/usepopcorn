@@ -1,10 +1,10 @@
--- REFERENCE SNAPSHOT of the live DB (pulled 2026-10-01). NOT a migration - never applied from here.
+-- REFERENCE SNAPSHOT of the live DB (pulled 2026-10-02). NOT a migration - never applied from here.
 -- Change it via: pnpm db:new <name> -> edit the new file in supabase/migrations -> pnpm db:dry -> pnpm db:push
 
 CREATE OR REPLACE FUNCTION public.get_profile_stats(p_user_id uuid)
  RETURNS jsonb
  LANGUAGE sql
- SECURITY DEFINER
+ STABLE
  SET search_path TO 'public'
 AS $function$
   with my_ratings as (
@@ -28,7 +28,7 @@ AS $function$
     'totalRated', (select count(*) from my_ratings),
     'averageScore', (select round(avg(score)::numeric, 1) from my_ratings),
     'moviesRated', (select count(*) filter (where type = 'movie') from my_ratings),
-    'seriesRated', (select count(*) filter (where type = 'series') from my_ratings),
+    'seriesRated', (select count(*) filter (where type = 'tv') from my_ratings),
     'totalWatchHours', (select round(sum(runtime) filter (where type = 'movie') / 60.0, 1) from my_ratings),
     'topGenres', (
       select jsonb_agg(jsonb_build_object('type', type, 'genreId', genre_id, 'count', genre_count))

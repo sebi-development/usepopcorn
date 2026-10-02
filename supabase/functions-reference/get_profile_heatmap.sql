@@ -1,10 +1,10 @@
--- REFERENCE SNAPSHOT of the live DB (pulled 2026-10-01). NOT a migration - never applied from here.
+-- REFERENCE SNAPSHOT of the live DB (pulled 2026-10-02). NOT a migration - never applied from here.
 -- Change it via: pnpm db:new <name> -> edit the new file in supabase/migrations -> pnpm db:dry -> pnpm db:push
 
 CREATE OR REPLACE FUNCTION public.get_profile_heatmap(p_user_id uuid, p_year integer)
  RETURNS jsonb
  LANGUAGE sql
- SECURITY DEFINER
+ STABLE
  SET search_path TO 'public'
 AS $function$
   with profile_start as (

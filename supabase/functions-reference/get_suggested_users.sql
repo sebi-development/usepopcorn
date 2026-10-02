@@ -1,9 +1,10 @@
--- REFERENCE SNAPSHOT of the live DB (pulled 2026-10-01). NOT a migration - never applied from here.
+-- REFERENCE SNAPSHOT of the live DB (pulled 2026-10-02). NOT a migration - never applied from here.
 -- Change it via: pnpm db:new <name> -> edit the new file in supabase/migrations -> pnpm db:dry -> pnpm db:push
 
 CREATE OR REPLACE FUNCTION public.get_suggested_users(current_user_id uuid)
  RETURNS TABLE(id uuid, username text, avatar_url text, recent_activity_count bigint, mutual_friend_count bigint, suggestion_score bigint)
  LANGUAGE plpgsql
+ STABLE
 AS $function$
 BEGIN
   RETURN QUERY
