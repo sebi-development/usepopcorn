@@ -16,7 +16,7 @@ function DeleteRating({ onClick, hasRating, className = '' }) {
           ${className}
         `}
       >
-        <FaTrash size={13} />
+        <FaTrash size={12} />
       </button>
     </Tooltip>
   )

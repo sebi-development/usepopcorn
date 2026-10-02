@@ -42,30 +42,29 @@ export default memo(function ActionSection({ media, userScore, averageScore, isW
           <div className="w-full md:absolute md:inset-x-0 flex justify-center animate-in fade-in zoom-in-95 duration-200">
             <div
               ref={ratingPanelRef}
-              className="flex flex-wrap items-center justify-center gap-2 md:gap-4 w-full max-w-sm md:max-w-xs bg-surface-900/50 border border-white/5 backdrop-blur-md shadow-inner px-2 md:px-6 py-3 rounded-xl"
+              // md+: wider than the ~240px rating column (the flex parent centres the overflow) and one row, so the delete icon sits beside the stars
+              className="flex items-center justify-center w-full max-w-sm md:w-88 md:max-w-none bg-surface-900/50 border border-white/5 backdrop-blur-md shadow-inner px-2 md:px-5 py-2.5 rounded-xl"
             >
               <StarRating
                 maxStars={10}
-                size={18}
+                size={24}
                 rating={userScore || 0}
                 onRate={(score) => {
                   onRate(score)
                   setIsRatingMode(false)
                 }}
-              />
-
-              {hasRated && (
-                <>
-                  <div className="hidden md:block w-[1px] h-6 bg-white/10" />
+              >
+                {hasRated && (
                   <DeleteRating
+                    className="md:p-1"
                     onClick={() => {
                       onDelete()
                       setIsRatingMode(false)
                     }}
                     hasRating={true}
                   />
-                </>
-              )}
+                )}
+              </StarRating>
             </div>
           </div>
         )}
