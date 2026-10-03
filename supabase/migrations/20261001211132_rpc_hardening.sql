@@ -82,5 +82,5 @@ alter function public.handle_new_user() set search_path = '';
 -- delete_user deletes the caller's own auth.users row; an anonymous caller has no row to delete.
 revoke execute on function public.delete_user() from public, anon;
 
--- Unused since the Home rows were seeded from get_best_rated_since (OPT-033); no callers in src/.
+-- Unused since the Home rows were seeded from get_best_rated_since; no callers in src/.
 drop function if exists public.get_recommendation_seed(uuid);
