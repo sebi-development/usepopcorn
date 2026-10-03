@@ -3,6 +3,10 @@ import { getMediaDetails } from "@/services/tmdb";
 import { extractRegionalData } from "@/utils/extractRegionalData";
 import queryKeys from "@/lib/queryKeys";
 import { CACHE } from "@/lib/queryClient";
+import { toMediaItem } from "@/utils/tmdbItem";
+
+// The Similar tab is one short row; the paged list lives in Inspire
+const SIMILAR_LIMIT = 12;
 
 // TMDB's detail payload carries the full cast and crew plus release dates and streaming providers
 // for every country: hundreds of KB for a big title. The detail page reads a few dozen fields, so
@@ -23,6 +27,7 @@ function toMediaDetails(data, type, userCountry) {
     type,
     certification,
     providers,
+    similar: data.recommendations?.results?.slice(0, SIMILAR_LIMIT).map(toMediaItem) ?? [],
   };
 
   if (type === 'movie') {

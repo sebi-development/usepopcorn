@@ -150,7 +150,7 @@ function MediaRow({
 
   if (isLoading) return (
     <div>
-      <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>
+      {heading && <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>}
       <div className={SCROLLER_CLASS}>
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className={CARD_SLOT_CLASS}>
@@ -163,7 +163,7 @@ function MediaRow({
 
   if (isError) return (
     <div>
-      <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>
+      {heading && <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>}
       <AlertBanner variant="danger" message="Couldn't load this. Please try again." />
     </div>
   )
@@ -171,16 +171,19 @@ function MediaRow({
 
   return (
     <div ref={containerRef}>
-      <div className="flex items-center justify-between mb-4 md:px-6">
-        <h2 className="text-text font-semibold text-xl">{heading}</h2>
-        {expandable && (
-          <ExpandToggle
-            isExpanded={isExpanded}
-            isLoadingFirstPage={isLoadingFirstPage}
-            onToggle={onToggleExpand}
-          />
-        )}
-      </div>
+      {/* Optional: a host that titles the row itself (e.g. a detail page tab) passes no heading */}
+      {(heading || expandable) && (
+        <div className="flex items-center justify-between mb-4 md:px-6">
+          <h2 className="text-text font-semibold text-xl">{heading}</h2>
+          {expandable && (
+            <ExpandToggle
+              isExpanded={isExpanded}
+              isLoadingFirstPage={isLoadingFirstPage}
+              onToggle={onToggleExpand}
+            />
+          )}
+        </div>
+      )}
 
       {showGrid ? (
         <div className="md:px-6">

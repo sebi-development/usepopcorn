@@ -17,10 +17,11 @@ export async function searchContent(query, type = 'movie') {
 }
 
 export async function getMediaDetails(id, type = 'movie') {
-  // credits is only read for a movie's director, so series don't request it
+  // credits is only read for a movie's director, so series don't request it.
+  // recommendations feeds the Similar tab and tells the page whether to show it, without a second request.
   const append = type === 'movie'
-    ? '?append_to_response=release_dates,watch%2Fproviders,credits' // movies endpoint
-    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids'; // series endpoint
+    ? '?append_to_response=release_dates,watch%2Fproviders,credits,recommendations' // movies endpoint
+    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids,recommendations'; // series endpoint
   return tmdbFetch(`/${type}/${id}${append}`);
 }
 
