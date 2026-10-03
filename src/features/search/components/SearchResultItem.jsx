@@ -7,7 +7,7 @@ import getTmdbImageUrl from "@/utils/tmdbImage"
 
 const SearchResultItem = memo(function SearchResultItem({ id, title, poster, releaseYear, media_type, genreIds, onClose, animationDelay = 0 }) {
   const navigate = useNavigate()
-  // OPT-029: memoize genre lookup to avoid recomputing on every render
+  // Memoize genre lookup to avoid recomputing on every render
   const genres = useMemo(() => getGenreNames(genreIds, media_type), [genreIds, media_type])
 
   function handleClick() {

@@ -60,7 +60,7 @@ function SeasonEpisodes({ tvId, seasonNumber }) {
     <AlertBanner variant='danger' message="Could not load episodes. Please try again later." />
   )
 
-  // Compute once per list render — primitive string for memo-friendly props (OPT-027)
+  // Compute once per list render — primitive string for memo-friendly props
   const todayISO = new Date().toISOString().split('T')[0]
 
   return (

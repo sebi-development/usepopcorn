@@ -27,7 +27,7 @@ function CriticScoresSkeleton() {
 }
 
 function CriticScoresTab({ imdbId, prefetchedQuery }) {
-  // OPT-018: use pre-fetched query from parent when available, fall back to own fetch
+  // Use pre-fetched query from parent when available, fall back to own fetch
   const ownQuery = useExternalApis(prefetchedQuery ? null : imdbId)
   const { data: scores, isLoading, isError } = prefetchedQuery || ownQuery
   const showLoading = useDelayedLoading(isLoading)
