@@ -3,9 +3,6 @@
 A movie and series discovery and social tracking platform. Users browse TMDB catalogues, rate titles, follow other users, and get analytics on their own viewing history. Analytics, aggregation and social-graph queries run inside PostgreSQL as 12 custom PL/pgSQL / SQL functions. The client receives pre-shaped `jsonb` or scalar results, not raw rows to reduce.
 
 **Live demo:** [https://usepopcorn.sebik.me/](https://usepopcorn.sebik.me/)
-
-<p align="center"><img src="docs/screenshots/demo.gif" width="800" alt="Short demo: expanding a row into a paginated grid with no layout flash"></p>
-
 <table>
   <tr>
     <td><img src="docs/screenshots/hero-page.jpg" alt="Landing page with the headline 'Your personal cinema companion', Get started free and Sign in buttons, and feature cards for search and watch stats"></td>
