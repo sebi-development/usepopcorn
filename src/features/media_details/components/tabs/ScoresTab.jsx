@@ -5,14 +5,13 @@ import useExternalApis from "@/features/media_details/hooks/useExternalApis"
 import BentoGrid from "@/components/ui/BentoGrid"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
-import useDelayedLoading from "@/hooks/useDelayedLoading"
 
 // Below sm each platform is one compact row (label left, score right ≈ 56px) instead of a 140px tile
 const SCORE_CARD_CLASS = "flex flex-row-reverse items-center justify-between p-4 sm:flex-col sm:p-6 sm:min-h-35"
 
 function CriticScoresSkeleton() {
   return (
-    <BentoGrid>
+    <BentoGrid className="delayed-reveal">
       {[1, 2, 3].map((i) => (
         <BentoGrid.Card key={i} className={SCORE_CARD_CLASS}>
           <div className="flex items-center gap-2.5">
@@ -30,7 +29,6 @@ function CriticScoresTab({ imdbId, prefetchedQuery }) {
   // Use pre-fetched query from parent when available, fall back to own fetch
   const ownQuery = useExternalApis(prefetchedQuery ? null : imdbId)
   const { data: scores, isLoading, isError } = prefetchedQuery || ownQuery
-  const showLoading = useDelayedLoading(isLoading)
 
   const platforms = useMemo(() => {
     if (!scores) return []
@@ -65,7 +63,7 @@ function CriticScoresTab({ imdbId, prefetchedQuery }) {
     )
   }
 
-  if (showLoading) return <CriticScoresSkeleton />
+  if (isLoading) return <CriticScoresSkeleton />
 
   if (isError) {
     return (

@@ -73,6 +73,8 @@ function PaginationControls({ page, totalPages, onPageChange, isPending, contain
 
 function MediaRow({
   heading, data, isLoading, isError, limit = Infinity,
+  // Hold the loading skeleton back 150ms (delayed-reveal) so a fast response never flashes it
+  delaySkeleton = false,
   // Row infinite scroll: `hasMore` mounts the sentinel that calls `onLoadMore`
   onLoadMore, hasMore = false,
   rank = true, showFavorite = false,
@@ -149,7 +151,7 @@ function MediaRow({
   }
 
   if (isLoading) return (
-    <div>
+    <div className={delaySkeleton ? "delayed-reveal" : undefined}>
       {heading && <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>}
       <div className={SCROLLER_CLASS}>
         {Array.from({ length: 8 }).map((_, i) => (

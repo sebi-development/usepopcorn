@@ -5,12 +5,10 @@ import useFeed from "@/features/social/hooks/useFeed"
 import useFeedRealtime from "@/features/social/hooks/useFeedRealtime"
 import UserSearchWidget from "@/features/social/components/UserSearchWidget"
 import SuggestedUsersWidget from "@/features/social/components/SuggestedUsersWidget"
-import useDelayedLoading from "@/hooks/useDelayedLoading"
 import LoadMoreFooter from "@/components/ui/LoadMoreFooter"
 
 export default function CommunityPage() {
   const { items: feed, isLoading, phase, pageCount, fetchMore, isFetchingNextPage } = useFeed()
-  const showLoading = useDelayedLoading(isLoading)
 
   useFeedRealtime()
 
@@ -39,25 +37,29 @@ export default function CommunityPage() {
           {/* Background Line */}
           <div className="absolute top-10 bottom-10 left-4.75 w-0.5 bg-surface-100 rounded-full" />
 
-          {showLoading && Array.from({ length: 3 }).map((_, i) => (
-            <TimelineRow key={i}>
-              <CommunityCardSkeleton />
-            </TimelineRow>
-          ))}
+          {isLoading && (
+            <div className="flex flex-col gap-6 delayed-reveal">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <TimelineRow key={i}>
+                  <CommunityCardSkeleton />
+                </TimelineRow>
+              ))}
+            </div>
+          )}
 
-          {!showLoading && feed?.length === 0 && (
+          {feed?.length === 0 && (
             <p className="text-text-muted text-sm pl-2">
               You're not following anyone yet. Find friends to see their activity.
             </p>
           )}
 
-          {!showLoading && feed?.map((feedItem) => (
+          {feed?.map((feedItem) => (
             <TimelineRow key={feedItem.id} sticky>
               <ActivityCard item={feedItem} />
             </TimelineRow>
           ))}
 
-          {!showLoading && feed && (
+          {feed && (
             <LoadMoreFooter
               phase={phase}
               pageCount={pageCount}

@@ -11,7 +11,6 @@ import useFollowingIds from "@/features/social/hooks/useFollowingIds"
 import useFollow from "@/features/social/hooks/useFollow"
 import { useParams } from "react-router"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
-import useDelayedLoading from "@/hooks/useDelayedLoading"
 
 const EditProfileModal = lazy(() => import("../../features/profile/components/EditProfileModal"))
 
@@ -25,7 +24,6 @@ function ProfilePage() {
   const targetUserId = userId ?? currentUser?.id
 
   const { profileData, recentRatings, ratingsCount, isLoadingProfile, isLoadingRatings } = useProfileData(targetUserId)
-  const showLoadingProfile = useDelayedLoading(isLoadingProfile)
   // Watchlist and favorites are private (RLS returns them to their owner only), so on someone
   // else's profile the two requests would always come back empty
   const { data: watchlist, isLoading: isWatchlistLoading } = useInteractions("watchlist", targetUserId, { enabled: isOwnProfile })
@@ -53,7 +51,7 @@ function ProfilePage() {
 
   return (
     <main className="flex flex-col gap-12 md:gap-16 pb-12">
-      {showLoadingProfile ? (
+      {isLoadingProfile ? (
         <ProfileHeroSkeleton />
       ) : (
         <ProfileHero

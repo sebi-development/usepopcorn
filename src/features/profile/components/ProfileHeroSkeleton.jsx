@@ -2,7 +2,7 @@ import SkeletonBox from '@/components/ui/SkeletonBox'
 
 export default function ProfileHeroSkeleton() {
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-8">
+    <div className="flex flex-col sm:flex-row items-center gap-8 delayed-reveal">
 
       {/* Avatar circle */}
       <SkeletonBox className="w-40 h-40 rounded-full shrink-0" />

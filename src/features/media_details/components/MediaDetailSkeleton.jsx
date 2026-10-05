@@ -3,7 +3,7 @@ import SkeletonText from '@/components/ui/SkeletonText'
 
 export default function MediaDetailSkeleton() {
   return (
-    <div className="media-detail-grid">
+    <div className="media-detail-grid delayed-reveal">
 
       {/* Poster */}
       <div className="[grid-area:poster]">

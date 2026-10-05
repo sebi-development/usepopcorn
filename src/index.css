@@ -338,6 +338,19 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Loading skeletons stay hidden for 150ms so a fast response never flashes one, then appear
+   at once (0s duration: an instant reveal, not a fade). Pure CSS: no timer, no extra render */
+@keyframes reveal {
+  from {
+    visibility: hidden;
+  }
+}
+
+@utility delayed-reveal {
+  animation: reveal 0s 150ms both;
+}
+
 /* ── Background Mesh & Noise ── */
 @layer utilities {
   .bg-noise {

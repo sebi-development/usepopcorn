@@ -2,7 +2,7 @@ import FriendActivityItemSkeleton from "@/features/media_details/components/Frie
 
 export default function FriendActivityTabSkeleton() {
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-5 delayed-reveal">
 
       {/* Header skeleton — mirrors title + count pill */}
       <div className="flex items-center justify-between">

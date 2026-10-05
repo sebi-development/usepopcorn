@@ -1,6 +1,5 @@
 import AlertBanner from "@/components/ui/AlertBanner"
 import FriendActivityTabSkeleton from "@/features/media_details/components/FriendActivityTabSkeleton"
-import useDelayedLoading from "@/hooks/useDelayedLoading"
 import useFriendsRatings from "@/features/social/hooks/useFriendsRatings"
 import FriendActivityItem from "@/features/media_details/components/FriendActivityItem"
 import LoadMoreFooter from "@/components/ui/LoadMoreFooter"
@@ -9,9 +8,8 @@ export default function FriendActivityTab({ tmdbId }) {
   const {
     items: friends, total, isLoading, isError, phase, pageCount, fetchMore, isFetchingNextPage,
   } = useFriendsRatings(tmdbId)
-  const showLoading = useDelayedLoading(isLoading)
 
-  if (showLoading) {
+  if (isLoading) {
     return <FriendActivityTabSkeleton />
   }
 

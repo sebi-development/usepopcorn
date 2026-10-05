@@ -3,7 +3,6 @@ import { FiLoader } from "react-icons/fi"
 import useSuggestedUsers from "@/features/social/hooks/useSuggestedUsers"
 import useFollowingIds from "@/features/social/hooks/useFollowingIds"
 import UserResultItem from "@/features/social/components/UserResultItem"
-import useDelayedLoading from "@/hooks/useDelayedLoading"
 
 function getSuggestionSubtitle(user) {
   if (user.mutual_friend_count > 0) {
@@ -19,7 +18,6 @@ function getSuggestionSubtitle(user) {
 export default function SuggestedUsersWidget() {
   const { data: suggestions, isLoading } = useSuggestedUsers()
   const { followingSet } = useFollowingIds()
-  const showLoading = useDelayedLoading(isLoading)
 
   // Precompute subtitles once per data change, not once per render.
   // Cheap either way at 4 items, but this is the correct habit for list-derived data.
@@ -30,9 +28,9 @@ export default function SuggestedUsersWidget() {
     })) ?? []
   }, [suggestions])
 
-  if (showLoading) {
+  if (isLoading) {
     return (
-      <div className="bg-surface-500 border border-surface-100 rounded-card p-5 flex justify-center py-10">
+      <div className="bg-surface-500 border border-surface-100 rounded-card p-5 flex justify-center py-10 delayed-reveal">
         <FiLoader className="animate-spin text-primary-light" size={20} />
       </div>
     )

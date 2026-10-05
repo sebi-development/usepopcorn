@@ -17,7 +17,6 @@ import ScoresTab from "@/features/media_details/components/tabs/ScoresTab"
 import OverviewTab from "@/features/media_details/components/tabs/OverviewTab"
 import SeasonsTab from "@/features/media_details/components/tabs/SeasonsTab"
 import SkeletonBox from "@/components/ui/SkeletonBox"
-import useDelayedLoading from "@/hooks/useDelayedLoading"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
 const SECTION_HEADER_CLASS = "text-sm font-semibold text-text-muted uppercase tracking-widest mb-3"
@@ -25,12 +24,10 @@ const SECTION_HEADER_CLASS = "text-sm font-semibold text-text-muted uppercase tr
 // Few users open it, so its chunk is only requested on the first click of the tab
 const SimilarTab = lazy(() => import("@/features/media_details/components/tabs/SimilarTab"))
 
-// Shown only if the chunk takes longer than the usual loading delay
+// Shown only if the chunk takes longer than the usual loading delay (delayed-reveal)
 function SimilarFallback() {
-  const show = useDelayedLoading(true)
-  if (!show) return null
   return (
-    <div className="flex gap-3 overflow-hidden md:px-6">
+    <div className="flex gap-3 overflow-hidden md:px-6 delayed-reveal">
       {Array.from({ length: 6 }).map((_, i) => (
         <SkeletonBox key={i} className="flex-none w-32 sm:w-40 md:w-44 aspect-2/3 rounded-card" />
       ))}
@@ -90,7 +87,6 @@ export default function DetailPage() {
 
   // ── Media ────────────────────────────────────────────────
   const { data, isLoading, error: errorDetailData } = useMediaDetails(tmdbId, type)
-  const showLoading = useDelayedLoading(isLoading)
 
   // Titles TMDB has no recommendations for get no Similar tab
   const hasSimilar = data?.similar?.length > 0
@@ -117,7 +113,7 @@ export default function DetailPage() {
     type === 'tv' && seasonsTabVisited
   )
 
-  if (showLoading) return <MediaDetailSkeleton />
+  if (isLoading) return <MediaDetailSkeleton />
   if (errorDetailData) return <AlertBanner message='Error fetching data. Please try again' variant="danger" />
   if (!data) return null
 
