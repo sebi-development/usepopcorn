@@ -72,7 +72,7 @@ function MediaCard({
       {/* Score chip, top-left on the heart's row. In "Recently rated" it is that row's score,
           everywhere else the signed-in user's own rating of the title. */}
       {userRating && (
-        <div className="absolute top-2 left-2 z-10 h-[34px] md:h-[30px] flex items-center">
+        <div className="absolute top-2 left-2 z-10 h-8.5 md:h-7.5 flex items-center">
           <Chip variant="ghost" size="sm" className="shadow-lg font-semibold">
             <RatingBadge text={userRating} size={14} />
           </Chip>
