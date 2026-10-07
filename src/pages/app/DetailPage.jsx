@@ -1,5 +1,5 @@
 import { useLocation, useParams } from "react-router"
-import { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from "react"
+import { useState, useMemo, useCallback, useLayoutEffect, lazy, Suspense } from "react"
 import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers, HiOutlineListBullet, HiOutlineSparkles } from "react-icons/hi2"
 
 import useMediaDetails from "@/features/media_details/hooks/useMediaDetails"
@@ -18,6 +18,8 @@ import OverviewTab from "@/features/media_details/components/tabs/OverviewTab"
 import SeasonsTab from "@/features/media_details/components/tabs/SeasonsTab"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import getTmdbImageUrl from "@/utils/tmdbImage"
+
+const PANEL_CARD_CLASS = "bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
 
 const SECTION_HEADER_CLASS = "text-sm font-semibold text-text-muted uppercase tracking-widest mb-3"
 
@@ -71,12 +73,14 @@ export default function DetailPage() {
     setTabSwitched(false)
   }
 
-  // ...and the window keeps its scroll position, so the new title would open mid-page
-  const scrolledForId = useRef(tmdbId)
-  useEffect(() => {
-    if (scrolledForId.current === tmdbId) return
-    scrolledForId.current = tmdbId
+  // A title always opens at the top. The router doesn't reset scroll on navigation, and on
+  // back/forward the browser would restore its saved position after this runs. The restore
+  // mode is stored per history entry, so `manual` opts out only the detail entries; cleanup
+  // hands `auto` back to whichever page comes next. Layout effect: the old position never paints.
+  useLayoutEffect(() => {
+    history.scrollRestoration = "manual"
     window.scrollTo(0, 0)
+    return () => { history.scrollRestoration = "auto" }
   }, [tmdbId])
 
   const handleTabChange = useCallback((tabId) => {
@@ -146,7 +150,8 @@ export default function DetailPage() {
           fill
         />
 
-        <div className="bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5">
+        {/* Text and data tabs sit in a card; the Similar poster row sits straight on the page */}
+        <div className={activeTab === "similar" ? undefined : PANEL_CARD_CLASS}>
 
           <TabPanel id="overview" activeTab={activeTab} animate={tabSwitched}>
             <OverviewTab data={data}></OverviewTab>
@@ -164,8 +169,9 @@ export default function DetailPage() {
           {hasSimilar && (
             <TabPanel id="similar" activeTab={activeTab} animate={tabSwitched}>
               <h3 className={SECTION_HEADER_CLASS}>Similar Titles</h3>
-              {/* Bleeds the row to the card's edges at md, as MediaRow's own margins already do below md */}
-              <div className="md:-mx-6">
+              {/* MediaRow insets itself by 24px at md (for page-level rows); undo it so the first
+                  poster lines up with the tabs and the heading */}
+              <div className="md:-ml-6">
                 <Suspense fallback={<SimilarFallback />}>
                   <SimilarTab items={data.similar} type={type} />
                 </Suspense>
