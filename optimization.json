@@ -551,7 +551,7 @@
       "category": "database",
       "priority": 40,
       "severity": "medium",
-      "status": "pending",
+      "status": "done",
       "files": [
         "supabase/migrations/20261001211134_index_cleanup.sql"
       ],
