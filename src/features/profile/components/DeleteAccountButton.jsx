@@ -5,17 +5,22 @@ import supabase from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from 'react-router'
 import toast from "react-hot-toast"
+import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
+import { deleteAllAvatarImages } from "@/services/files"
 
 export default function DeleteAccountButton() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isConfirming, setIsConfirming] = useState(false);
 
   const queryClient = useQueryClient()
+  const currentUser = useCurrentUser()
   const navigate = useNavigate()
 
   async function handleDelete() {
     setIsDeleting(true)
     try {
+      // Storage files aren't covered by the database cascade, and need the session: files first
+      if (currentUser?.id) await deleteAllAvatarImages(currentUser.id)
       const { error } = await supabase.rpc('delete_user')
       if (error) throw error
       await supabase.auth.signOut()
