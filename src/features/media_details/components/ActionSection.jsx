@@ -20,12 +20,10 @@ export default memo(function ActionSection({ media, userScore, averageScore, isW
 
       <Score value={averageScore != null ? Math.round(averageScore * 10) : null} />
 
-      {/* md+: a fixed 56px slot the star panel floats over. Below md the open panel is in flow
-          instead, so it pushes the dock down rather than covering the score and the buttons. */}
       <div className="w-full relative flex items-center justify-center min-h-14 md:h-14">
         <button
           onClick={() => setIsRatingMode(true)}
-          className={`absolute min-h-[52px] md:min-h-0 px-6 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 hover:border-white/20 transition-all duration-200 cursor-pointer ${
+          className={`absolute min-h-13 md:min-h-0 px-6 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 hover:border-white/20 transition-all duration-200 cursor-pointer ${
             isRatingMode ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'
           }`}
         >
@@ -42,7 +40,6 @@ export default memo(function ActionSection({ media, userScore, averageScore, isW
           <div className="w-full md:absolute md:inset-x-0 flex justify-center animate-in fade-in zoom-in-95 duration-200">
             <div
               ref={ratingPanelRef}
-              // md+: wider than the ~240px rating column (the flex parent centres the overflow) and one row, so the delete icon sits beside the stars
               className="flex items-center justify-center w-full max-w-sm md:w-88 md:max-w-none bg-surface-900/50 border border-white/5 backdrop-blur-md shadow-inner px-2 md:px-5 py-2.5 rounded-xl"
             >
               <StarRating
