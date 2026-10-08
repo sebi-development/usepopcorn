@@ -4,6 +4,7 @@ import { LuLoaderCircle } from "react-icons/lu"
 import supabase from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from 'react-router'
+import toast from "react-hot-toast"
 
 export default function DeleteAccountButton() {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -21,6 +22,7 @@ export default function DeleteAccountButton() {
       queryClient.clear()
       await supabase.removeAllChannels()
       navigate('/', { replace: true })
+      toast.success("Your account has been deleted.")
     } catch (error) {
       console.error("Failed to delete account:", error)
       alert("An error occurred while deleting your account.")
