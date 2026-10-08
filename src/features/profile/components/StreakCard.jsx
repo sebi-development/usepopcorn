@@ -51,9 +51,7 @@ export default function StreakCard({ data, extendedStreak, isSaturated, isLoadin
           <SkeletonBox className="w-10 sm:w-16 h-8 sm:h-12 rounded-md" />
         ) : displayStreak > 0 ? (
           <span className="text-4xl sm:text-6xl font-black text-white leading-none drop-shadow-md">{displayStreak}</span>
-        ) : (
-          <span className="text-[10px] sm:text-sm font-semibold text-white drop-shadow-md">Start rating</span>
-        )
+        ) : null
       }
     >
       <Chip size="sm" colorRgb="247, 103, 7" className="self-start max-w-full">

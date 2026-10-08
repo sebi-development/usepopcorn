@@ -51,7 +51,7 @@ export default function HomePage() {
   if (hasNoActivity) return (
     <div className="flex justify-center md:pt-6">
       <InfoCard icon={WELCOME_ICON} title="Welcome to usePopcorn" subtitle="Rate a few titles and this page fills in with picks made for you.">
-        <ul className="flex flex-col gap-3 text-sm text-text-muted">
+        <ul className="flex flex-col gap-3 text-sm text-text-muted list-disc marker:text-primary-light pl-5">
           <li>Search any movie or series and give it a rating</li>
           <li>Save things you want to watch to your watchlist</li>
           <li>Come back here for picks based on what you loved</li>
