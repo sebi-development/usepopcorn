@@ -26,7 +26,8 @@ export default function StreakCard({ data, extendedStreak, isSaturated, isLoadin
     if (!data?.length) return { fastStreak: 0, recentWeeks: [], maxCount: 0 }
     const countedWeeks = getCountedWeeks(data)
     const streak = calculateStreak(countedWeeks)
-    const recent = countedWeeks.slice(-Math.min(streak, 6))
+    // No streak, no tiles. (slice(-0) is slice(0): it would return every week, all empty.)
+    const recent = streak > 0 ? countedWeeks.slice(-Math.min(streak, 6)) : []
     return {
       fastStreak: streak,
       recentWeeks: recent,
