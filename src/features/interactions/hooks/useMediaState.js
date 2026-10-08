@@ -52,6 +52,18 @@ export function useFavoritesCount() {
   return data ?? 0
 }
 
+const hasNoActivity = (raw) =>
+  raw.favorites.length === 0 && raw.watchlist.length === 0 && Object.keys(raw.ratings).length === 0
+
+// true when the user has rated, favorited and saved nothing; undefined until the state has loaded.
+export function useHasNoActivity() {
+  const currentUser = useCurrentUser()
+  const id = currentUser?.id
+
+  const { data } = useQuery({ ...mediaStateQuery(id), enabled: !!id, select: hasNoActivity })
+  return data
+}
+
 // Optimistic update helper. No-op until the state has loaded (the settle-time invalidation fetches it).
 export function patchMediaState(queryClient, userId, updater) {
   queryClient.setQueryData(queryKeys.mediaState(userId), (old) => (old ? updater(old) : old))

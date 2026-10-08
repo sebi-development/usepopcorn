@@ -1,7 +1,7 @@
 import useRecommendationSeeds from '@/features/browse/hooks/useRecommendationSeeds'
 import RecommendationRow from '@/features/browse/components/RecommendationRow'
 import useInteractions from '@/features/interactions/hooks/useInteractions'
-import { useFavoritesCount } from '@/features/interactions/hooks/useMediaState'
+import { useFavoritesCount, useHasNoActivity } from '@/features/interactions/hooks/useMediaState'
 import useProfileStats from '@/features/profile/hooks/useProfileStats'
 import useCurrentUser from '@/features/auth/hooks/useCurrentUser'
 import useCategoryMedia from '@/features/browse/hooks/useCategoryMedia'
@@ -16,11 +16,12 @@ import ArrowLink from '@/components/ui/ArrowLink'
 import useProfileStreak from '@/features/profile/hooks/useProfileStreak'
 import FeatureCard, { FeatureCardSkeleton } from '@/components/ui/FeatureCard'
 import Chip from '@/components/ui/Chip'
-import { HiHeart, HiOutlineFilm } from 'react-icons/hi2'
+import { HiHeart } from 'react-icons/hi2'
+import { PopcornIcon } from '@/components/ui/Logo'
 import useBestRated from '@/features/profile/hooks/useBestRated'
 import BestRatedCard from '@/features/profile/components/BestRatedCard'
 
-const WELCOME_ICON = <HiOutlineFilm className="text-3xl text-primary-light" />
+const WELCOME_ICON = <PopcornIcon className="text-4xl" />
 
 export default function HomePage() {
   const currentUser = useCurrentUser()
@@ -28,10 +29,11 @@ export default function HomePage() {
   const seeds = useRecommendationSeeds(currentUser?.id)
   const { data: watchlist, isLoading: isLoadingWatchlist, error: watchlistError } = useInteractions('watchlist')
   const favoritesCount = useFavoritesCount()
+  const hasNoActivity = useHasNoActivity()
   const { data: streakData, isLoading: isLoadingStreak, isError: isErrorStreak, isLoadingExtended, extendedStreak, isSaturated } = useProfileStreak(currentUser?.id)
   const { movie: bestMovie, tv: bestSeries, isLoading: isLoadingBestRated } = useBestRated(currentUser?.id)
 
-  const { data: stats, isLoading: isLoadingStats, isError: isErrorStats } = useProfileStats(currentUser?.id)
+  const { data: stats, isLoading: isLoadingStats } = useProfileStats(currentUser?.id)
 
   const topMovieGenreId = useMemo(
     () => stats?.topGenres?.find(g => g.type === 'movie')?.genreId ?? null,
@@ -44,8 +46,9 @@ export default function HomePage() {
 
   const isLoadingCards = isLoadingStats || isLoadingBestRated
 
-  // get_profile_stats returns null, not zeros, for a user with no ratings: null is "new", not "loading"
-  if (!isLoadingStats && !isErrorStats && !stats?.totalRated) return (
+  // Only for someone who has done nothing yet: no ratings, favorites or saved titles. (Stats are null,
+  // not zeros, for a user with no ratings, so they can't tell "new" from "loading" on their own.)
+  if (hasNoActivity) return (
     <div className="flex justify-center md:pt-6">
       <InfoCard icon={WELCOME_ICON} title="Welcome to usePopcorn" subtitle="Rate a few titles and this page fills in with picks made for you.">
         <ul className="flex flex-col gap-3 text-sm text-text-muted">
