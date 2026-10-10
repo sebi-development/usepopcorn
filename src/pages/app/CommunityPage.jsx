@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { HiArrowUp } from "react-icons/hi2"
 import CommunityCardSkeleton from "@/features/social/components/CommunityPageSkeleton"
 import ActivityCard from "@/features/social/components/CommunityCard"
@@ -8,13 +8,39 @@ import useFeedRealtime from "@/features/social/hooks/useFeedRealtime"
 import useFollowingIds from "@/features/social/hooks/useFollowingIds"
 import UserSearchWidget from "@/features/social/components/UserSearchWidget"
 import SuggestedUsersWidget from "@/features/social/components/SuggestedUsersWidget"
+import useFollowingProfiles from "@/features/social/hooks/useFollowingProfiles"
+import { FEED_FILTERS, getFeedGenreOptions } from "@/features/social/constants/feedFilters"
 import LoadMoreFooter from "@/components/ui/LoadMoreFooter"
+import FilterBar from "@/components/filters/FilterBar"
+import useUrlFilters from "@/hooks/useUrlFilters"
 
 export default function CommunityPage() {
-  const { items: feed, isLoading, phase, pageCount, fetchMore, isFetchingNextPage } = useFeed()
+  const { filters, activeCount, setFilter, clearFilters } = useUrlFilters(FEED_FILTERS)
+  const { items: feed, isLoading, phase, pageCount, fetchMore, isFetchingNextPage } = useFeed(filters)
   const { followingIds, isLoading: isLoadingFollowing } = useFollowingIds()
 
-  const { newCount, showNew } = useFeedRealtime(feed)
+  // Friend names load the first time the Friend pill opens (or when the URL already names one)
+  const [friendsRequested, setFriendsRequested] = useState(false)
+  const handleFilterOpen = useCallback((key) => {
+    if (key === "friend") setFriendsRequested(true)
+  }, [])
+  const { profiles } = useFollowingProfiles({ enabled: friendsRequested || !!filters.friend })
+
+  // Runtime options: followed users for Friend (none followed → empty, so the pill is disabled
+  // without a request), and the genre list of the chosen type
+  const filterDefs = useMemo(() => {
+    const friendOptions = followingIds?.length === 0
+      ? []
+      : profiles?.map((profile) => ({ value: profile.id, label: profile.username }))
+    const genreOptions = getFeedGenreOptions(filters.type, filters.genre)
+    return FEED_FILTERS.map((def) => {
+      if (def.key === "friend") return { ...def, options: friendOptions }
+      if (def.key === "genre") return { ...def, options: genreOptions }
+      return def
+    })
+  }, [followingIds, profiles, filters.type, filters.genre])
+
+  const { newCount, showNew } = useFeedRealtime(feed, filters)
   const sectionRef = useRef(null)
 
   const handleShowNew = useCallback(() => {
@@ -36,6 +62,14 @@ export default function CommunityPage() {
           <p className="text-xs sm:text-sm text-text-muted">
             Latest ratings from the people you follow.
           </p>
+          <FilterBar
+            defs={filterDefs}
+            filters={filters}
+            onChange={setFilter}
+            onClear={clearFilters}
+            onOpen={handleFilterOpen}
+            className="mt-4"
+          />
         </header>
 
         <aside className="flex flex-col gap-6 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24">
@@ -75,13 +109,19 @@ export default function CommunityPage() {
             </div>
           )}
 
-          {feed?.length === 0 && !isLoadingFollowing && (followingIds?.length === 0 || !followingIds) && (
+          {feed?.length === 0 && activeCount > 0 && (
+            <p className="text-text-muted text-sm pl-2">
+              No ratings match these filters.
+            </p>
+          )}
+
+          {feed?.length === 0 && activeCount === 0 && !isLoadingFollowing && (followingIds?.length === 0 || !followingIds) && (
             <p className="text-text-muted text-sm pl-2">
               You're not following anyone yet. Find friends to see their activity.
             </p>
           )}
 
-          {feed?.length === 0 && followingIds?.length > 0 && (
+          {feed?.length === 0 && activeCount === 0 && followingIds?.length > 0 && (
             <p className="text-text-muted text-sm pl-2">
               Your friends haven't rated anything yet. Be the first to break the ice!
             </p>

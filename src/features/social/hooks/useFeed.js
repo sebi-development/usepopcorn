@@ -2,6 +2,7 @@ import { getFeed } from "@/services/follows"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import usePagedList from "@/hooks/usePagedList"
 import { fromCursorRpc } from "@/utils/pagination"
+import { toFeedParams } from "@/features/social/constants/feedFilters"
 import queryKeys from "@/lib/queryKeys"
 
 // The feed is a glance at recent activity, not an archive (full histories live on profiles):
@@ -10,14 +11,18 @@ import queryKeys from "@/lib/queryKeys"
 const FEED_PAGE_SIZE = 10
 const FEED_MAX_PAGES = 3
 
-// Key must stay queryKeys.feed: useFeedRealtime and useFollow invalidate it.
-export default function useFeed() {
+// `filters` are the feed filters from useUrlFilters (FEED_FILTERS); each combination is its own
+// list under queryKeys.feed.all, which useFeedRealtime and useFollow refresh.
+export default function useFeed(filters) {
   const currentUser = useCurrentUser()
   const userId = currentUser?.id
 
   return usePagedList({
-    queryKey: queryKeys.feed(userId),
-    fetchPage: fromCursorRpc(({ limit, cursor }) => getFeed(userId, { limit, cursor }), FEED_PAGE_SIZE),
+    queryKey: queryKeys.feed.list(userId, filters),
+    fetchPage: fromCursorRpc(
+      ({ limit, cursor }) => getFeed(userId, { limit, cursor, filterParams: toFeedParams(filters) }),
+      FEED_PAGE_SIZE
+    ),
     initialPageParam: null,
     autoPages: 1,
     maxPages: FEED_MAX_PAGES,

@@ -36,6 +36,13 @@ function getActiveIcon({ section, categoryId }) {
 // section's media type (`InspireSearch`). `onInspireSelect(seed)` receives the picked title.
 // It is a one-shot tool: the accordion folds (and the search clears) after a pick and whenever
 // the rail closes, so the next visit starts from the plain rail again.
+//
+// Motion follows SlidingTabs: one property drives each change, on the `ease-out-quint` curve,
+// and reduced motion snaps. Expanding animates only the rail's width: a row's label is a flex item
+// that shrinks to nothing on the collapsed rail (the chevron after it lands just outside the
+// rail's clip), so the growing rail reveals both and no per-row transitions run. The mobile panel
+// moves when it opens, so it has no backdrop blur (a moving blur is re-rendered on every frame);
+// it sits over a dimmed page with a solid fill.
 const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect, onInspireSelect, onExpandChange }) {
   const [expanded, setExpandedState] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -110,39 +117,20 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
         aria-current={isActive ? "page" : undefined}
         aria-expanded={hasChevron ? isOpen : undefined}
         className={`
-          flex items-center justify-between w-full h-11 md:h-8 rounded-md
+          flex items-center w-full h-11 md:h-8 rounded-md
           transition-colors duration-200 ease-out
           ${isActive
             ? "bg-primary/15 text-primary-light font-medium"
             : "text-text-muted hover:bg-surface-300/60 hover:text-text"}
         `}
       >
-        <div className="flex items-center h-full">
-          <span className="flex items-center justify-center w-8 h-full shrink-0">
-            <Icon size={18} strokeWidth={isActive ? 2 : 1.5} />
-          </span>
-          <span
-            className="text-sm whitespace-nowrap overflow-hidden text-left"
-            style={{
-              maxWidth: showLabels ? "6rem" : "0px",
-              opacity: showLabels ? 1 : 0,
-              transition: "max-width 300ms ease, opacity 200ms ease",
-              paddingLeft: showLabels ? "0.25rem" : "0px",
-            }}
-          >
-            {label}
-          </span>
-        </div>
+        <span className="flex items-center justify-center w-8 h-full shrink-0">
+          <Icon size={18} strokeWidth={isActive ? 2 : 1.5} />
+        </span>
+        <span className="flex-1 min-w-0 pl-1 overflow-hidden whitespace-nowrap text-sm text-left">{label}</span>
         {hasChevron && (
           <span
-            className="flex items-center justify-center shrink-0"
-            style={{
-              width: showLabels ? "1.5rem" : "0px",
-              opacity: showLabels ? 1 : 0,
-              marginRight: showLabels ? "0.25rem" : "0px",
-              transform: isOpen ? "rotate(90deg)" : "rotate(0deg)",
-              transition: "width 300ms ease, opacity 200ms ease, transform 300ms ease",
-            }}
+            className={`flex items-center justify-center w-6 mr-1 shrink-0 transition-transform duration-300 ease-out-quint motion-reduce:transition-none ${isOpen ? "rotate-90" : ""}`}
           >
             <HiChevronRight size={16} />
           </span>
@@ -156,7 +144,10 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
   function renderAccordion(isOpen, children) {
     const isVisible = showLabels && isOpen
     return (
-      <div style={{ display: "grid", gridTemplateRows: isVisible ? "1fr" : "0fr", transition: "grid-template-rows 300ms ease" }}>
+      <div
+        className="grid transition-[grid-template-rows] duration-300 ease-out-quint motion-reduce:transition-none"
+        style={{ gridTemplateRows: isVisible ? "1fr" : "0fr" }}
+      >
         <div className="overflow-hidden" inert={!isVisible}>
           {children}
         </div>
@@ -211,8 +202,7 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
       <div className="flex flex-col w-full">
         <div className="mx-2 my-2 h-px bg-surface-100 shrink-0" />
         <div
-          className="flex items-center h-6 px-2 text-[0.65rem] uppercase tracking-widest text-text-muted/70 whitespace-nowrap overflow-hidden"
-          style={{ opacity: showLabels ? 1 : 0, transition: "opacity 200ms ease" }}
+          className={`flex items-center h-6 px-2 text-[0.65rem] uppercase tracking-widest text-text-muted/70 whitespace-nowrap overflow-hidden transition-opacity duration-300 ease-out-quint motion-reduce:transition-none ${showLabels ? "opacity-100" : "opacity-0"}`}
         >
           {sectionLabel}
         </div>
@@ -265,7 +255,7 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
           fixed left-5 top-1/2 -translate-y-1/2 z-50
           flex-col gap-1 py-4 px-2 *:shrink-0
           overflow-x-hidden overflow-y-auto scrollbar-hide
-          transition-[width] duration-300 ease-out
+          transition-[width] duration-300 ease-out-quint motion-reduce:transition-none
           ${expanded ? "w-56" : "w-12"}
         `}
         style={{ maxHeight: "calc(100dvh - 4rem)" }}
@@ -281,7 +271,7 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
         <>
           <div
             onClick={closeMobile}
-            className="md:hidden fixed inset-0 z-50 bg-black/60 touch-none animate-[overlay-fade_200ms_ease-out_both]"
+            className="md:hidden fixed inset-0 z-50 bg-black/60 touch-none animate-[overlay-fade_200ms_ease-out_both] motion-reduce:animate-none"
           />
           <div
             ref={panelRef}
@@ -290,12 +280,12 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
             aria-label="Browse categories"
             tabIndex={-1}
             className="
-              md:hidden glass-panel shadow-xl outline-none
+              md:hidden glass-panel backdrop-blur-none! bg-surface-900/95! shadow-xl outline-none
               fixed left-3 top-1/2 -translate-y-1/2 z-50 w-56
               max-h-[calc(100dvh-2rem)]
               flex flex-col gap-1 py-4 px-2 *:shrink-0
               overflow-x-hidden overflow-y-auto overscroll-contain touch-pan-y scrollbar-hide
-              animate-[overlay-in_250ms_ease-out_both]
+              animate-[overlay-in_250ms_var(--ease-out-quint)_both] motion-reduce:animate-none
             "
           >
             {renderItems()}

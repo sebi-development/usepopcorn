@@ -25,14 +25,29 @@ export async function getFollowingIds(userId) {
   return data.map(row => row.following_id)
 }
 
+// Profiles the user follows ({ id, username }), sorted by name: the feed's Friend filter options
+export async function getFollowingProfiles(userId) {
+  const { data, error } = await supabase
+    .from('follows')
+    .select('profile:profiles!follows_following_fkey(id, username)')
+    .eq('follower_id', userId)
+  if (error) throw new Error(error.message)
+  return data
+    .map((row) => row.profile)
+    .filter(Boolean)
+    .sort((a, b) => a.username.localeCompare(b.username))
+}
+
 // `cursor` is the { created_at, id } of the last row of the previous page,
 // or null for the first page (keyset paging, see the pagination migration).
-export async function getFeed(currentUserId, { limit, cursor }) {
+// `filterParams` are the optional p_* filters (toFeedParams in feedFilters.js).
+export async function getFeed(currentUserId, { limit, cursor, filterParams }) {
   const { data, error } = await supabase.rpc('get_user_feed', {
     current_user_id: currentUserId,
     p_limit: limit,
     p_cursor_created_at: cursor?.created_at ?? null,
     p_cursor_id: cursor?.id ?? null,
+    ...filterParams,
   })
   if (error) throw new Error(error.message)
   return data ?? []

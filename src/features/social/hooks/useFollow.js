@@ -34,7 +34,8 @@ export default function useFollow(userId) {
     onSettled: () => {
       const me = currentUser?.id
       queryClient.invalidateQueries({ queryKey: queryKeys.followingIds(me) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.feed(me) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.feed.all(me) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.followingProfiles(me) })
       queryClient.invalidateQueries({ queryKey: queryKeys.suggestedUsers(me) })
       // Whose ratings count as "friends" on every detail page just changed
       queryClient.invalidateQueries({ queryKey: queryKeys.friendsRatings.all(me) })

@@ -134,6 +134,8 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
         const hit = state.following.includes(q.get('following_id').replace('eq.', '')) ? [{ id: 'follow-1' }] : []
         return single ? (hit.length ? json(hit[0]) : json({ code: 'PGRST116', message: 'no rows' }, 406)) : json(hit)
       }
+      // Friend filter options embed the followed profile
+      if (method === 'GET' && (q.get('select') || '').startsWith('profile:')) return json(state.following.map((id) => ({ profile: { id, username: id === FRIEND ? 'a_friend_with_a_long_username' : 'someone' } })))
       if (method === 'GET') return json(state.following.map((id) => ({ following_id: id })))
       if (method === 'POST') { state.following = [...state.following, JSON.parse(body).following_id]; return json(undefined, 201) }
       if (method === 'DELETE') { const id = q.get('following_id').replace('eq.', ''); state.following = state.following.filter((x) => x !== id); return json(undefined, 204) }

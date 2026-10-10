@@ -10,15 +10,19 @@ const Chip = memo(function Chip({
   label, 
   icon: Icon, 
   children,
-  variant = 'glow', // 'glow' | 'ghost'
+  variant = 'glow', // 'glow' | 'ghost' | 'outline'
+  // outline only: selected look (primary outline + tint)
+  active = false,
   colorRgb = "121, 80, 242",
   size = 'md',
   className = "",
-  onClick 
+  onClick,
+  // aria-* and other button attributes
+  ...rest
 }) {
 
   const dynamicStyles = useMemo(() => {
-    if (variant === 'ghost') return {};
+    if (variant !== 'glow') return {};
     return {
       "--chip-base": `rgb(${colorRgb})`,
       "--chip-muted": `rgba(${colorRgb}, 0.25)`,
@@ -28,16 +32,23 @@ const Chip = memo(function Chip({
 
   const { button, content, icon } = SIZES[size]
   
-  const ghostStyles = variant === 'ghost' 
+  const variantStyles = variant === 'ghost'
     ? 'bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-sm text-text'
-    : '';
+    : variant === 'outline'
+      ? active
+        ? 'border border-primary-light/70 bg-primary/10 text-primary-light'
+        : 'border border-surface-300 text-text-muted hover:text-text hover:border-text-muted/40'
+      : '';
+  const focusStyles = variant === 'outline' ? 'focus-visible:ring-2 focus-visible:ring-primary-light/60' : ''
 
   return (
     <button
+      type="button"
       onClick={onClick}
       disabled={!onClick}
-      className={`relative inline-flex items-center justify-center ${button} rounded-full group outline-none transition-transform ${onClick ? 'cursor-pointer active:scale-95' : 'cursor-default'} ${ghostStyles} ${className}`}
+      className={`relative inline-flex items-center justify-center ${button} rounded-full group outline-none transition-transform ${onClick ? 'cursor-pointer active:scale-95' : 'cursor-default'} ${variantStyles} ${focusStyles} ${className}`}
       style={dynamicStyles}
+      {...rest}
     >
       {variant === 'glow' && (
         <>

@@ -15,6 +15,8 @@
   --color-warning: #fab005;
   --color-success: #40c057;
   --radius-card: 0.9rem;
+  /* SlidingTabs' curve (leaves quickly, settles softly) as the `ease-out-quint` utility */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ==================== 03. BASE & RESET STYLES ==================== */

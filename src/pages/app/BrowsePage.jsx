@@ -8,6 +8,10 @@ import InspirationPanel from '@/features/browse/components/InspirationPanel'
 import { INSPIRE_ITEM } from '@/features/browse/constants/categories'
 import { SECTION_TO_TYPE } from '@/features/browse/hooks/useCategoryMedia'
 import HomePage from '@/pages/app/HomePage'
+import FilterBar from '@/components/filters/FilterBar'
+import { getBrowseFilters } from '@/features/browse/constants/filters'
+import useUrlFilters from '@/hooks/useUrlFilters'
+import { parseFilters, writeFilters } from '@/utils/filters'
 
 const CATEGORY_TITLES = {
   movies: {
@@ -50,6 +54,9 @@ export default function BrowsePage() {
 
   const activeLabel = categoryId === 'home' ? 'Home' : getCategoryTitle(section, categoryId)
 
+  const filterDefs = getBrowseFilters(section, categoryId)
+  const { filters, setFilter, clearFilters } = useUrlFilters(filterDefs)
+
   // Titles picked in the rail's Inspire searches, one per media type ({ movie, tv }), so they
   // survive switching categories and picking a series doesn't discard the movie
   const [inspireSeeds, setInspireSeeds] = useState({})
@@ -59,9 +66,16 @@ export default function BrowsePage() {
   )
   const mediaType = SECTION_TO_TYPE[section] ?? 'movie'
 
+  // Filters carry over to another category of the same section, minus any the target doesn't
+  // offer (e.g. genre on a genre category). A section switch drops them: genre ids differ.
   const handleSelect = useCallback(
-    (section, categoryId) => {
-      setSearchParams({ type: section, category: categoryId }, { replace: true })
+    (nextSection, nextCategoryId) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams({ type: nextSection, category: nextCategoryId })
+        if (nextSection !== (prev.get('type') || 'movies')) return next
+        const nextDefs = getBrowseFilters(nextSection, nextCategoryId)
+        return writeFilters(next, nextDefs, parseFilters(prev, nextDefs))
+      }, { replace: true })
     },
     [setSearchParams]
   )
@@ -69,14 +83,17 @@ export default function BrowsePage() {
   return (
     <main className='flex flex-col gap-6 md:gap-10 pb-12'>
       <CategoryRail active={active} activeLabel={activeLabel} onSelect={handleSelect} onInspireSelect={handleInspireSelect} />
+      {filterDefs.length > 0 && (
+        <FilterBar defs={filterDefs} filters={filters} onChange={setFilter} onClear={clearFilters} className="md:px-6" />
+      )}
       {active.categoryId === 'home' ? (
         <HomePage />
       ) : active.categoryId === INSPIRE_ITEM.id ? (
         <InspirationPanel type={mediaType} seed={inspireSeeds[mediaType]} />
       ) : active.categoryId === 'upcoming' ? (
         <>
-          <CategoryMediaRow section="movies" categoryId="upcoming" title="Upcoming this month" />
-          <CategoryMediaRow section="movies" categoryId="upcoming_next_month" title="Upcoming next month" />
+          <CategoryMediaRow section="movies" categoryId="upcoming" title="Upcoming this month" filters={filters} />
+          <CategoryMediaRow section="movies" categoryId="upcoming_next_month" title="Upcoming next month" filters={filters} />
         </>
       ) : (
         <CategoryMediaRow
@@ -84,7 +101,7 @@ export default function BrowsePage() {
           section={active.section}
           categoryId={active.categoryId}
           title={getCategoryTitle(active.section, active.categoryId)}
-         
+          filters={filters}
         />
       )}
 

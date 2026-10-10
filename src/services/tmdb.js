@@ -44,13 +44,18 @@ export async function getTopRated(type = 'movie', page = 1) {
   return tmdbFetch(`/${type}/top_rated?page=${page}`)
 }
 
-// Movie-only categories — no series equivalent exists on TMDB.
-export async function getUpcoming(page = 1, minDate, maxDate) {
-  return tmdbFetch(
-    `/discover/movie?sort_by=popularity.desc&with_release_type=2|3&release_date.gte=${minDate}&release_date.lte=${maxDate}&page=${page}`
-  )
+// /discover is the one TMDB list endpoint that filters (genre, dates, country, language...).
+// `params` is a plain object of TMDB query params; null / undefined values are skipped.
+export async function discoverMedia(type = 'movie', params = {}, page = 1) {
+  const query = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) {
+    if (value != null) query.set(key, value)
+  }
+  query.set('page', page)
+  return tmdbFetch(`/discover/${type}?${query}`)
 }
 
+// Movie-only category — no series equivalent exists on TMDB.
 export async function getNowPlaying(page = 1) {
   return tmdbFetch(`/movie/now_playing?page=${page}`)
 }
@@ -58,12 +63,6 @@ export async function getNowPlaying(page = 1) {
 // Series-only category — closest analogue to "upcoming" for TV,
 export async function getOnTheAir(page = 1) {
   return tmdbFetch(`/tv/on_the_air?page=${page}`)
-}
-
-// Genre-based discovery — used by the browse page when a genre is selected
-// from the CategoryRail. TMDB's /discover endpoint filters by genre id.
-export async function getMediaByGenre(type = 'movie', genreId, page = 1) {
-  return tmdbFetch(`/discover/${type}?with_genres=${genreId}&sort_by=popularity.desc&page=${page}`)
 }
 
 export async function getRecommendations(id, type = 'movie', page = 1) {

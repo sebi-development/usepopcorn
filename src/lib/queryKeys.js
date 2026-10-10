@@ -33,7 +33,12 @@ const queryKeys = {
   // ── Social ───────────────────────────────────────────────────
   followingIds: (userId) => ['followingIds', userId],
   suggestedUsers: (userId) => ['suggested', userId],
-  feed: (userId) => ['feed', userId],
+  followingProfiles: (userId) => ['followingProfiles', userId],
+  feed: {
+    // Every filtered variant sits under `all`, so realtime and follows refresh them together
+    all: (userId) => ['feed', userId],
+    list: (userId, filters) => ['feed', userId, filters],
+  },
   friendsRatings: {
     // User first, so following / unfollowing someone can refresh every title at once
     all: (userId) => ['friendsRatings', userId],
@@ -54,6 +59,8 @@ const queryKeys = {
     recommendations: (tmdbId, type) => ['recommendations', tmdbId, type],
     category: (type, categoryId) => ['browse', categoryId, type],
     genre: (type, genreId) => ['browse', 'genre', type, genreId],
+    // A category narrowed by Browse filters (served by /discover)
+    discover: (type, categoryId, filters) => ['browse', categoryId, type, 'filtered', filters],
   },
 
   // One numbered page of a grid whose base key is `base` (usePagedGrid). A row that shows the
