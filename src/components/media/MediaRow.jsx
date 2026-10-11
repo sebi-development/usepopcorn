@@ -150,15 +150,24 @@ function MediaRow({
     )
   }
 
+  // Same box structure and header height as the loaded row: a reused node that changes role
+  // (scroller -> wrapper) or a header that grows when "View all" appears is a layout shift
   if (isLoading) return (
     <div className={delaySkeleton ? "delayed-reveal" : undefined}>
-      {heading && <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>}
-      <div className={SCROLLER_CLASS}>
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className={CARD_SLOT_CLASS}>
-            <SkeletonBox className="w-full aspect-2/3 rounded-card" />
-          </div>
-        ))}
+      {(heading || expandable) && (
+        <div className="flex items-center justify-between mb-4 md:px-6">
+          <h2 className="text-text font-semibold text-xl">{heading}</h2>
+          {expandable && <span aria-hidden="true" className="invisible text-sm px-3 py-3 md:py-1.5">View all</span>}
+        </div>
+      )}
+      <div className="relative group/row">
+        <div className={SCROLLER_CLASS}>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className={CARD_SLOT_CLASS}>
+              <SkeletonBox className="w-full aspect-2/3 rounded-card" />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -220,7 +229,7 @@ function MediaRow({
           {/* Left arrow. Hover-revealed, so on touch (no hover) it would be an invisible button
               stealing taps from the card under it: there the row is swiped instead. */}
           {showLeft && (
-            <button onClick={handleScrollLeft} className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex pointer-coarse:hidden items-center justify-center text-text-muted opacity-0 group-hover/row:opacity-100 hover:scale-110 hover:bg-surface-800 transition-all duration-200">
+            <button onClick={handleScrollLeft} aria-label="Scroll left" className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex pointer-coarse:hidden items-center justify-center text-text-muted opacity-0 group-hover/row:opacity-100 hover:scale-110 hover:bg-surface-800 transition-all duration-200">
               <FiChevronLeft size={16} />
             </button>
           )}
@@ -244,7 +253,7 @@ function MediaRow({
 
           {/* Right arrow */}
           {showRight && (
-            <button onClick={handleScrollRight} className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex pointer-coarse:hidden items-center justify-center text-text-muted opacity-0 group-hover/row:opacity-100 hover:scale-110 hover:bg-surface-800 transition-all duration-200">
+            <button onClick={handleScrollRight} aria-label="Scroll right" className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface-900/80 backdrop-blur border border-surface-100/40 flex pointer-coarse:hidden items-center justify-center text-text-muted opacity-0 group-hover/row:opacity-100 hover:scale-110 hover:bg-surface-800 transition-all duration-200">
               <FiChevronRight size={16} />
             </button>
           )}

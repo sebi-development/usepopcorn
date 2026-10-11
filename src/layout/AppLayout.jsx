@@ -10,13 +10,24 @@ import queryKeys from '@/lib/queryKeys'
 // Prefetch a lazy chunk without blocking — resolves the dynamic import so
 // the module is cached by the time the user navigates to it.
 function prefetch(factory) {
-  factory().catch(() => {/* network fail is fine — lazy() will retry on navigation */})
+  factory().catch(() => {/* network fail is fine — the route's lazy() imports it again on navigation */})
 }
 
 // ric with a setTimeout fallback for environments without requestIdleCallback.
 function onIdle(cb) {
   if ('requestIdleCallback' in window) requestIdleCallback(cb, { timeout: 3000 })
   else setTimeout(cb, 200)
+}
+
+// Full-screen spinner while the session resolves; also the router's fallback on a cold load
+// while the page module downloads, so the two waits look like one
+export function AppSpinner() {
+  return (
+    <div className="min-h-dvh flex items-center justify-center relative">
+      <BackgroundMesh />
+      <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin z-10" />
+    </div>
+  )
 }
 
 function AppLayout() {
@@ -71,14 +82,7 @@ function AppLayout() {
   const isLoggedIn = Boolean(session)
 
   // still loading
-  if (session === undefined) {
-    return (
-      <div className="min-h-dvh flex items-center justify-center relative">
-        <BackgroundMesh />
-        <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin z-10" />
-      </div>
-    );
-  }
+  if (session === undefined) return <AppSpinner />;
 
   if (session === null) return <Navigate to='/login' replace />
 

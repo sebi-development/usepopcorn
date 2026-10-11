@@ -5,13 +5,41 @@ function extractFilePath(url) {
   return url.split('/avatars/')[1]
 }
 
+// Avatars show at 36px (navbar) up to 160px (profile hero): 320px covers the largest at 2x.
+// Uploaded as picked, a phone photo was served to a 36px slot at full size.
+const AVATAR_SIZE = 320
+
+// Center square crop (the framing object-cover shows), scaled down, WebP where the browser can
+// encode it (toBlob falls back to PNG elsewhere, so JPEG then). An image the browser can't
+// decode is uploaded unchanged, as before.
+async function shrinkAvatar(file) {
+  let bitmap
+  try {
+    bitmap = await createImageBitmap(file)
+  } catch {
+    return file
+  }
+  const side = Math.min(bitmap.width, bitmap.height)
+  const size = Math.min(side, AVATAR_SIZE)
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = size
+  canvas.getContext('2d').drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, size, size)
+  bitmap.close()
+
+  const encode = (type) => new Promise((resolve) => canvas.toBlob(resolve, type, 0.85))
+  const webp = await encode('image/webp')
+  return webp?.type === 'image/webp' ? webp : (await encode('image/jpeg')) ?? file
+}
+
 export async function uploadAvatarImage(file, oldAvatarUrl, currentUserId) {
-  const fileExt = file.name.split('.').pop()
+  const image = await shrinkAvatar(file)
+  const fileExt = image === file ? file.name.split('.').pop() : image.type.split('/')[1]
   const newFilePath = `${currentUserId}/avatar-${Date.now()}.${fileExt}`
 
+  // Every upload gets a new path, so the file never changes: cache it for a year (default 1h)
   const { error: uploadError } = await supabase.storage
     .from('avatars')
-    .upload(newFilePath, file)
+    .upload(newFilePath, image, { contentType: image.type, cacheControl: '31536000' })
   if (uploadError) throw new Error(uploadError.message)
 
   if (oldAvatarUrl) {

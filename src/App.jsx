@@ -1,10 +1,9 @@
-import { lazy, Suspense } from "react"
 import { createBrowserRouter, RouterProvider } from "react-router"
 import { Toaster } from 'react-hot-toast'
 import { LuLoaderCircle } from "react-icons/lu"
 
 import PublicLayout from "@/layout/PublicLayout"
-import AppLayout from "@/layout/AppLayout"
+import AppLayout, { AppSpinner } from "@/layout/AppLayout"
 
 // ─── T0: Critical first-paint bundle ──────────────────────────────────────────
 // Only what the user sees before they've done anything: landing, login, register.
@@ -13,24 +12,29 @@ import LoginPage from "@/pages/auth/LoginPage"
 import RegisterPage from "@/pages/auth/RegisterPage"
 import NotFoundPage from "@/pages/public/NotFoundPage"
 
-// ─── T1: Lazy — prefetched the moment session resolves in AppLayout ───────────
-// BrowsePage is the first authenticated view; it and its deps arrive during the
-// auth spinner so there's zero wait on navigation.
-const BrowsePage = lazy(() => import("@/pages/app/BrowsePage"))
+// Every other page is a route-level `lazy`: the router loads the module before it renders the
+// route, so nothing suspends. A React.lazy page always suspends on its first render, and React
+// reveals a suspended boundary no sooner than 300ms after its fallback (FALLBACK_THROTTLE_MS),
+// which held a cold load of /browse back by ~280ms. Navigations keep the current page until the
+// module is in; AppLayout's prefetch cascade has usually loaded it already.
+const page = (load) => async () => ({ Component: (await load()).default })
 
-// ─── T2: Lazy — loaded on demand (user navigates there) ──────────────────────
-const DetailPage = lazy(() => import("@/pages/app/DetailPage"))
-const ProfilePage = lazy(() => import("@/pages/app/ProfilePage"))
-const ForgotPasswordPage = lazy(() => import("@/pages/auth/ForgotPasswordPage"))
-const ResetPasswordPage = lazy(() => import("@/pages/auth/ResetPasswordPage"))
+// ─── T1: prefetched the moment session resolves in AppLayout ─────────────────
+const BrowsePage = page(() => import("@/pages/app/BrowsePage"))
 
-// ─── T3: Lazy — low priority, prefetched after BrowsePage mounts ─────────────
-const ProfileStatsPage = lazy(() => import("@/pages/app/ProfileStatsPage"))
-const CommunityPage = lazy(() => import("@/pages/app/CommunityPage"))
+// ─── T2: commonly visited, prefetched in the first idle slot ─────────────────
+const DetailPage = page(() => import("@/pages/app/DetailPage"))
+const ProfilePage = page(() => import("@/pages/app/ProfilePage"))
+const ForgotPasswordPage = page(() => import("@/pages/auth/ForgotPasswordPage"))
+const ResetPasswordPage = page(() => import("@/pages/auth/ResetPasswordPage"))
 
+// ─── T3: low priority, prefetched last ───────────────────────────────────────
+const ProfileStatsPage = page(() => import("@/pages/app/ProfileStatsPage"))
+const CommunityPage = page(() => import("@/pages/app/CommunityPage"))
 
-const routeFallback = (
-  <div className="flex items-center justify-center min-h-[50dvh]">
+// Shown in place of the layout while a cold load fetches its lazy page module
+const publicFallback = (
+  <div className="flex items-center justify-center min-h-dvh">
     <LuLoaderCircle className="animate-spin text-primary" size={28} />
   </div>
 )
@@ -39,25 +43,27 @@ const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     errorElement: <NotFoundPage />,
+    hydrateFallbackElement: publicFallback,
     children: [
       { path: '/', element: <LandingPage /> },
       { path: '/login', element: <LoginPage /> },
       { path: '/register', element: <RegisterPage /> },
-      { path: '/forgot-password', element: <Suspense fallback={routeFallback}><ForgotPasswordPage /></Suspense> },
-      { path: '/reset-password', element: <Suspense fallback={routeFallback}><ResetPasswordPage /></Suspense> },
+      { path: '/forgot-password', lazy: ForgotPasswordPage },
+      { path: '/reset-password', lazy: ResetPasswordPage },
       { path: '*', element: <NotFoundPage /> }
     ],
   },
   {
     element: <AppLayout />,
     errorElement: <NotFoundPage />,
+    hydrateFallbackElement: <AppSpinner />,
     children: [
-      { path: '/browse', element: <Suspense fallback={routeFallback}><BrowsePage /></Suspense> },
-      { path: '/browse/:id', element: <Suspense fallback={routeFallback}><DetailPage /></Suspense> },
-      { path: '/profile', element: <Suspense fallback={routeFallback}><ProfilePage /></Suspense> },
-      { path: '/community', element: <Suspense fallback={routeFallback}><CommunityPage /></Suspense> },
-      { path: '/profile/stats', element: <Suspense fallback={routeFallback}><ProfileStatsPage /></Suspense> },
-      { path: '/profile/:userId', element: <Suspense fallback={routeFallback}><ProfilePage /></Suspense> },
+      { path: '/browse', lazy: BrowsePage },
+      { path: '/browse/:id', lazy: DetailPage },
+      { path: '/profile', lazy: ProfilePage },
+      { path: '/community', lazy: CommunityPage },
+      { path: '/profile/stats', lazy: ProfileStatsPage },
+      { path: '/profile/:userId', lazy: ProfilePage },
       { path: '*', element: <NotFoundPage /> }
     ],
   }

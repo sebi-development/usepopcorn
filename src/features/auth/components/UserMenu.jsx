@@ -39,12 +39,14 @@ function UserMenu() {
       {/* Trigger */}
       <button
         onClick={toggleMenu}
+        // Named on the button, not the avatar's alt: without an avatar it holds only an icon
+        aria-label="User menu"
         className="flex items-center justify-center w-11 h-11 md:w-9 md:h-9 rounded-full bg-primary-light text-white cursor-pointer transition-colors hover:bg-primary shrink-0 overflow-hidden"
       >
         {profileData?.avatar_url ? (
           <img
             src={profileData.avatar_url}
-            alt="User menu"
+            alt=""
             className="w-full h-full object-cover"
             loading="lazy"
             decoding="async"

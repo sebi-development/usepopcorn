@@ -5,6 +5,7 @@ import FeatureCard, { FeatureCardSkeleton } from '@/components/ui/FeatureCard'
 import Chip from '@/components/ui/Chip'
 import RatingBadge from '@/components/media/RatingBadge'
 import { PERIODS } from '@/utils/periods'
+import getTmdbImageUrl from '@/utils/tmdbImage'
 
 const KINDS = {
   movie: {
@@ -36,11 +37,19 @@ export default memo(function BestRatedCard({ pick, kind, period = 'month', isLoa
 
   return (
     <FeatureCard
-      heroBackground={
-        pick?.poster_path
-          ? `url('https://image.tmdb.org/t/p/w342${pick.poster_path}') center/cover`
-          : gradient
-      }
+      heroBackground={pick?.poster_path ? undefined : gradient}
+      // An <img>, not a CSS background: this poster is usually the page's LCP element, and only an
+      // <img> takes fetchpriority and srcset (w185 for the ~175px hero at 1x, w342 at 2x+)
+      heroContent={pick?.poster_path && (
+        <img
+          src={getTmdbImageUrl(pick.poster_path, 'w342')}
+          srcSet={`${getTmdbImageUrl(pick.poster_path, 'w185')} 185w, ${getTmdbImageUrl(pick.poster_path, 'w342')} 342w`}
+          sizes="(min-width: 640px) 180px, 45vw"
+          alt=""
+          fetchPriority="high"
+          className="w-full h-full object-cover"
+        />
+      )}
       // The icon only decorates the gradient placeholder; a poster stands alone
       floatingIcon={pick?.poster_path ? undefined : icon}
     >
