@@ -98,6 +98,7 @@ Every query spreads a cache tier from `CACHE` in `src/lib/queryClient.js` instea
 | `aggregate` | 15 / 10 min | Stats, streak, best-rated picks, suggestions. Invalidated on write, otherwise slow-moving. |
 | `media` | 15 / 30 min | One title's or season's TMDB metadata. |
 | `mediaList` | 15 / 15 min | Browse rows and grids, recommendations. `gcTime` equals `staleTime` because data past `staleTime` refetches anyway, so holding it longer only keeps stale objects in memory. |
+| `filtered` (override) | `gcTime` 2 min | Spread on top of a tier by `filteredCache(tier, filters)` for a list narrowed by filters. A filter combination is mostly viewed once, so it only outlives its screen long enough to open a title and come back. `staleTime` stays the source tier's. |
 
 Two cases sit outside the tiers on purpose: the current user (`∞` / `∞`, seeded from the session and changed only by the auth listener or `setQueryData`) and OMDb external scores (1 h, because of the free tier's daily request cap).
 
@@ -114,7 +115,7 @@ Two cases sit outside the tiers on purpose: the current user (`∞` / `∞`, see
 
 Supabase RPCs page by keyset cursor `(created_at, id)`, so deep pages cost the same as the first. The cursor timestamp is passed back as the string PostgREST returned, and `p_limit` is clamped to 50 server-side.
 
-**Realtime invalidation, not polling.** `useFeedRealtime` and `useAverageRatingRealtime` subscribe to Supabase `postgres_changes` on `ratings`, with server-side filters (`user_id=in.(…)` for followed users, `tmdb_id=eq.<id>`). Each event calls `invalidateQueries` with the exact key the reader uses, and both sides take it from `queryKeys` (`queryKeys.feed(userId)`, `queryKeys.ratings.average(tmdbId)`), so they cannot drift apart. Channels are torn down on unmount, and the following-id list is sorted and joined into a stable string so the channel is not resubscribed on every render.
+**Realtime invalidation, not polling.** `useFeedRealtime` and `useAverageRatingRealtime` subscribe to Supabase `postgres_changes` on `ratings`, with server-side filters (`user_id=in.(…)` for followed users, `tmdb_id=eq.<id>`). Each event calls `invalidateQueries` (or patches a score in place) with the exact key the reader uses, and both sides take it from `queryKeys` (`queryKeys.feed(userId)`, `queryKeys.ratings.average(tmdbId)`), so they cannot drift apart. Channels are torn down on unmount, and the following-id list is sorted and joined into a stable string so the channel is not resubscribed on every render.
 
 **Route-level speculative loading.** `src/App.jsx` splits routes into tiers, and `AppLayout` runs a prefetch cascade once per session:
 
@@ -128,6 +129,23 @@ Supabase RPCs page by keyset cursor `(created_at, id)`, so deep pages cost the s
 `requestIdleCallback` has a `timeout: 3000` and a `setTimeout` fallback. Prefetch failures are swallowed, because `React.lazy` retries on navigation.
 
 **Optimistic mutations.** Rating upsert follows `cancelQueries` → snapshot → `setQueryData` → rollback on error → invalidate on settle (`invalidateRatingQueries`). Ratings, average rating, profile stats, best-rated picks and every heatmap year refresh from `onSettled`. Favourite / watchlist toggles and follows patch their caches the same way.
+
+### 2.2.1 URL-driven filtering
+
+Browse and the Community feed share one filter layer. The URL is the single source of truth, so a filtered view is a shareable link and Back restores it. Filtering is done at the source (TMDB `/discover`, the `get_user_feed` RPC), never by trimming a loaded list on the client.
+
+| Surface | Filters | Source | `multi` (OR) |
+|---|---|---|---|
+| Browse (movies / series) | genre, year, country, language | TMDB `/discover`, values pipe-joined | genre, country, language. `/discover` takes one exact year, so year is a `select`. |
+| Friends Activity feed | type, score, genre, friend, period | optional parameters of `get_user_feed` (`p_type`, `p_min_score`, `p_genre_ids`, `p_user_ids`, `p_since`) | genre, friend |
+
+- **Defs, not special cases.** A surface describes its filters as `{ key, label, kind: 'select' | 'multi', options }` (`features/browse/constants/filters.js`, `features/social/constants/feedFilters.js`). `useUrlFilters(defs)` parses the URL into a normalised `filters` object with a stable identity, so it goes straight into query keys without re-keying on every render. `FilterBar` / `FilterPill` render pills and removable value chips from the same defs.
+- **Unfiltered stays untouched.** Categories without a filter keep their own TMDB endpoints and keys. Any active filter switches to `/discover` under `queryKeys.media.discover`; the feed gets one `queryKeys.feed.list(userId, filters)` entry per combination under `feed.all(userId)`, which realtime and follow/unfollow refresh together.
+- **One request per burst of ticks.** A multi pill keeps its picks as a draft and commits them 400 ms after the last tick or when it closes, so ticking three genres is one URL change, one request and one cache entry. A pick that returns to the committed value cancels the pending commit.
+- **Short-lived cache entries.** Filtered lists take the `filtered` override (`gcTime` 2 min), so exploring combinations does not accumulate memory.
+- **Live count without duplicating SQL.** With filters on, `useFeedRealtime` does not re-implement the filter in JS. It asks `get_user_feed` which of the unseen live ratings match (`limit = unseen.length`, one small request, `queryKeys.feedFilterMatches`) and counts those, so the SQL stays the only definition of a filter. A re-score still patches the card in place in every filtered variant.
+- **Motion.** A pill grows into its option list with one WAAPI timing for its width and the list's clip-path (`ease-out-quint`, snaps under `prefers-reduced-motion`). Widths are measured with `getBoundingClientRect`, because the rounded `offsetWidth` left a pill a fraction of a pixel short and its label truncated mid-animation. Lists over 8 options get a search that is never auto-focused, so no caret and no mobile keyboard pop up on open.
+- **Database.** Migrations `feed_filters` and `feed_filter_friends` add the optional parameters and turn the friend filter into `p_user_ids uuid[]` (old signature dropped in the same migration, because new parameters would otherwise create an overload).
 
 ### 2.3 Relational integrity and boundary normalisation
 
@@ -162,7 +180,7 @@ Twelve functions live in `public` (the trigger function also depends on the `aut
 | 6 | `get_recent_weekly_activity(p_user_id uuid, p_weeks integer DEFAULT 12)` | `jsonb` | Same dense-calendar pattern over a rolling window of `p_weeks` weeks ending at the current week. Fixed-size output (12 by default). | `SECURITY INVOKER`, `STABLE`, so RLS applies |
 | 7 | `get_best_rated_since(p_user_id uuid, p_since timestamptz)` | `jsonb` | `DISTINCT ON (type)` over the user's `movie` / `tv` ratings with `updated_at >= p_since`, `ORDER BY type, score DESC, updated_at DESC`, so each type keeps its best-scored rating (ties go to the most recently updated). `jsonb_object_agg(type, to_jsonb(t))` folds the two rows into one `{ movie, tv }` object (`{}` when the window is empty), each pick carrying `type`, `tmdb_id`, `title`, `poster_path`, `rating`. The client passes calendar-snapped windows from `src/utils/periods.js`: the month for the "of the Month" cards, then 3, 6 and 12 months as fallbacks that seed the recommendation rows, which then call TMDB `/recommendations`. | `SECURITY INVOKER` (default), marked `STABLE`, so RLS applies |
 | 8 | `get_average_rating(p_tmdb_id integer)` | `numeric` | `ROUND(AVG(score)::numeric, 1)` over all ratings for a title. | `SECURITY INVOKER` (default), marked `STABLE` |
-| 9 | `get_user_feed(current_user_id uuid, p_limit integer DEFAULT 20, p_cursor_created_at timestamptz, p_cursor_id uuid)` | `TABLE(id, tmdb_id, title, poster_path, type, score, created_at, user_id, username, avatar_url)` | `ratings ⨝ follows ON r.user_id = f.following_id ⨝ profiles`, filtered by `f.follower_id = current_user_id`, ordered by `(created_at, id) DESC` and paged by keyset cursor. `p_limit` is clamped to 50, so the client receives one small page of fully-hydrated rows at a time. | `SECURITY INVOKER`, `STABLE`, so RLS applies |
+| 9 | `get_user_feed(current_user_id uuid, p_limit integer DEFAULT 20, p_cursor_created_at timestamptz, p_cursor_id uuid, p_type text, p_min_score integer, p_genre_ids integer[], p_user_ids uuid[], p_since timestamptz)` | `TABLE(id, tmdb_id, title, poster_path, type, score, created_at, user_id, username, avatar_url)` | `ratings ⨝ follows ON r.user_id = f.following_id ⨝ profiles`, filtered by `f.follower_id = current_user_id`, ordered by `(created_at, id) DESC` and paged by keyset cursor. `p_limit` is clamped to 50, so the client receives one small page of fully-hydrated rows at a time. The optional `p_*` filters (type, minimum score, any-of genres, any-of followed users, since) are applied in the same query, and are `null` when unused. | `SECURITY INVOKER`, `STABLE`, so RLS applies |
 | 10 | `get_friends_ratings(current_user_id uuid, p_tmdb_id integer, p_limit integer DEFAULT 12, p_cursor_created_at timestamptz, p_cursor_id uuid)` | `TABLE(rating_id, score, created_at, user_id, username, avatar_url, total_count)` | Same three-way join, restricted to a single `tmdb_id`, with the same keyset paging and `total_count` for the grid. Drives the friend activity tab on a title's page. | `SECURITY INVOKER`, `STABLE`, so RLS applies |
 | 11 | `get_suggested_users(current_user_id uuid)` | `TABLE(id, username, avatar_url, recent_activity_count, mutual_friend_count, suggestion_score)` | Three CTEs: `my_follows`, `user_activity` (ratings in the last 14 days, `GROUP BY user_id`) and `mutual_connections` (for users followed by people I follow, `count(follower_id)`). Score = `mutual × 10 + activity`. Excludes self and already-followed users via `NOT EXISTS`, requires `score > 0`, `ORDER BY suggestion_score DESC LIMIT 4`. | `SECURITY INVOKER`, `STABLE`, so RLS applies |
 | 12 | `get_my_media_state()` | `jsonb` | Three scalar subqueries over the caller's `user_media_interactions` (favourites, watchlist) and `ratings`, filtered on `(select auth.uid())` so the planner uses an InitPlan and an index scan on `ratings`. Returns `{ favorites: [tmdb_id], watchlist: [tmdb_id], ratings: { "<tmdb_id>": score } }`. One round trip answers "favourited / watchlisted / my score" for every card on screen. | `SECURITY INVOKER`, `STABLE`, so RLS applies |
@@ -242,13 +260,15 @@ The project is linked to the production database through the Supabase CLI (a dev
 **Discovery**
 - Category rails for movies and series (trending, popular, top rated, now playing / on the air, two rolling *upcoming* windows) and per-genre `/discover` rows.
 - Each row is an infinite-scrolling horizontal strip that expands into a paginated grid, with `keepPreviousData` transitions and next-page prefetch (see 2.2).
+- Filters on every Browse category: genre, year, country and language (multi-select where TMDB can OR the values), URL-driven so a filtered view is a link. See 2.2.1.
 - Debounced title search, overlay results, and user search.
 - Title pages with tabbed Overview / Scores / Seasons / Friend Activity panels. TMDB details are fetched with `append_to_response` (credits, providers, release dates or content ratings, external IDs) to keep it to one request. IMDb, Rotten Tomatoes and Metacritic scores are fetched separately through OMDb once an IMDb id is known. Season details load lazily, only after the Seasons tab is visited.
 - Favourites and watchlist toggles (optimistic), for movies and series, behind an actions menu on each card. Cards also show the signed-in user's own rating as a star chip.
 - Movie and series recommendation rows seeded from the user's movie and series of the month (`get_best_rated_since`, then TMDB `/recommendations`), widening to the last 3, 6 or 12 months when a type has no pick and labelling the window used.
 
 **Social**
-- Feed of followed users' ratings (`get_user_feed`), live-updated over Realtime and keyset-paged: 20 per page, three pages on scroll, then a "Load more" button, capped at five pages.
+- Feed of followed users' ratings (`get_user_feed`), live-updated over Realtime and keyset-paged: one page on arrival, then a "Load more" button, capped at three pages.
+- Feed filters: type, minimum score, genre, friend and period, resolved server-side. New ratings that arrive while a filter is on are counted only if they match it.
 - Mutual-friend suggestions (`get_suggested_users`, `mutual × 10 + 14-day activity`).
 - Inline friend ratings on each title (`get_friends_ratings`), 12 per page behind a "Load more" button.
 - Follow / unfollow with follower and following counts, public profile pages.
@@ -353,10 +373,10 @@ src/
 │   ├── search/            # title and user search
 │   ├── social/            # feed, follows, suggestions, realtime feed
 │   └── profile/           # heatmap, streak, stats, avatar, account deletion
-├── components/{ui,media}  # shared primitives (FeatureCard, Chip, Modal, MediaRow, …)
+├── components/{ui,media,filters}  # shared primitives (FeatureCard, Chip, Modal, MediaRow, FilterBar, FilterPill, …)
 ├── services/              # tmdb, omdb, ratings, follows, profiles, interactions, files
 ├── hooks/                 # generic hooks (usePagedList, usePagedGrid, debounce, focus trap, …)
-├── utils/                 # pure helpers (pagination adapters, tmdbItem, periods)
+├── utils/                 # pure helpers (pagination adapters, tmdbItem, periods, filters)
 └── lib/                   # supabase client, queryClient (CACHE tiers), queryKeys factory
 supabase/
 ├── migrations/            # every DB change since 2026-10-01
