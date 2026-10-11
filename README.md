@@ -126,7 +126,9 @@ Supabase RPCs page by keyset cursor `(created_at, id)`, so deep pages cost the s
 | T2 | `ProfilePage`, `DetailPage` (plus `ForgotPassword` / `ResetPassword` on demand) | `requestIdleCallback` slot |
 | T3 | `CommunityPage`, `ProfileStatsPage` | Later `requestIdleCallback` slot |
 
-`requestIdleCallback` has a `timeout: 3000` and a `setTimeout` fallback. Prefetch failures are swallowed, because `React.lazy` retries on navigation.
+`requestIdleCallback` has a `timeout: 3000` and a `setTimeout` fallback. Prefetch failures are swallowed, because the route's `lazy` loader imports the module again on navigation.
+
+Pages are data-router `lazy` routes, not `React.lazy` + `<Suspense>`. The router loads the module before it renders the route, so nothing suspends. A `React.lazy` page always suspends on its first render, and React 19 reveals a suspended boundary no sooner than 300 ms after its fallback appeared (`FALLBACK_THROTTLE_MS`), which on a cold load of `/browse` held the page back ~280 ms after its code had arrived.
 
 **Optimistic mutations.** Rating upsert follows `cancelQueries` → snapshot → `setQueryData` → rollback on error → invalidate on settle (`invalidateRatingQueries`). Ratings, average rating, profile stats, best-rated picks and every heatmap year refresh from `onSettled`. Favourite / watchlist toggles and follows patch their caches the same way.
 
@@ -290,8 +292,8 @@ The project is linked to the production database through the Supabase CLI (a dev
 
 | Layer | Technology | Strategic tradeoff |
 |---|---|---|
-| Frontend | **React 19** | Concurrent renderer and `React.memo` / `lazy` / `Suspense` primitives cover the rendering and splitting needs. No framework runtime (Next.js / Remix) is needed for a client-rendered app behind an auth gate, so there is no SSR complexity and static hosting is enough. |
-| Frontend | **Vite 8** | Native-ESM dev server and Rollup production build with automatic per-route chunking for `React.lazy`. |
+| Frontend | **React 19** | Concurrent renderer and `React.memo` / `lazy` / `Suspense` primitives (with React Router's route-level `lazy` for pages) cover the rendering and splitting needs. No framework runtime (Next.js / Remix) is needed for a client-rendered app behind an auth gate, so there is no SSR complexity and static hosting is enough. |
+| Frontend | **Vite 8** | Native-ESM dev server and Rollup production build with automatic chunking for every dynamic `import()`. |
 | Frontend | **React Router v7** (`createBrowserRouter`) | Data-router API with nested layouts (`PublicLayout` / `AppLayout`), and the auth gate lives in a layout route rather than being repeated per page. |
 | Frontend | **Tailwind CSS v4** (`@tailwindcss/vite`) | Zero-runtime styling with tokens declared in `@theme`. Removes CSS-in-JS runtime cost and keeps geometry (radii, aspect ratios) declarative. |
 | Frontend | react-hook-form, react-hot-toast, date-fns, react-icons | Uncontrolled form inputs (fewer re-renders than controlled forms), small toast surface, and tree-shakeable date and icon imports. |
