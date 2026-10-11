@@ -1,4 +1,3 @@
-// src/features/interactions/components/FavoritesButton.jsx
 import useToggleInteractions from '@/features/interactions/hooks/useToggleInteractions'
 import Tooltip from '@/components/ui/Tooltip'
 import { IoMdHeart } from 'react-icons/io'

@@ -1,4 +1,3 @@
-// src/features/interactions/components/WatchlistButton.jsx
 import useToggleInteractions from '@/features/interactions/hooks/useToggleInteractions'
 import Tooltip from '@/components/ui/Tooltip'
 import { BsBookmark, BsBookmarkFill } from 'react-icons/bs'

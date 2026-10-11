@@ -35,8 +35,6 @@ function UserMenu() {
 
 
   return (
-    // Below md this wrapper is static so the menu anchors to the navbar and spans its
-    // full width (it can't hang off-screen); from md up it anchors under the avatar.
     <div ref={ref} className="md:relative">
       {/* Trigger */}
       <button
