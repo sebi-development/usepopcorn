@@ -18,6 +18,10 @@ export const CACHE = {
   // TMDB lists (browse rows and grids, recommendations). Browsing creates many of these, so they
   // are dropped as soon as they would need a refetch anyway.
   mediaList: { staleTime: 15 * MINUTE, gcTime: 15 * MINUTE },
+  // Override for a list narrowed by filters (see filteredCache in src/utils/filters.js): a
+  // combination is mostly looked at once, so it only outlives its screen long enough to open a
+  // title and come back. Freshness (staleTime) stays the source tier's.
+  filtered: { gcTime: 2 * MINUTE },
 }
 
 const queryClient = new QueryClient({

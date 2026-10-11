@@ -2,7 +2,7 @@ import { addDays, addMonths, subWeeks, format } from 'date-fns'
 import usePagedList from "@/hooks/usePagedList"
 import usePagedGrid from "@/hooks/usePagedGrid"
 import { MAX_PAGES, fromTmdb } from "@/utils/pagination"
-import { isEmptyFilters } from "@/utils/filters"
+import { isEmptyFilters, filteredCache } from "@/utils/filters"
 import queryKeys from "@/lib/queryKeys"
 import { CACHE } from "@/lib/queryClient"
 import {
@@ -101,7 +101,8 @@ export const SECTION_TO_TYPE = { movies: 'movie', series: 'tv' }
 // fetcher and a base query key, including genre detection. CategoryRail emits
 // categoryIds like "genre-28"; we strip the prefix and route to /discover.
 // Unfiltered categories keep their own endpoints and keys; any active filter
-// switches to /discover under a key that holds the filters.
+// switches to /discover under a key that holds the filters, with a shorter
+// cache lifetime (`cache`).
 function resolveCategoryFetch(section, categoryId, filters) {
   const type = SECTION_TO_TYPE[section]
   const genreId = categoryId.startsWith('genre-') ? categoryId.slice(6) : null
@@ -112,6 +113,7 @@ function resolveCategoryFetch(section, categoryId, filters) {
     return {
       queryKeyBase: queryKeys.media.discover(type, categoryId, filters),
       fetchPage: fromTmdb((page) => discoverMedia(type, params, page)),
+      cache: filteredCache(CACHE.mediaList, filters),
     }
   }
 
@@ -119,12 +121,14 @@ function resolveCategoryFetch(section, categoryId, filters) {
     return {
       queryKeyBase: queryKeys.media.genre(type, genreId),
       fetchPage: fromTmdb((page) => discoverMedia(type, genreParams(genreId), page)),
+      cache: CACHE.mediaList,
     }
   }
 
   return {
     queryKeyBase: queryKeys.media.category(type, categoryId),
     fetchPage: fromTmdb(FETCH_MAP[section]?.[categoryId]),
+    cache: CACHE.mediaList,
   }
 }
 
@@ -137,13 +141,13 @@ function resolveCategoryFetch(section, categoryId, filters) {
  * mode is instant if still within staleTime).
  */
 export default function useCategoryMedia(section, categoryId, { enabled = true, filters } = {}) {
-  const { queryKeyBase, fetchPage } = resolveCategoryFetch(section, categoryId, filters)
+  const { queryKeyBase, fetchPage, cache } = resolveCategoryFetch(section, categoryId, filters)
 
   return usePagedList({
     queryKey: queryKeyBase,
     fetchPage,
     autoPages: MAX_PAGES,
-    ...CACHE.mediaList,
+    ...cache,
     enabled,
   })
 }
@@ -153,13 +157,13 @@ export default function useCategoryMedia(section, categoryId, { enabled = true, 
  * usePagedGrid for the keepPreviousData / next-page prefetch behaviour.
  */
 export function useCategoryMediaGrid(section, categoryId, page, { enabled = true, filters } = {}) {
-  const { queryKeyBase, fetchPage } = resolveCategoryFetch(section, categoryId, filters)
+  const { queryKeyBase, fetchPage, cache } = resolveCategoryFetch(section, categoryId, filters)
 
   return usePagedGrid({
     queryKey: queryKeyBase,
     fetchPage,
     page,
     enabled,
-    ...CACHE.mediaList,
+    ...cache,
   })
 }

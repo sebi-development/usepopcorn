@@ -55,13 +55,3 @@ export function toFeedParams({ type, score, genre, friend, period } = {}) {
   if (period) params.p_since = PERIOD_START[period]().toISOString()
   return params
 }
-
-// Whether a fresh ratings row (a realtime INSERT) belongs in the filtered feed. Period always
-// holds for a rating made just now.
-export function matchesFeedFilters(row, { type, score, genre, friend } = {}) {
-  if (type && row.type !== type) return false
-  if (score && row.score < Number(score)) return false
-  if (friend && !friend.includes(row.user_id)) return false
-  if (genre && !row.genre_ids?.some((id) => genre.includes(String(id)))) return false
-  return true
-}

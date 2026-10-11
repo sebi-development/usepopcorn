@@ -1,4 +1,4 @@
-import { memo, useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { HiChevronDown } from "react-icons/hi2"
 import { FiSearch } from "react-icons/fi"
 import Chip from "@/components/ui/Chip"
@@ -8,8 +8,8 @@ import { useOutsideClick } from "@/hooks/useOutsideClick"
 // and settles softly
 const GROW = { duration: 300, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
 
-// A quick re-toggle starts from wherever the running grow/shrink is, so it is dropped rather than
-// left to stack under the new one
+// A quick re-toggle starts from wherever the running grow/shrink
+
 const restart = (el, keyframes) => {
   el.getAnimations().forEach((animation) => animation.cancel())
   el.animate(keyframes, GROW)
@@ -18,11 +18,16 @@ const restart = (el, keyframes) => {
 // Lists longer than this get a search box; Type, Score and Period are short enough to scan
 const SEARCH_MIN_OPTIONS = 8
 
+// A multi list commits its picks once they pause this long (or as it closes), so ticking three
+// genres in a row is one URL change, one request and one cache entry instead of three
+const COMMIT_DELAY = 400
+
+// Order-free identity of a multi value (the URL keeps them sorted, picks come in any order)
+const sameValues = (a, b) => (a ? [...a].sort().join() : "") === (b ? [...b].sort().join() : "")
+
 // Case- and accent-insensitive, so "cote" finds "Côte d'Ivoire"
 const fold = (text) => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase()
 
-// Fractional layout width. offsetWidth rounds, and a pill held even 0.3px under its label's width
-// shows an ellipsis (the label flickered to "Gen…" at the end of a close)
 const widthOf = (el) => el.getBoundingClientRect().width
 
 // The open list. Mounted only while open, so its search query resets every time the list closes.
@@ -46,10 +51,6 @@ function OptionList({ def, value, onPick, panelRef, id }) {
   }
 
   return (
-    // Border colour of the outline pill and a light, static blur (the list never moves, only its
-    // clip changes while it opens, so the blur isn't re-rendered across the screen). No shadow:
-    // the opening clip would cut it off and it would pop in when the reveal ends.
-    // A searchable list is at least min-w-28 wide, so short options (Year) leave room to type
     <div
       ref={panelRef}
       id={id}
@@ -64,8 +65,6 @@ function OptionList({ def, value, onPick, panelRef, id }) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             aria-label={`Search ${def.label.toLowerCase()} options`}
-            // size={1}: the input must not widen the list when it is measured at max-content.
-            // text-base below md: iOS zooms the page when a focused input is under 16px
             size={1}
             className="w-full h-11 md:h-8 pl-8 pr-2 rounded-md bg-surface-900/60 border border-white/5 text-base md:text-sm text-text outline-none focus:border-primary-light/50 transition-colors"
           />
@@ -102,10 +101,33 @@ function OptionList({ def, value, onPick, panelRef, id }) {
 // never outgrows the room left on its row: longer options truncate instead.
 // The chevron only shows when there is something to pick: `options` undefined means "not loaded
 // yet" (opening calls `onOpen(key)` so the surface can load them), an empty list disables the pill.
-// A select picks one value and closes; a multi toggles values and stays open.
+// A select picks one value and closes; a multi toggles values and stays open, its picks held as a
+// draft until they are committed (COMMIT_DELAY).
 const FilterPill = memo(function FilterPill({ def, value, onChange, onOpen }) {
   const [isOpen, setIsOpen] = useState(false)
-  const close = useCallback(() => setIsOpen(false), [])
+
+  // Multi picks not committed yet ({ value }), null when the pill shows the committed value.
+  // Any new committed value (this pill's commit, a removed chip, Clear all) supersedes it.
+  const [draft, setDraft] = useState(null)
+  const [prevValue, setPrevValue] = useState(value)
+  if (value !== prevValue) {
+    setPrevValue(value)
+    setDraft(null)
+  }
+  const current = draft ? draft.value : value
+
+  useEffect(() => {
+    if (!draft || !isOpen) return
+    const timer = setTimeout(() => onChange(def.key, draft.value), COMMIT_DELAY)
+    return () => clearTimeout(timer)
+  }, [draft, isOpen, def.key, onChange])
+
+  // Closing commits what is pending at once (an outside click closes in the capture phase, so
+  // before whatever was clicked reacts)
+  const close = useCallback(() => {
+    setIsOpen(false)
+    if (draft) onChange(def.key, draft.value)
+  }, [draft, def.key, onChange])
   const ref = useOutsideClick(close)
   const panelRef = useRef(null)
   // The pill's width while its list is open (null while closed)
@@ -146,21 +168,23 @@ const FilterPill = memo(function FilterPill({ def, value, onChange, onOpen }) {
   }, [isOpen, def.options, ref])
 
   const hasOptions = def.options === undefined || def.options.length > 0
-  const isActive = value != null
-  const count = def.kind === "multi" && value ? value.length : 0
+  const isActive = current != null
+  const count = def.kind === "multi" && current ? current.length : 0
 
   function toggle() {
-    if (!isOpen) onOpen?.(def.key)
-    setIsOpen((open) => !open)
+    if (isOpen) return close()
+    onOpen?.(def.key)
+    setIsOpen(true)
   }
 
   function pick(optionValue) {
     if (def.kind === "multi") {
-      const current = value ?? []
-      const next = current.includes(optionValue)
-        ? current.filter((v) => v !== optionValue)
-        : [...current, optionValue]
-      onChange(def.key, next.length ? next : undefined)
+      const picked = current ?? []
+      const next = picked.includes(optionValue)
+        ? picked.filter((v) => v !== optionValue)
+        : [...picked, optionValue]
+      // Ticked back to what is committed: nothing left to commit
+      setDraft(sameValues(next, value) ? null : { value: next.length ? next : undefined })
     } else {
       onChange(def.key, value === optionValue ? undefined : optionValue)
       close()
@@ -185,7 +209,7 @@ const FilterPill = memo(function FilterPill({ def, value, onChange, onOpen }) {
         )}
       </Chip>
 
-      {isOpen && <OptionList def={def} value={value} onPick={pick} panelRef={panelRef} id={listId} />}
+      {isOpen && <OptionList def={def} value={current} onPick={pick} panelRef={panelRef} id={listId} />}
     </div>
   )
 })

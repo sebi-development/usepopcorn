@@ -39,6 +39,9 @@ const queryKeys = {
     all: (userId) => ['feed', userId],
     list: (userId, filters) => ['feed', userId, filters],
   },
+  // Which live ratings (`ratingIds`) pass the feed's filters. Not under `feed`: realtime patches
+  // every `feed.all` entry as a paged list, and this one holds ids
+  feedFilterMatches: (userId, filters, ratingIds) => ['feedFilterMatches', userId, filters, ratingIds],
   friendsRatings: {
     // User first, so following / unfollowing someone can refresh every title at once
     all: (userId) => ['friendsRatings', userId],
