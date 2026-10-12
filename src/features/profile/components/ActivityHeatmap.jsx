@@ -26,7 +26,6 @@ function HeatmapTooltip({ label, children }) {
       </div>
 
       {coords && createPortal(
-        // left is clamped by half the max tooltip width (8rem) so it never leaves the screen
         <div
           className="fixed z-50 -translate-x-1/2 -translate-y-full w-max max-w-64 text-center px-2.5 py-1 rounded-lg text-xs font-medium bg-surface-100 text-text-muted border border-white/10 pointer-events-none"
           style={{ top: coords.top - 8, left: `clamp(8rem, ${coords.left}px, calc(100vw - 8rem))` }}
@@ -47,7 +46,6 @@ const HEATMAP_LEGEND = [
   { className: 'bg-primary-light', label: 'Peak' },
 ]
 
-// Months per row below md (desktop is a single scrolling row). Change to grid-cols-4 etc. to retune.
 const MONTHS_PER_ROW = 'grid-cols-3'
 
 function formatWeekRange(weekStart) {

@@ -59,8 +59,6 @@ export default function StreakCard({ data, extendedStreak, isSaturated, isLoadin
       </Chip>
 
       {recentWeeks.length > 0 && (
-        // With a mouse the dots sit above the card link so their hover tooltips work; on
-        // touch (no hover, 8px targets) they sit below it, so a tap anywhere opens the link
         <div className="relative z-30 pointer-coarse:z-10 mt-auto flex w-full justify-center gap-0.5 sm:gap-1">
           {recentWeeks.map((week) => (
             <Tooltip

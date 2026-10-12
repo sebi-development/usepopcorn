@@ -4,12 +4,9 @@ import { FiSearch } from "react-icons/fi"
 import Chip from "@/components/ui/Chip"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 
-// Same motion as SlidingTabs: ease-out-quint (the `ease-out-quint` theme token), leaves quickly
-// and settles softly
 const GROW = { duration: 300, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
 
 // A quick re-toggle starts from wherever the running grow/shrink
-
 const restart = (el, keyframes) => {
   el.getAnimations().forEach((animation) => animation.cancel())
   el.animate(keyframes, GROW)
