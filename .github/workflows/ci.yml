@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-build:
+    name: Lint & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # --ignore-scripts: the Supabase CLI devDependency downloads a binary in
+      # its postinstall, which neither lint nor build needs.
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - run: pnpm lint
+
+      - run: pnpm build
+        env:
+          # Read at module load, never called during the build: placeholders only.
+          VITE_SUPABASE_URL: https://ci.supabase.co
+          VITE_SUPABASE_ANON_KEY: ci
+          VITE_TMDB_BASE_URL: https://api.themoviedb.org/3
+          VITE_TMDB_API_KEY: ci
+          VITE_OMDB_API_KEY: ci
