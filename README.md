@@ -2,6 +2,71 @@
 
 A movie and series discovery and social tracking platform. Users browse TMDB catalogues, rate titles, follow other users, and get analytics on their own viewing history. Analytics, aggregation and social-graph queries run inside PostgreSQL as 12 custom PL/pgSQL / SQL functions. The client receives pre-shaped `jsonb` or scalar results, not raw rows to reduce.
 
+<p align="center">
+  <a href="https://usepopcorn.sebik.me/"><img alt="Live demo" src="https://img.shields.io/badge/%F0%9F%8D%BF_live_demo-usepopcorn.sebik.me-6D4AE0?style=for-the-badge"></a>
+  <a href="https://github.com/sebi-development/usepopcorn/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/sebi-development/usepopcorn/ci.yml?branch=main&label=CI&style=for-the-badge"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge"></a>
+</p>
+
+<p align="center">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white">
+  <img alt="Vite 8" src="https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white">
+  <img alt="Tailwind CSS v4" src="https://img.shields.io/badge/Tailwind-v4-06B6D4?logo=tailwindcss&logoColor=white">
+  <img alt="TanStack Query v5" src="https://img.shields.io/badge/TanStack_Query-v5-FF4154?logo=reactquery&logoColor=white">
+  <img alt="React Router v7" src="https://img.shields.io/badge/React_Router-v7-CA4245?logo=reactrouter&logoColor=white">
+  <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Auth_%C2%B7_Realtime_%C2%B7_Storage-3ECF8E?logo=supabase&logoColor=white">
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-12_RPC_functions-4169E1?logo=postgresql&logoColor=white">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/demo.gif" alt="usePopcorn product walkthrough" width="800">
+</p>
+
+### Try it in 30 seconds
+
+**[usepopcorn.sebik.me](https://usepopcorn.sebik.me/)**. Sign in with the shared demo account, or register your own.
+
+| | |
+|---|---|
+| **Demo email** | `demo1@test.com` |
+| **Demo password** | `demo1234` |
+
+### Screenshots
+
+| | |
+|---|---|
+| <img src="docs/screenshots/landing.jpg" alt="Landing page: 'Your personal cinema companion' with Get started and Sign in buttons and feature cards"><br>**Landing.** Eager-loaded first paint, auth entry points. | <img src="docs/screenshots/browse-filters.jpg" alt="Browse page with the Genre filter pill grown into its searchable option list above a row of upcoming movies"><br>**Browse + URL-driven filters.** Genre, year, country, language. Filtered at TMDB, shareable as a link. |
+| <img src="docs/screenshots/title-page.jpg" alt="Title page for The Batman with poster, genres, popcorn score badge, the user's own 9/10 rating and watchlist, favourite and share actions"><br>**Title page.** One request via `append_to_response`, optimistic rating and favourite / watchlist toggles. | <img src="docs/screenshots/similar-titles.jpg" alt="Similar Titles tab on The Batman page showing a row of related posters with rating chips"><br>**Overview · Critic Scores · Friend Activity · Similar Titles.** Everything about a title in one tabbed page. |
+| <img src="docs/screenshots/stats.jpg" alt="Stats page with titles rated, average rating, movie watch time, most watched genres, current rank and a yearly activity heatmap"><br>**Profile analytics.** Totals, top genres and the weekly heatmap are each computed by one PostgreSQL function. | <img src="docs/screenshots/recommendations.jpg" alt="Because you loved The Lord of the Rings: The Fellowship of the Ring, an expanded grid of recommended titles with the user's own rating chips"><br>**Recommendations.** Seeded from the user's best-rated title of the month, expands into a paged grid. |
+
+### What makes this more than a TMDB client
+
+| | |
+|---|---|
+| **Analytics in the database** | 12 PL/pgSQL / SQL functions (CTEs, window functions, `generate_series`) return pre-shaped `jsonb`. Streak, heatmap and genre ranking are one round trip each, with no client-side reducing. [Details](#3-deep-dive-custom-database-engine) |
+| **No application server** | The browser talks to Supabase and TMDB / OMDb directly. Authorization is Row Level Security on every table plus `SECURITY INVOKER` read functions, with `anon` locked out. [Security notes](#security-notes) |
+| **Realtime social feed** | Followed users' ratings arrive over `postgres_changes` with server-side row filters, keyset-paged, and filterable by type, score, genre, friend and period. |
+| **One cache vocabulary** | Five named cache tiers and a `queryKeys` factory that ESLint enforces, so a query, its invalidation and its realtime subscription cannot drift apart. [Cache strategy](#22-client-cache-strategy-and-speculative-prefetching) |
+| **URL is the state** | Browse and feed filters are one shared, URL-driven layer. A filtered view is a link, and Back restores it. [Filtering](#221-url-driven-filtering) |
+| **Database as code** | Every schema change is a migration file, applied with the Supabase CLI. Live RPC definitions are snapshotted in `supabase/functions-reference/`. [Workflow](#database-workflow) |
+| **Continuous integration** | Every pull request runs lint and a production build in GitHub Actions ([`ci.yml`](.github/workflows/ci.yml)). |
+
+### Where to look first
+
+If you have five minutes, these files show the shape of the codebase:
+
+| Question | File |
+|---|---|
+| How is server state organised? | [`src/lib/queryClient.js`](src/lib/queryClient.js), [`src/lib/queryKeys.js`](src/lib/queryKeys.js) |
+| How do the two-tier streak queries work? | [`src/features/profile/hooks/useProfileStreak.js`](src/features/profile/hooks/useProfileStreak.js) and [`get_extended_streak.sql`](supabase/functions-reference/get_extended_streak.sql) |
+| How is realtime wired to the cache? | [`src/features/social/hooks/useFeedRealtime.js`](src/features/social/hooks/useFeedRealtime.js) |
+| How do paged lists share one system? | [`src/hooks/usePagedList.js`](src/hooks/usePagedList.js), [`src/utils/pagination.js`](src/utils/pagination.js) |
+| How are filters modelled? | [`src/hooks/useUrlFilters.js`](src/hooks/useUrlFilters.js), [`src/utils/filters.js`](src/utils/filters.js) |
+| How are routes split and prefetched? | [`src/App.jsx`](src/App.jsx), [`src/layout/AppLayout.jsx`](src/layout/AppLayout.jsx) |
+| What does the database look like? | [`supabase/migrations/`](supabase/migrations), [`supabase/functions-reference/`](supabase/functions-reference) |
+
+---
+
 - **Client:** React 19, Vite, Tailwind CSS v4, TanStack Query v5, React Router v7 (data router)
 - **Backend:** Supabase (Auth, PostgreSQL, Realtime, Storage). There is no application server. The browser talks to Supabase (PostgREST and RPC) and to TMDB / OMDb directly.
 - **Language:** plain JavaScript / JSX, no TypeScript, no test suite. Lint: ESLint 10 flat config.
@@ -9,46 +74,6 @@ A movie and series discovery and social tracking platform. Users browse TMDB cat
 ---
 
 ## 1. Architecture Overview
-
-```mermaid
-flowchart LR
-  subgraph Client["Browser (Vite SPA)"]
-    direction TB
-    UI["React 19 components<br/>pages/ · features/ · components/"]
-    RQ["TanStack Query v5 cache<br/>staleTime / gcTime · prefetch · optimistic updates"]
-    SVC["services/*<br/>plain async fns, throw Error"]
-    UI --> RQ --> SVC
-  end
-
-  subgraph Edge["Static hosting / CDN"]
-    BUNDLE["Code-split bundle<br/>T0 eager · T1-T3 lazy chunks"]
-  end
-
-  subgraph Ext["External APIs"]
-    TMDB["TMDB API<br/>catalogue, details, recommendations"]
-    OMDB["OMDb API<br/>IMDb / RT / Metacritic scores"]
-  end
-
-  subgraph SB["Supabase"]
-    AUTH["Auth (JWT)"]
-    PG[("PostgreSQL<br/>ratings · follows · profiles ·<br/>user_media_interactions")]
-    RPC["Custom RPC tier (12 functions)<br/>CTEs · window fns · generate_series"]
-    RT["Realtime<br/>postgres_changes"]
-    STORE["Storage<br/>avatars"]
-    RPC --- PG
-    AUTH -- "trigger: handle_new_user()" --> PG
-  end
-
-  BUNDLE -. "serves" .-> Client
-  SVC -- "fetch + Bearer token" --> TMDB
-  SVC -- "fetch" --> OMDB
-  SVC -- "supabase-js .from() / .rpc()" --> RPC
-  SVC -- "supabase-js .from()" --> PG
-  SVC -- "upload" --> STORE
-  AUTH -- "session / onAuthStateChange" --> Client
-  RT -- "invalidateQueries(exact key)" --> RQ
-  PG -. "WAL change events" .-> RT
-```
 
 ### Data flow
 
@@ -388,3 +413,14 @@ supabase/
 └── templates/             # auth email templates
 scripts/audit/             # headless-browser audits (mobile, cache, checks)
 ```
+
+---
+
+## 8. License and attribution
+
+The source code is released under the [MIT License](LICENSE), © 2026 Sebastian Pajonk.
+
+The MIT License covers this repository's code only. Movie and series data and images are provided by third parties and remain under their own terms:
+
+- This product uses the [TMDB API](https://www.themoviedb.org/) but is not endorsed or certified by TMDB. Titles, posters and metadata belong to TMDB and their respective rights holders.
+- IMDb, Rotten Tomatoes and Metacritic scores are retrieved through the [OMDb API](https://www.omdbapi.com/) and belong to their respective owners.
