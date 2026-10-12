@@ -4,7 +4,10 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon.png" />
-  <link rel="preconnect" href="https://api.themoviedb.org" />
+  <!-- fetch() to Supabase and the TMDB API is CORS without credentials, which uses a separate
+       socket pool: only a crossorigin preconnect is reused. <img> loads are no-cors: no attribute. -->
+  <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
+  <link rel="preconnect" href="https://api.themoviedb.org" crossorigin />
   <link rel="preconnect" href="https://image.tmdb.org" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />

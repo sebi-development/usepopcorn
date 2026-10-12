@@ -87,7 +87,9 @@ function AppLayout() {
   if (session === null) return <Navigate to='/login' replace />
 
   return (
-    <div className="min-h-dvh relative">
+    // flow-root keeps the navbar's mobile top margin inside this box: collapsed through it, the
+    // margin moved <body> down 12px when the layout replaced the spinner (a CLS of 12/viewport)
+    <div className="min-h-dvh relative flow-root">
       <BackgroundMesh />
       <Navbar isLoggedIn={isLoggedIn} />
       <main className="pt-4 px-4 md:pt-24 md:px-6 max-w-7xl mx-auto w-full relative z-10">

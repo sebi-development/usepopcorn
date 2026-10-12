@@ -4,6 +4,11 @@ import { LuLoaderCircle } from "react-icons/lu"
 
 import PublicLayout from "@/layout/PublicLayout"
 import AppLayout, { AppSpinner } from "@/layout/AppLayout"
+import supabase from "@/lib/supabase"
+import queryClient from "@/lib/queryClient"
+import { mediaStateQuery } from "@/features/interactions/hooks/useMediaState"
+import { profileStatsQuery } from "@/features/profile/hooks/useProfileStats"
+import { bestRatedQuery } from "@/features/profile/hooks/useBestRated"
 
 // ─── T0: Critical first-paint bundle ──────────────────────────────────────────
 // Only what the user sees before they've done anything: landing, login, register.
@@ -32,6 +37,23 @@ const ResetPasswordPage = page(() => import("@/pages/auth/ResetPasswordPage"))
 const ProfileStatsPage = page(() => import("@/pages/app/ProfileStatsPage"))
 const CommunityPage = page(() => import("@/pages/app/CommunityPage"))
 
+// A route loader runs in parallel with the route's `lazy` import, so Home's above-the-fold queries
+// (its cards wait on stats and best-rated; the best-rated poster is the page's LCP) start next to the
+// BrowsePage chunk download instead of after it. Fire-and-forget: the hooks pick up the in-flight
+// or cached results, and nothing here blocks the render.
+async function browseLoader({ request }) {
+  const category = new URL(request.url).searchParams.get('category')
+  if (category && category !== 'home') return null
+  const { data } = await supabase.auth.getSession()
+  const userId = data.session?.user.id
+  if (userId) {
+    queryClient.prefetchQuery(mediaStateQuery(userId))
+    queryClient.prefetchQuery(profileStatsQuery(userId))
+    queryClient.prefetchQuery(bestRatedQuery(userId))
+  }
+  return null
+}
+
 // Shown in place of the layout while a cold load fetches its lazy page module
 const publicFallback = (
   <div className="flex items-center justify-center min-h-dvh">
@@ -58,7 +80,7 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage />,
     hydrateFallbackElement: <AppSpinner />,
     children: [
-      { path: '/browse', lazy: BrowsePage },
+      { path: '/browse', lazy: BrowsePage, loader: browseLoader },
       { path: '/browse/:id', lazy: DetailPage },
       { path: '/profile', lazy: ProfilePage },
       { path: '/community', lazy: CommunityPage },
