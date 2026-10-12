@@ -28,8 +28,8 @@ A movie and series discovery and social tracking platform. Users browse TMDB cat
 
 | | |
 |---|---|
-| **Demo email** | `<DEMO_EMAIL>` |
-| **Demo password** | `<DEMO_PASSWORD>` |
+| **Demo email** | `demo1@test.com` |
+| **Demo password** | `demo1234` |
 
 ### Screenshots
 
