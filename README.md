@@ -130,6 +130,8 @@ Supabase RPCs page by keyset cursor `(created_at, id)`, so deep pages cost the s
 
 Pages are data-router `lazy` routes, not `React.lazy` + `<Suspense>`. The router loads the module before it renders the route, so nothing suspends. A `React.lazy` page always suspends on its first render, and React 19 reveals a suspended boundary no sooner than 300 ms after its fallback appeared (`FALLBACK_THROTTLE_MS`), which on a cold load of `/browse` held the page back ~280 ms after its code had arrived.
 
+**Render-as-you-fetch on `/browse`.** A route `loader` runs in parallel with the route's `lazy` import, so `browseLoader` starts Home's above-the-fold queries (media state, profile stats, best-rated picks) next to the BrowsePage chunk download instead of after it. It does not await them: the hooks pick up the in-flight requests through the shared query option factories (`bestRatedQuery`, `profileStatsQuery`, `mediaStateQuery`), so each is requested once. Under a throttled mobile profile (4× CPU, 150 ms RTT, 1.6 Mbps) the best-rated request starts ~520 ms earlier and LCP drops from ~3.3 s to ~2.9 s.
+
 **Optimistic mutations.** Rating upsert follows `cancelQueries` → snapshot → `setQueryData` → rollback on error → invalidate on settle (`invalidateRatingQueries`). Ratings, average rating, profile stats, best-rated picks and every heatmap year refresh from `onSettled`. Favourite / watchlist toggles and follows patch their caches the same way.
 
 ### 2.2.1 URL-driven filtering
