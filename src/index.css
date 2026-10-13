@@ -373,6 +373,24 @@ body {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   }
 
+  /* A mesh blob's glow is a radial gradient, not filter: blur(). On desktop Safari four large
+     blurred layers were redrawn on every navigation (~1.3 s to the next frame, ~90 ms without);
+     the gradient's falloff matches the old blur. Padding grows the box by about 2x the old blur
+     radius each side (the negative margin keeps it in place) so the edge fades out as far.
+     Set per blob: --blob-rgb (color channels), --blob-alpha, --blob-spread. */
+  .mesh-blob {
+    box-sizing: content-box;
+    padding: var(--blob-spread);
+    margin: calc(var(--blob-spread) * -1);
+    background: radial-gradient(circle closest-side,
+        rgb(var(--blob-rgb) / var(--blob-alpha)) 0%,
+        rgb(var(--blob-rgb) / calc(var(--blob-alpha) * 0.95)) 30%,
+        rgb(var(--blob-rgb) / calc(var(--blob-alpha) * 0.75)) 50%,
+        rgb(var(--blob-rgb) / calc(var(--blob-alpha) * 0.5)) 65%,
+        rgb(var(--blob-rgb) / calc(var(--blob-alpha) * 0.22)) 80%,
+        rgb(var(--blob-rgb) / 0) 100%);
+  }
+
   .animation-delay-2000 {
     animation-delay: 2s;
   }
