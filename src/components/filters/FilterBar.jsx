@@ -4,16 +4,8 @@ import Chip from "@/components/ui/Chip"
 import FilterPill from "@/components/filters/FilterPill"
 import { getActiveChips } from "@/utils/filters"
 
-// Below md the small value chips get a taller invisible tap area (::before) instead of a taller box.
-// No backdrop blur: they sit on the plain page background, and a Chip shrinks while pressed, which
-// would re-render the blur on every frame
 const VALUE_CHIP_CLASS = "backdrop-blur-none! before:absolute before:-inset-y-2.5 before:inset-x-0 before:content-[''] md:before:content-none"
 
-/**
- * Filter pills for `defs` (src/utils/filters.js), each with its own dropdown, plus "Clear all";
- * underneath, one smaller removable chip per active value.
- * `onOpen(key)` fires when a pill opens, so a surface can load that filter's options lazily.
- */
 function FilterBar({ defs, filters, onChange, onClear, onOpen, className = "" }) {
   const chips = useMemo(() => getActiveChips(defs, filters), [defs, filters])
 
