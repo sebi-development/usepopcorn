@@ -1,4 +1,5 @@
-function Card({ span, accent, icon: Icon, title, desc, className = '', children }) {
+// With `href` the whole card is a link that opens in a new tab
+function Card({ span, accent, icon: Icon, title, desc, href, className = '', children }) {
   const cardClass = [
     'bento-card',
     span === 'wide' && 'bento-card--wide',
@@ -7,12 +8,26 @@ function Card({ span, accent, icon: Icon, title, desc, className = '', children 
     className,
   ].filter(Boolean).join(' ')
 
-  return (
-    <div className={cardClass} role="button" tabIndex={0}>
+  const content = (
+    <>
       {Icon && <Icon className="bento-card__icon" />}
       {title && <p className="bento-card__title">{title}</p>}
       {desc && <p className="bento-card__desc">{desc}</p>}
       {children}
+    </>
+  )
+
+  if (href) {
+    return (
+      <a className={cardClass} href={href} target="_blank" rel="noopener noreferrer">
+        {content}
+      </a>
+    )
+  }
+
+  return (
+    <div className={cardClass} role="button" tabIndex={0}>
+      {content}
     </div>
   )
 }

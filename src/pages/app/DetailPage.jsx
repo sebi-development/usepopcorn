@@ -1,10 +1,12 @@
 import { useLocation, useParams } from "react-router"
-import { useState, useMemo, useCallback, useLayoutEffect, lazy, Suspense } from "react"
+import { useState, useMemo, useCallback, useEffect, useLayoutEffect, lazy, Suspense } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers, HiOutlineListBullet, HiOutlineSparkles } from "react-icons/hi2"
 
 import useMediaDetails from "@/features/media_details/hooks/useMediaDetails"
 import useAllSeasonDetails from "@/features/media_details/hooks/useAllSeasonDetails"
-import useExternalApis from "@/features/media_details/hooks/useExternalApis"
+import { externalScoresQuery } from "@/features/media_details/hooks/useExternalApis"
+import { csfdScoreQuery } from "@/features/media_details/hooks/useCsfdScore"
 
 import DetailCard from "@/features/media_details/components/DetailCard"
 import MoviePoster from "@/components/media/MoviePoster"
@@ -106,9 +108,16 @@ export default function DetailPage() {
     return tabs
   }, [type, hasSimilar])
 
-  // Hoist external scores fetch to eliminate waterfall
-  // (starts as soon as imdb_id is available, instead of waiting for ScoresTab to mount)
-  const externalScores = useExternalApis(data?.imdb_id)
+  // Start the score lookups as soon as the IMDb id is known, so the Scores tab is usually filled
+  // by the time it's opened. A prefetch only fills the cache and doesn't subscribe, so this page
+  // doesn't re-render when the results land; ScoresTab, which reads them, does.
+  const queryClient = useQueryClient()
+  const imdbId = data?.imdb_id
+  useEffect(() => {
+    if (!imdbId) return
+    queryClient.prefetchQuery(externalScoresQuery(imdbId))
+    queryClient.prefetchQuery(csfdScoreQuery(imdbId))
+  }, [queryClient, imdbId])
 
   // ── Bulk season fetch — triggered on first Seasons tab click ──
   const { isLoading: isSeasonsLoading } = useAllSeasonDetails(
@@ -159,7 +168,7 @@ export default function DetailPage() {
 
           <TabPanel id="scores" activeTab={activeTab} animate={tabSwitched}>
             <h3 className={SECTION_HEADER_CLASS}>Platform Scores</h3>
-            <ScoresTab imdbId={data?.imdb_id} prefetchedQuery={externalScores} />
+            <ScoresTab imdbId={imdbId} />
           </TabPanel>
 
           <TabPanel id="social" activeTab={activeTab} animate={tabSwitched}>

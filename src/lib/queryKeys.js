@@ -59,6 +59,7 @@ const queryKeys = {
     details: (type, tmdbId, country) => ['mediaDetails', type, tmdbId, country],
     season: (tvId, seasonNumber) => ['seasonDetails', tvId, seasonNumber],
     externalScores: (imdbId) => ['externalScores', imdbId],
+    csfdScore: (imdbId) => ['csfdScore', imdbId],
     recommendations: (tmdbId, type) => ['recommendations', tmdbId, type],
     category: (type, categoryId) => ['browse', categoryId, type],
     genre: (type, genreId) => ['browse', 'genre', type, genreId],

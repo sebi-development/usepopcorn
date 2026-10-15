@@ -16,12 +16,17 @@ function toScores(data) {
   }
 }
 
+// Shared with DetailPage, which prefetches it on page open
+export const externalScoresQuery = (imdbId) => ({
+  queryKey: queryKeys.media.externalScores(imdbId),
+  queryFn: async () => toScores(await getOmdbScores(imdbId)),
+  staleTime: ONE_HOUR,
+  gcTime: ONE_HOUR,
+})
+
 export default function useExternalApis(imdbId) {
   return useQuery({
-    queryKey: queryKeys.media.externalScores(imdbId),
-    queryFn: async () => toScores(await getOmdbScores(imdbId)),
+    ...externalScoresQuery(imdbId),
     enabled: !!imdbId,
-    staleTime: ONE_HOUR,
-    gcTime: ONE_HOUR,
   })
 }

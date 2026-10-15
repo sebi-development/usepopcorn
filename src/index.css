@@ -90,6 +90,12 @@ body {
     grid-template-columns: repeat(3, 1fr);
   }
 
+  /* Four critic scores: 2 x 2 instead of three and one alone on the last row. Defined before the
+     media queries below, so they still collapse it to one column on phones. */
+  .bento-grid--scores {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .bento-card {
     @apply relative flex flex-col gap-3 bg-surface-500 border border-transparent rounded-[1.2rem] p-7 cursor-pointer outline-none transition-all duration-200;
   }
