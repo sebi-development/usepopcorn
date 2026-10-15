@@ -12,14 +12,14 @@ const NO_FILTERS = {}
 function SearchFilters({ year, onChange }) {
   const filters = useMemo(() => (year ? { year } : NO_FILTERS), [year])
   const handleChange = useCallback((_key, value) => onChange(value), [onChange])
-  const handleClear = useCallback(() => onChange(undefined), [onChange])
 
+  // One filter: the chip's own ✕ is the only reset needed, so no "Clear all"
   return (
     <FilterBar
       defs={SEARCH_FILTERS}
       filters={filters}
       onChange={handleChange}
-      onClear={handleClear}
+      inline
       className="px-4 py-2 border-b border-surface-100"
     />
   )
