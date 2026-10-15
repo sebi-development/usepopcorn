@@ -12,8 +12,12 @@ async function tmdbFetch(endpoint) {
   return res.json()
 }
 
-export async function searchContent(query, type = 'movie') {
-  return tmdbFetch(`/search/${type}?query=${encodeURIComponent(query)}`)
+// /search/* takes a text query and a year only (genre, country and language need /discover, which
+// takes no text). The year param is named per type, as in Browse's /discover params.
+export async function searchContent(query, type = 'movie', year) {
+  const params = new URLSearchParams({ query })
+  if (year) params.set(type === 'movie' ? 'primary_release_year' : 'first_air_date_year', year)
+  return tmdbFetch(`/search/${type}?${params}`)
 }
 
 export async function getMediaDetails(id, type = 'movie') {

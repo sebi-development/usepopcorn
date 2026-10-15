@@ -5,13 +5,13 @@ import { toMediaItem } from "@/utils/tmdbItem";
 import queryKeys from "@/lib/queryKeys";
 import { CACHE } from "@/lib/queryClient";
 
-export default function useSearch(query, filter) {
+export default function useSearch(query, filter, year) {
   const debouncedQuery = useDebounce(query, 200)
 
   const { data, isLoading, isFetching, error } = useQuery({
-    queryKey: queryKeys.search.media(filter, debouncedQuery),
+    queryKey: queryKeys.search.media(filter, debouncedQuery, year),
     queryFn: async () => {
-      const response = await searchContent(debouncedQuery, filter)
+      const response = await searchContent(debouncedQuery, filter, year)
       return { results: (response.results ?? []).map(toMediaItem) }
     },
     enabled: debouncedQuery.length > 0,

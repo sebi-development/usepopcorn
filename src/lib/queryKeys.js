@@ -50,7 +50,7 @@ const queryKeys = {
 
   // ── Search ───────────────────────────────────────────────────
   search: {
-    media: (type, query) => ['search', type, query],
+    media: (type, query, year) => ['search', type, query, year ?? null],
     users: (query) => ['users', 'search', query],
   },
 

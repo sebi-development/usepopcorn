@@ -26,7 +26,7 @@ const LANGUAGE_OPTIONS = LANGUAGE_CODES
 
 const COUNTRY_OPTIONS = getCountryOptions().map(({ code, name }) => ({ value: code, label: name }))
 
-const YEAR = { key: 'year', label: 'Year', kind: 'select', options: YEAR_OPTIONS }
+export const YEAR = { key: 'year', label: 'Year', kind: 'select', options: YEAR_OPTIONS }
 const COUNTRY = { key: 'country', label: 'Country', kind: 'multi', options: COUNTRY_OPTIONS }
 const LANGUAGE = { key: 'language', label: 'Language', kind: 'multi', options: LANGUAGE_OPTIONS }
 const genre = (map) => ({ key: 'genre', label: 'Genre', kind: 'multi', options: toGenreOptions(map) })
