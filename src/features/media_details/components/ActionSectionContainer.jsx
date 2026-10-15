@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react"
+import { memo, useMemo, useCallback } from "react"
 import useUploadRating from "@/features/ratings/hooks/useUploadRating"
 import useDeleteRating from "@/features/ratings/hooks/useDeleteRating"
 import useMediaState from "@/features/interactions/hooks/useMediaState"
@@ -6,7 +6,7 @@ import useGetAverageRating from "@/features/ratings/hooks/useGetAverageRating"
 import useAverageRatingRealtime from "@/features/ratings/hooks/useAverageRatingRealtime"
 import ActionSection from "@/features/media_details/components/ActionSection"
 
-export default function ActionSectionContainer({ media, tmdbId, type }) {
+function ActionSectionContainer({ media, tmdbId, type }) {
   // ── User state (rating, favorite, watchlist) — one cached read model ──
   const { favorites, watchlist, ratings } = useMediaState()
   const userScore = ratings.get(tmdbId)
@@ -57,3 +57,5 @@ export default function ActionSectionContainer({ media, tmdbId, type }) {
     />
   )
 }
+
+export default memo(ActionSectionContainer)

@@ -1,4 +1,4 @@
-
+import { memo } from 'react'
 import formatRuntime from '@/utils/formatRuntime'
 import Chip from '@/components/ui/Chip'
 
@@ -78,4 +78,4 @@ function DetailCard({ media }) {
   )
 }
 
-export default DetailCard
+export default memo(DetailCard)

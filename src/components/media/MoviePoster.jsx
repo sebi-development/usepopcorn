@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { memo, useState } from "react"
 import { FiImage } from "react-icons/fi"
 
 function MoviePoster({ src, alt, className = '' }) {
@@ -31,4 +31,4 @@ function MoviePoster({ src, alt, className = '' }) {
   )
 }
 
-export default MoviePoster
+export default memo(MoviePoster)
