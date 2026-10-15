@@ -385,6 +385,11 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# The gateway rejects calls without a valid user JWT before the function runs, so only signed-in
+# users can make it scrape ČSFD
+[functions.csfd-score]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

@@ -13,6 +13,7 @@
     "db:new": "supabase migration new",
     "db:dry": "supabase db push --linked --dry-run",
     "db:push": "supabase db push --linked",
+    "fn:deploy": "supabase functions deploy --use-api",
     "audit:mobile": "node scripts/audit/mobile.mjs",
     "audit:cache": "node scripts/audit/cache.mjs",
     "audit:checks": "node scripts/audit/checks.mjs"
