@@ -390,6 +390,9 @@ deno_version = 2
 [functions.csfd-score]
 verify_jwt = true
 
+[functions.mdblist-scores]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327
