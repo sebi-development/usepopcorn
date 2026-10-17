@@ -2,7 +2,7 @@
 //
 // It drives the Vite dev server through the Chrome DevTools Protocol and stubs Supabase inside
 // the page (fetch + WebSocket), so the app renders signed-in with fixture data and nothing
-// touches the production database. TMDB / OMDb requests are real.
+// touches the production database. TMDB requests are real.
 //
 // Setup (two terminals):
 //   pnpm dev
@@ -80,6 +80,9 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
     if (p.startsWith('/auth/v1/user')) return json(user)
     if (p.startsWith('/auth/v1/logout')) return json({}, 204)
     if (p.startsWith('/auth/v1/')) return json({ error: 'stubbed' }, 400)
+    // Score Edge Functions: the cache rows below are always fresh, so these are a safety net
+    if (p === '/functions/v1/csfd-score') return json({ csfdId: 9499, rating: 90 })
+    if (p === '/functions/v1/mdblist-scores') return json({ imdb: 8.7, rtCritics: 96, rtAudience: 97, metacritic: 87, rtPath: '/tv/breaking_bad' })
     if (p.startsWith('/rest/v1/rpc/')) {
       const fn = p.split('/').pop()
       const args = body ? JSON.parse(body) : {}
@@ -128,6 +131,9 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
       }
       if (method === 'POST') { const r = JSON.parse(body); const f = r.interaction_type === 'favorite' ? 'favorites' : 'watchlist'; state[f] = [...state[f], r.tmdb_id]; return json(undefined, 201) }
     }
+    // Score caches: one fresh row per title (maybeSingle reads an array)
+    if (table === 'csfd_cache') return json([{ csfd_id: 9499, rating: 90, expires_at: new Date(now + 90 * 864e5).toISOString() }])
+    if (table === 'mdblist_cache') return json([{ imdb_rating: 8.7, rt_critics: 96, rt_audience: 97, metacritic: 87, rt_path: '/tv/breaking_bad', expires_at: new Date(now + 90 * 864e5).toISOString() }])
     if (table === 'follows') {
       if (method === 'HEAD') return json(undefined, 200, { 'content-range': '*/1' })
       if (method === 'GET' && q.get('following_id')) {

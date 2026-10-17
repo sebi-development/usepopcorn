@@ -10,7 +10,6 @@ import { expiresAt } from "../_shared/ttl.ts";
 import { staleWhileRevalidate } from "../_shared/cache.ts";
 
 const API_URL = "https://api.mdblist.com";
-// A Supabase secret (supabase secrets set): never shipped to the browser
 const API_KEY = Deno.env.get("MDBLIST_API_KEY");
 const TIMEOUT_MS = 4000;
 

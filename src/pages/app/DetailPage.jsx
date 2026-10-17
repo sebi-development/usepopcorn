@@ -5,7 +5,6 @@ import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers, HiOutlineLis
 
 import useMediaDetails from "@/features/media_details/hooks/useMediaDetails"
 import useAllSeasonDetails from "@/features/media_details/hooks/useAllSeasonDetails"
-import { externalScoresQuery } from "@/features/media_details/hooks/useExternalApis"
 import { csfdScoreQuery } from "@/features/media_details/hooks/useCsfdScore"
 
 import DetailCard from "@/features/media_details/components/DetailCard"
@@ -20,6 +19,7 @@ import OverviewTab from "@/features/media_details/components/tabs/OverviewTab"
 import SeasonsTab from "@/features/media_details/components/tabs/SeasonsTab"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import getTmdbImageUrl from "@/utils/tmdbImage"
+import { mdblistScoresQuery } from "@/features/media_details/hooks/useMdblistScores"
 
 const PANEL_CARD_CLASS = "bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
 
@@ -108,14 +108,17 @@ export default function DetailPage() {
     return tabs
   }, [type, hasSimilar])
 
-  // Start the score lookups as soon as the IMDb id is known, so the Scores tab is usually filled
-  // by the time it's opened. A prefetch only fills the cache and doesn't subscribe, so this page
-  // doesn't re-render when the results land; ScoresTab, which reads them, does.
+  // Start the score lookups early, so the Scores tab is usually filled by the time it's opened.
+  // A prefetch only fills the cache and doesn't subscribe, so this page doesn't re-render when the
+  // results land; ScoresTab, which reads them, does. MDBList is keyed by the id and type from the
+  // URL, so it starts at once; ČSFD needs the IMDb id, which arrives with the title's details.
   const queryClient = useQueryClient()
   const imdbId = data?.imdb_id
   useEffect(() => {
+    queryClient.prefetchQuery(mdblistScoresQuery(type, tmdbId))
+  }, [queryClient, type, tmdbId])
+  useEffect(() => {
     if (!imdbId) return
-    queryClient.prefetchQuery(externalScoresQuery(imdbId))
     queryClient.prefetchQuery(csfdScoreQuery(imdbId))
   }, [queryClient, imdbId])
 
@@ -168,7 +171,7 @@ export default function DetailPage() {
 
           <TabPanel id="scores" activeTab={activeTab} animate={tabSwitched}>
             <h3 className={SECTION_HEADER_CLASS}>Platform Scores</h3>
-            <ScoresTab imdbId={imdbId} />
+            <ScoresTab media={data} />
           </TabPanel>
 
           <TabPanel id="social" activeTab={activeTab} animate={tabSwitched}>
@@ -178,8 +181,6 @@ export default function DetailPage() {
           {hasSimilar && (
             <TabPanel id="similar" activeTab={activeTab} animate={tabSwitched}>
               <h3 className={SECTION_HEADER_CLASS}>Similar Titles</h3>
-              {/* MediaRow insets itself by 24px at md (for page-level rows); undo it so the first
-                  poster lines up with the tabs and the heading */}
               <div className="md:-ml-6">
                 <Suspense fallback={<SimilarFallback />}>
                   <SimilarTab items={data.similar} type={type} />

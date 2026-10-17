@@ -54,12 +54,13 @@ const queryKeys = {
     users: (query) => ['users', 'search', query],
   },
 
-  // ── TMDB / OMDb ──────────────────────────────────────────────
+  // ── Titles (TMDB) and their scores (MDBList, ČSFD) ───────────
   media: {
     details: (type, tmdbId, country) => ['mediaDetails', type, tmdbId, country],
     season: (tvId, seasonNumber) => ['seasonDetails', tvId, seasonNumber],
-    externalScores: (imdbId) => ['externalScores', imdbId],
     csfdScore: (imdbId) => ['csfdScore', imdbId],
+    // TMDB movie and TV ids overlap, so the type is part of the key
+    mdblistScores: (type, tmdbId) => ['mdblistScores', type, tmdbId],
     recommendations: (tmdbId, type) => ['recommendations', tmdbId, type],
     category: (type, categoryId) => ['browse', categoryId, type],
     genre: (type, genreId) => ['browse', 'genre', type, genreId],

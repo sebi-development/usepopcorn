@@ -44,7 +44,7 @@ A movie and series discovery and social tracking platform. Users browse TMDB cat
 | | |
 |---|---|
 | **Analytics in the database** | 12 PL/pgSQL / SQL functions (CTEs, window functions, `generate_series`) return pre-shaped `jsonb`. Streak, heatmap and genre ranking are one round trip each, with no client-side reducing. [Details](#3-deep-dive-custom-database-engine) |
-| **No application server** | The browser talks to Supabase and TMDB / OMDb directly. Authorization is Row Level Security on every table plus `SECURITY INVOKER` read functions, with `anon` locked out. [Security notes](#security-notes) |
+| **No application server** | The browser talks to Supabase and TMDB directly; external scores (MDBList, ČSFD) come through two Supabase Edge Functions that hold the keys and cache the results in Postgres. Authorization is Row Level Security on every table plus `SECURITY INVOKER` read functions, with `anon` locked out. [Security notes](#security-notes) |
 | **Realtime social feed** | Followed users' ratings arrive over `postgres_changes` with server-side row filters, keyset-paged, and filterable by type, score, genre, friend and period. |
 | **One cache vocabulary** | Five named cache tiers and a `queryKeys` factory that ESLint enforces, so a query, its invalidation and its realtime subscription cannot drift apart. [Cache strategy](#22-client-cache-strategy-and-speculative-prefetching) |
 | **URL is the state** | Browse and feed filters are one shared, URL-driven layer. A filtered view is a link, and Back restores it. [Filtering](#221-url-driven-filtering) |
@@ -68,7 +68,7 @@ If you have five minutes, these files show the shape of the codebase:
 ---
 
 - **Client:** React 19, Vite, Tailwind CSS v4, TanStack Query v5, React Router v7 (data router)
-- **Backend:** Supabase (Auth, PostgreSQL, Realtime, Storage). There is no application server. The browser talks to Supabase (PostgREST and RPC) and to TMDB / OMDb directly.
+- **Backend:** Supabase (Auth, PostgreSQL, Realtime, Storage, Edge Functions). There is no application server. The browser talks to Supabase (PostgREST, RPC, and two Edge Functions for external scores) and to TMDB directly.
 - **Language:** plain JavaScript / JSX, no TypeScript, no test suite. Lint: ESLint 10 flat config.
 
 ---
@@ -81,8 +81,8 @@ Data moves through three layers, and each layer has one job.
 
 | Layer | Location | Responsibility |
 |---|---|---|
-| **Services** | `src/services/*` | Plain async functions with no React. `tmdb.js` / `omdb.js` wrap `fetch`. The rest (`ratings`, `follows`, `profiles`, `interactions`, `files`) call Supabase through one shared client (`src/lib/supabase.js`). Every function throws `Error` so React Query can surface it. |
-| **Hooks** | `src/features/<feature>/hooks/*` | `useQuery` / `useInfiniteQuery` / `useMutation` wrappers. Third-party payloads (TMDB, OMDb) are normalised in the `queryFn`, not in `select`, so the cache holds only the fields the UI reads (a raw TMDB title is ~200 KB, a season ~100 KB). OMDb's `"N/A"` strings become `null` there too. Mutations use optimistic updates: `onMutate` snapshot, `onError` rollback, `onSettled` invalidate. |
+| **Services** | `src/services/*` | Plain async functions with no React. `tmdb.js` wraps `fetch`. `mdblist.js` / `csfd.js` read a score cache table and call their Edge Function only when the row is missing or expired. The rest (`ratings`, `follows`, `profiles`, `interactions`, `files`) call Supabase through one shared client (`src/lib/supabase.js`). Every function throws `Error` so React Query can surface it. |
+| **Hooks** | `src/features/<feature>/hooks/*` | `useQuery` / `useInfiniteQuery` / `useMutation` wrappers. Third-party payloads (TMDB, MDBList, ČSFD) are normalised in the `queryFn`, not in `select`, so the cache holds only the fields the UI reads (a raw TMDB title is ~200 KB, a season ~100 KB). Mutations use optimistic updates: `onMutate` snapshot, `onError` rollback, `onSettled` invalidate. |
 | **Components** | `src/features/<feature>/components`, `src/components/{ui,media}`, `src/pages/*` | Presentation. Shared primitives are `React.memo`-ed. |
 
 ### Auth gate and current user
@@ -125,9 +125,9 @@ Every query spreads a cache tier from `CACHE` in `src/lib/queryClient.js` instea
 | `mediaList` | 15 / 15 min | Browse rows and grids, recommendations. `gcTime` equals `staleTime` because data past `staleTime` refetches anyway, so holding it longer only keeps stale objects in memory. |
 | `filtered` (override) | `gcTime` 2 min | Spread on top of a tier by `filteredCache(tier, filters)` for a list narrowed by filters. A filter combination is mostly viewed once, so it only outlives its screen long enough to open a title and come back. `staleTime` stays the source tier's. |
 
-Two cases sit outside the tiers on purpose: the current user (`∞` / `∞`, seeded from the session and changed only by the auth listener or `setQueryData`) and OMDb external scores (1 h, because of the free tier's daily request cap).
+One case sits outside the tiers on purpose: the current user (`∞` / `∞`, seeded from the session and changed only by the auth listener or `setQueryData`). External scores use the `media` tier: their long-lived cache is the Postgres table behind each Edge Function (7–90 days by title age), not the browser.
 
-**Trimmed cache payloads.** TMDB and OMDb responses are reduced in the `queryFn`, and list items go through `toMediaItem` (`src/utils/tmdbItem.js`). Series details no longer request credits. In a scripted session (Home, three browse rows, three movies, two series with episodes, a search, a profile) the cached data went from 2090 KB to 108 KB.
+**Trimmed cache payloads.** TMDB responses are reduced in the `queryFn`, and list items go through `toMediaItem` (`src/utils/tmdbItem.js`). Series details no longer request credits. In a scripted session (Home, three browse rows, three movies, two series with episodes, a search, a profile) the cached data went from 2090 KB to 108 KB.
 
 **Shared page 1.** A row that shows the first page of a numbered grid uses `queryKeys.gridPage(base, 1)`, so expanding it is a cache hit. "Am I following X" is read from the followed-ids list (`useFollowingIds`), which `useFollow` patches optimistically, so a profile makes no per-user follow requests.
 
@@ -182,7 +182,7 @@ Browse and the Community feed share one filter layer. The URL is the single sour
 - **Idempotent writes via composite key.** Ratings are written with `upsert(..., { onConflict: 'user_id,tmdb_id' })`. This relies on a composite unique constraint on `(user_id, tmdb_id)`, which gives "one rating per user per title" without a read-before-write and makes a re-rate a single statement. The same constraint gives the index that serves the `WHERE user_id = … AND tmdb_id = …` lookups, so no separate duplicate index is needed on those columns.
 - **Follows** are `(follower_id, following_id)` edges. Social RPCs join `ratings ⨝ follows ⨝ profiles` on those keys.
 - **Profile lifecycle.** A `SECURITY DEFINER` trigger, `handle_new_user()`, creates the `profiles` row from `auth.users.raw_user_meta_data`, so signup is atomic and the client never writes a profile row itself. `delete_user()` deletes `auth.users` where `id = auth.uid()`, which comes from the verified JWT and cannot be spoofed by an argument. This removes the account, and cascades depend on the schema's foreign keys.
-- **Data normalisation in hooks.** OMDb payloads are reduced to `{ imdb, metacritic, rottenTomatoes }` in the `queryFn` (with `"N/A"` → `null`), so components never see the raw shape.
+- **Data normalisation at both ends.** The Edge Functions store only the scores (MDBList's ~3 KB response becomes five columns), and the hooks shape them for the UI in the `queryFn` (`{ imdb, rtCritics, rtAudience, metacritic, rtUrl }`, `{ rating, url }`), so components never see a provider's raw shape.
 
 ### 2.4 Component geometry and design system
 
@@ -270,7 +270,8 @@ ranked_genres as (
 - Only `delete_user` and `handle_new_user` are `SECURITY DEFINER`, both with a pinned `search_path`. `delete_user()` accepts no arguments, the target is derived from the JWT, and `anon` cannot execute it.
 - Read-only functions are marked `STABLE`. At the current table sizes this changes no measurable timing, but it is correct (read-only transaction) and good planner hygiene.
 - Indexes: `follows` is indexed by `following_id` (mutual friends in `get_suggested_users`, cascade on profile delete), and `ratings (user_id, updated_at desc)` serves the windowed best-rated query.
-- The Supabase **anon key** and the TMDB / OMDb keys are `VITE_`-prefixed and are therefore embedded in the client bundle. Authorization has to come from RLS and the RPC design above. The TMDB and OMDb keys should be treated as public, low-privilege, rate-limited credentials.
+- The Supabase **anon key** and the TMDB key are `VITE_`-prefixed and are therefore embedded in the client bundle. Authorization has to come from RLS and the RPC design above. The TMDB key should be treated as a public, low-privilege, rate-limited credential.
+- The MDBList key is not in the bundle: it is a Supabase secret (`MDBLIST_API_KEY`) that only the `mdblist-scores` Edge Function reads, so its daily quota can't be spent from outside. Both score functions require a signed-in user's JWT (`verify_jwt`), and only they can write the score cache tables (`service_role`); signed-in users can only read them.
 
 ### Database workflow
 
@@ -291,7 +292,7 @@ The project is linked to the production database through the Supabase CLI (a dev
 - Each row is an infinite-scrolling horizontal strip that expands into a paginated grid, with `keepPreviousData` transitions and next-page prefetch (see 2.2).
 - Filters on every Browse category: genre, year, country and language (multi-select where TMDB can OR the values), URL-driven so a filtered view is a link. See 2.2.1.
 - Debounced title search, overlay results, and user search.
-- Title pages with tabbed Overview / Scores / Seasons / Friend Activity panels. TMDB details are fetched with `append_to_response` (credits, providers, release dates or content ratings, external IDs) to keep it to one request. IMDb, Rotten Tomatoes and Metacritic scores are fetched separately through OMDb once an IMDb id is known. Season details load lazily, only after the Seasons tab is visited.
+- Title pages with tabbed Overview / Scores / Seasons / Friend Activity panels. TMDB details are fetched with `append_to_response` (credits, providers, release dates or content ratings, external IDs) to keep it to one request. IMDb, Rotten Tomatoes (critics and audience) and Metacritic scores come from MDBList by TMDB id, and the ČSFD rating by IMDb id, each through its own Edge Function and Postgres cache. Season details load lazily, only after the Seasons tab is visited.
 - Favourites and watchlist toggles (optimistic), for movies and series, behind an actions menu on each card. Cards also show the signed-in user's own rating as a star chip.
 - Movie and series recommendation rows seeded from the user's movie and series of the month (`get_best_rated_since`, then TMDB `/recommendations`), widening to the last 3, 6 or 12 months when a type has no pick and labelling the window used.
 
@@ -328,8 +329,10 @@ The project is linked to the production database through the Supabase CLI (a dev
 | Backend / DB | **Supabase / PostgreSQL** | Relational data (ratings ⨝ follows ⨝ profiles) with real SQL: CTEs, window functions and `generate_series` power the analytics. A document store would push joins and aggregates into the client. Supabase also provides Auth, Realtime and Storage without a custom server. |
 | Backend / DB | **PL/pgSQL / SQL RPCs** | Aggregation runs next to the data, and the wire carries small pre-shaped results. The tradeoff is that logic lives in the database and needs migration discipline, and the DB CPU is shared across users. |
 | Backend / DB | **Supabase Realtime** (`postgres_changes`) | Push-based invalidation for feed and average ratings, with server-side row filters, instead of polling. |
+| Backend / DB | **Supabase Edge Functions** (Deno) | The only server-side code: two score lookups that need a secret or can't run in a browser. Shared modules in `supabase/functions/_shared` hold CORS, the service-role client, the TTL policy and stale-while-revalidate. |
 | External | **TMDB API** (v4 bearer token) | Primary catalogue: trending, discover, details, recommendations, images. |
-| External | **OMDb API** | Supplies IMDb / Rotten Tomatoes / Metacritic scores that TMDB does not expose. Isolated behind its own hook with a 1-hour cache because it is the most rate-limited dependency. |
+| External | **MDBList API** | IMDb, Rotten Tomatoes (critics and audience) and Metacritic scores by TMDB id, so titles without an IMDb id still get scores. Called only from the `mdblist-scores` Edge Function and cached in `mdblist_cache`, which keeps usage far below the free tier's 1,000 requests a day. |
+| External | **ČSFD** (node-csfd-api, Wikidata) | The ČSFD rating. Wikidata maps the IMDb id to the ČSFD id exactly; the `csfd-score` Edge Function reads the rating server-side (ČSFD has no API, no CORS and a bot challenge) and caches it in `csfd_cache`. |
 
 ---
 
@@ -339,7 +342,8 @@ The project is linked to the production database through the Supabase CLI (a dev
 
 - A current Node.js LTS (Vite 8 requires a recent Node) and **pnpm**
 - A Supabase project with the schema, RLS policies and RPC functions from section 3 (migrations since 2026-10-01 are in `supabase/migrations/`, the earlier schema is only in the live database)
-- A TMDB account (v4 read-access token) and an OMDb API key
+- A TMDB account (v4 read-access token)
+- An [MDBList](https://mdblist.com/api/) API key (the free tier is enough). It is a Supabase secret, not a `.env` variable: `pnpm exec supabase secrets set MDBLIST_API_KEY=<key>`
 
 ### Environment contract
 
@@ -353,9 +357,6 @@ VITE_SUPABASE_ANON_KEY=<supabase-anon-public-key>
 # TMDB (v3 base URL, v4 read-access bearer token)
 VITE_TMDB_BASE_URL=https://api.themoviedb.org/3
 VITE_TMDB_API_KEY=<tmdb-v4-read-access-token>
-
-# OMDb
-VITE_OMDB_API_KEY=<omdb-api-key>
 ```
 
 `.env` is git-ignored. `.env.example` is tracked.
@@ -373,6 +374,7 @@ pnpm db:query "<sql>"   # run SQL on the linked database (read-only inspection)
 pnpm db:new <name>      # create a migration file
 pnpm db:dry             # list migrations db:push would apply
 pnpm db:push            # apply pending migrations to production
+pnpm fn:deploy <name>   # deploy an Edge Function (bundled server-side, no Docker)
 
 pnpm audit:mobile       # tap targets, overflow and iOS input zoom per screen
 pnpm audit:cache        # what the query cache holds after a scripted session
@@ -396,19 +398,20 @@ src/
 ├── features/
 │   ├── auth/              # session, current user, password recovery
 │   ├── browse/            # category rail, rows, useCategoryMedia (row + grid hooks)
-│   ├── media_details/     # detail tabs, TMDB/OMDb hooks, season loading
+│   ├── media_details/     # detail tabs, TMDB and score hooks, season loading
 │   ├── ratings/           # rating UI, optimistic mutations, realtime average
 │   ├── interactions/      # favourites / watchlist
 │   ├── search/            # title and user search
 │   ├── social/            # feed, follows, suggestions, realtime feed
 │   └── profile/           # heatmap, streak, stats, avatar, account deletion
 ├── components/{ui,media,filters}  # shared primitives (FeatureCard, Chip, Modal, MediaRow, FilterBar, FilterPill, …)
-├── services/              # tmdb, omdb, ratings, follows, profiles, interactions, files
+├── services/              # tmdb, mdblist, csfd, ratings, follows, profiles, interactions, files
 ├── hooks/                 # generic hooks (usePagedList, usePagedGrid, debounce, focus trap, …)
 ├── utils/                 # pure helpers (pagination adapters, tmdbItem, periods, filters)
 └── lib/                   # supabase client, queryClient (CACHE tiers), queryKeys factory
 supabase/
 ├── migrations/            # every DB change since 2026-10-01
+├── functions/             # Edge Functions (csfd-score, mdblist-scores) and their _shared modules
 ├── functions-reference/   # read-only snapshot of the live RPCs and triggers
 └── templates/             # auth email templates
 scripts/audit/             # headless-browser audits (mobile, cache, checks)
@@ -423,4 +426,5 @@ The source code is released under the [MIT License](LICENSE), © 2026 Sebastian 
 The MIT License covers this repository's code only. Movie and series data and images are provided by third parties and remain under their own terms:
 
 - This product uses the [TMDB API](https://www.themoviedb.org/) but is not endorsed or certified by TMDB. Titles, posters and metadata belong to TMDB and their respective rights holders.
-- IMDb, Rotten Tomatoes and Metacritic scores are retrieved through the [OMDb API](https://www.omdbapi.com/) and belong to their respective owners.
+- IMDb, Rotten Tomatoes and Metacritic scores are retrieved through [MDBList](https://mdblist.com/) and belong to their respective owners.
+- ČSFD ratings come from [ČSFD](https://www.csfd.cz/), with title ids matched through [Wikidata](https://www.wikidata.org/), and belong to ČSFD.

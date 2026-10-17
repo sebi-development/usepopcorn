@@ -55,6 +55,6 @@ for (const [g, v] of Object.entries(groups).sort((a, b) => b[1].bytes - a[1].byt
 const total = cache.reduce((a, q) => a + q.bytes, 0)
 console.log('TOTAL'.padEnd(20), String(cache.length).padStart(7), kb(total))
 console.log('JS heap used after GC:', (heap / 1048576).toFixed(1), 'MB (dev build, indicative only)')
-console.log('supabase requests in session:', (await page.calls()).length, '| TMDB/OMDb requests:', (await page.calls('ext')).length)
+console.log('supabase requests in session:', (await page.calls()).length, '| TMDB requests:', (await page.calls('ext')).length)
 console.log('errors:', page.errors.map((e) => e.slice(0, 120)))
 await page.close()
