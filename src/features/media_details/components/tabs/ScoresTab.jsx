@@ -1,12 +1,12 @@
 import { useMemo, memo } from "react"
 import { FaImdb } from "react-icons/fa"
 import { SiRottentomatoes, SiMetacritic } from "react-icons/si"
-import { LuPopcorn } from "react-icons/lu"
 import { HiArrowTopRightOnSquare } from "react-icons/hi2"
 import useCsfdScore from "@/features/media_details/hooks/useCsfdScore"
 import useMdblistScores from "@/features/media_details/hooks/useMdblistScores"
 import BentoGrid from "@/components/ui/BentoGrid"
 import SkeletonBox from "@/components/ui/SkeletonBox"
+import PlatformScore from "@/features/media_details/components/PlatformScore"
 
 // Below sm each platform is one compact row (label left, score right) instead of a 140px tile.
 // min-w-0: a grid item won't shrink below its content width, so without it a wide score row
@@ -23,26 +23,25 @@ function CsfdIcon({ className }) {
   )
 }
 
-// Tomatometer (critics) first, then Popcornmeter (audience) behind the popcorn icon. Either can be
-// missing, so each shows only if it exists.
+// Tomatometer (critics) and Popcornmeter (audience) side by side, each captioned since the two
+// circles look alike. A missing one shows "-".
 function RottenScore({ critics, audience }) {
-  if (critics == null && audience == null) return "N/A"
-
   return (
-    <span className="inline-flex items-center gap-2 sm:gap-3">
-      {critics != null && <span><span className="sr-only">Critics </span>{critics}%</span>}
-      {audience != null && (
-        <span className="inline-flex items-center gap-1">
-          <LuPopcorn className="w-4 h-4 text-[#fa320a]" aria-hidden="true" />
-          <span className="sr-only">Audience </span>{audience}%
-        </span>
-      )}
+    <span className="flex items-start gap-3">
+      <span className="flex flex-col items-center gap-1">
+        <PlatformScore value={critics} suffix="%" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">Critics</span>
+      </span>
+      <span className="flex flex-col items-center gap-1">
+        <PlatformScore value={audience} suffix="%" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">Audience</span>
+      </span>
     </span>
   )
 }
 
 // Each source has its own query, so a slow lookup or a failure only affects its own tiles: a tile
-// shows a skeleton while `loading` and N/A when there's no score. DetailPage prefetches the queries
+// shows a skeleton while `loading` and "-" when there's no score. DetailPage prefetches the queries
 // on page open, so they usually read a filled cache.
 function CriticScoresTab({ media }) {
   const { id: tmdbId, type, imdb_id: imdbId } = media
@@ -54,7 +53,7 @@ function CriticScoresTab({ media }) {
       id: "imdb",
       name: "IMDb",
       icon: FaImdb,
-      score: mdblist?.imdb != null ? `${mdblist.imdb}/10` : "N/A",
+      score: <PlatformScore value={mdblist?.imdb} scale={10} />,
       iconColor: "text-[#f5c518]",
       loading: mdblistLoading,
     },
@@ -71,7 +70,7 @@ function CriticScoresTab({ media }) {
       id: "metacritic",
       name: "Metacritic",
       icon: SiMetacritic,
-      score: mdblist?.metacritic != null ? `${mdblist.metacritic}/100` : "N/A",
+      score: <PlatformScore value={mdblist?.metacritic} />,
       iconColor: "text-[#61c74f]",
       loading: mdblistLoading,
     },
@@ -79,7 +78,7 @@ function CriticScoresTab({ media }) {
       id: "csfd",
       name: "ČSFD",
       icon: CsfdIcon,
-      score: csfd?.rating != null ? `${csfd.rating}%` : "N/A",
+      score: <PlatformScore value={csfd?.rating} suffix="%" />,
       iconColor: "text-white",
       url: csfd?.url,
       loading: csfdLoading,
@@ -96,9 +95,7 @@ function CriticScoresTab({ media }) {
             className={SCORE_CARD_CLASS}
           >
             <div className="flex items-center justify-center shrink-0 sm:w-full sm:mb-4">
-              <div className="px-3 py-2 sm:px-5 rounded-2xl bg-surface-900/60 border border-white/10 text-text font-bold text-sm sm:text-base tracking-tight shadow-inner transition-colors hover:border-white/20">
-                {loading ? <SkeletonBox className="w-10 h-6 rounded-md" /> : score}
-              </div>
+              {loading ? <SkeletonBox className="w-14 h-14 rounded-full" /> : score}
             </div>
 
             <div className="flex items-center gap-2.5 min-w-0 text-text-muted sm:mt-auto sm:w-full sm:justify-center">

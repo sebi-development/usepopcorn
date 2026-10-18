@@ -15,11 +15,13 @@ const SCORE_TIERS = [
   { min: -Infinity, classes: "border-white/5 text-white/40", icon: null }
 ];
 
-function Score({ value, size = 'md' }) {
-  const displayValue = value !== undefined && value !== null ? value : "--";
+// `value` (0–100) picks the tier; `label` overrides the text when the shown number uses another scale
+function Score({ value, label, size = 'md' }) {
+  const hasValue = value !== undefined && value !== null;
+  const displayValue = label ?? (hasValue ? value : "--");
 
   const activeTier = SCORE_TIERS.find(tier =>
-    displayValue === "--" ? tier.min === -Infinity : displayValue >= tier.min
+    hasValue ? value >= tier.min : tier.min === -Infinity
   );
 
   const { icon } = activeTier
@@ -32,12 +34,15 @@ function Score({ value, size = 'md' }) {
       ? "w-36 h-36 text-3xl border-2"
       : "w-28 h-28 text-4xl border-2";
 
+  // sm sits inside cards that lift on hover, and a moving backdrop-blur is re-rendered every frame
+
   return (
     <div
       className={`
         flex flex-col items-center justify-center gap-0.5 font-black tracking-tighter
-        rounded-full bg-surface-900/50 backdrop-blur-md shadow-inner
+        rounded-full bg-surface-900/50 shadow-inner
         transition-all duration-300
+        ${isSm ? "" : "backdrop-blur-md"}
         ${sizeClasses}
         ${activeTier.classes}
       `}
