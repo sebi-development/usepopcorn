@@ -5,12 +5,8 @@ import queryKeys from "@/lib/queryKeys";
 import { CACHE } from "@/lib/queryClient";
 import { toMediaItem } from "@/utils/tmdbItem";
 
-// The Similar tab is one short row; the paged list lives in Inspire
 const SIMILAR_LIMIT = 12;
 
-// TMDB's detail payload carries the full cast and crew plus release dates and streaming providers
-// for every country: hundreds of KB for a big title. The detail page reads a few dozen fields, so
-// the payload is reduced to those before it is cached (the cache then holds a few KB per title).
 function toMediaDetails(data, type, userCountry) {
   const { certification, regionalReleaseDate, providers } = extractRegionalData(data, userCountry, type);
 

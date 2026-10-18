@@ -23,7 +23,6 @@ export function getCountry() {
       return res.json().then(data => data.country_code ?? null);
     })
     .catch(error => {
-      // Silently handle: ad-blockers, timeouts, network failures
       console.warn('Geolocation skipped. Defaulting to null.', error.message);
       return null;
     });

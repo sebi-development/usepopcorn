@@ -21,9 +21,6 @@ export async function getAverageRating(tmdbId) {
   return data ?? null
 }
 
-// One numbered page of a user's ratings (inclusive `from`..`to` range) plus
-// the total row count, in a single request. Newest first, with id as
-// tiebreaker so pages never overlap or skip on equal timestamps.
 export async function getUserRatingsPage(userId, from, to) {
   const { data, error, count } = await supabase
     .from('ratings')

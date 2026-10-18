@@ -5,13 +5,8 @@ function extractFilePath(url) {
   return url.split('/avatars/')[1]
 }
 
-// Avatars show at 36px (navbar) up to 160px (profile hero): 320px covers the largest at 2x.
-// Uploaded as picked, a phone photo was served to a 36px slot at full size.
 const AVATAR_SIZE = 320
 
-// Center square crop (the framing object-cover shows), scaled down, WebP where the browser can
-// encode it (toBlob falls back to PNG elsewhere, so JPEG then). An image the browser can't
-// decode is uploaded unchanged, as before.
 async function shrinkAvatar(file) {
   let bitmap
   try {

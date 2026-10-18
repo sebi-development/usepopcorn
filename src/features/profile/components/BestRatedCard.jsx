@@ -25,8 +25,8 @@ const KINDS = {
 }
 
 const TEXT = 'text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2'
+
 // Stretched link: the ::after covers the whole card so it is one click target,
-// without nesting the title Chip (a <button>) in an <a>
 const STRETCHED = `${TEXT} hover:text-text transition-colors after:absolute after:inset-0 after:z-20`
 
 export default memo(function BestRatedCard({ pick, kind, period = 'month', isLoading }) {
@@ -38,8 +38,6 @@ export default memo(function BestRatedCard({ pick, kind, period = 'month', isLoa
   return (
     <FeatureCard
       heroBackground={pick?.poster_path ? undefined : gradient}
-      // An <img>, not a CSS background: this poster is usually the page's LCP element, and only an
-      // <img> takes fetchpriority and srcset (w185 for the ~175px hero at 1x, w342 at 2x+)
       heroContent={pick?.poster_path && (
         <img
           src={getTmdbImageUrl(pick.poster_path, 'w342')}

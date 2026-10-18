@@ -3,8 +3,6 @@ import { getSeasonDetails } from "@/services/tmdb";
 import queryKeys from "@/lib/queryKeys";
 import { CACHE } from "@/lib/queryClient";
 
-// TMDB sends every episode with its crew and guest stars. The episode list shows a handful of
-// fields, so only those are cached: a few KB per season instead of hundreds.
 function toSeason(data) {
   return {
     id: data.id,

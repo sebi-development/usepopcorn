@@ -13,8 +13,6 @@ export function useAuth() {
   }
 
   async function register({ email, password, username }) {
-    // By submit time, this Promise is already resolved from the onMouseEnter prefetch.
-    // The await is instant — it just reads the cached value.
     const country = await getCountry()
 
     const { error } = await supabase.auth.signUp({

@@ -38,9 +38,6 @@ export async function getFollowingProfiles(userId) {
     .sort((a, b) => a.username.localeCompare(b.username))
 }
 
-// `cursor` is the { created_at, id } of the last row of the previous page,
-// or null for the first page (keyset paging, see the pagination migration).
-// `filterParams` are the optional p_* filters (toFeedParams in feedFilters.js).
 export async function getFeed(currentUserId, { limit, cursor, filterParams }) {
   const { data, error } = await supabase.rpc('get_user_feed', {
     current_user_id: currentUserId,

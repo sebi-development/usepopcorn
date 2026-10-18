@@ -142,7 +142,7 @@ export default function ActivityHeatmap({ data, year, onYearChange, minYear, isE
         </div>
       </div>
 
-      {/* Legend: a single "Less ▪▪▪▪▪ More" strip below md, labelled dots from md up */}
+      {/* Legend */}
       <div className="flex items-center justify-end gap-1 pt-3 mt-3 md:justify-start md:gap-5 md:pt-4 md:mt-2 md:flex-wrap border-t border-surface-100/20">
         <span className="md:hidden mr-0.5 text-[10px] text-text-muted">Less</span>
         {HEATMAP_LEGEND.map(({ className, label }) => (

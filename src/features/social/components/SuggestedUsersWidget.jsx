@@ -20,7 +20,6 @@ export default function SuggestedUsersWidget() {
   const { followingSet } = useFollowingIds()
 
   // Precompute subtitles once per data change, not once per render.
-  // Cheap either way at 4 items, but this is the correct habit for list-derived data.
   const suggestionsWithSubtitles = useMemo(() => {
     return suggestions?.map(user => ({
       ...user,
