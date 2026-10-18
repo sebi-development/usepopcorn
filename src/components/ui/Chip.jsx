@@ -46,7 +46,7 @@ const Chip = memo(function Chip({
       type="button"
       onClick={onClick}
       disabled={!onClick}
-      className={`relative inline-flex items-center justify-center ${button} rounded-full group outline-none transition-transform ${onClick ? 'cursor-pointer active:scale-95' : 'cursor-default'} ${variantStyles} ${focusStyles} ${className}`}
+      className={`relative inline-flex items-center justify-center ${button} rounded-full outline-none transition-transform ${onClick ? 'cursor-pointer active:scale-95' : 'cursor-default'} ${variantStyles} ${focusStyles} ${className}`}
       style={dynamicStyles}
       {...rest}
     >
@@ -54,7 +54,7 @@ const Chip = memo(function Chip({
         <>
           {/* The Smoked Glass */}
           <div 
-            className="absolute inset-0 rounded-full bg-[#0a0a0a]/60 backdrop-blur-md transition-colors duration-300 group-hover:bg-[#0a0a0a]/40"
+            className="absolute inset-0 rounded-full bg-[#0a0a0a]/60 backdrop-blur-md"
             style={{ boxShadow: `inset 0 0 16px var(--chip-muted)` }}
           />
 
@@ -71,7 +71,7 @@ const Chip = memo(function Chip({
 
           {/* The Ambient Outset Glow */}
           <div 
-            className="absolute inset-0 rounded-full opacity-60 blur-[6px] pointer-events-none transition-opacity duration-300 group-hover:opacity-100"
+            className="absolute inset-0 rounded-full opacity-60 blur-[6px] pointer-events-none"
             style={{
               background: `linear-gradient(135deg, transparent 40%, var(--chip-glow) 100%)`,
             }}
