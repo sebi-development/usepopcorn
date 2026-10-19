@@ -33,7 +33,7 @@ function RottenMeter({ value, icon: Icon, caption, loading }) {
     <span className="flex flex-col items-center gap-1.5">
       <ScoreRing pct={value} label={value} suffix="%" tone={RT_TONE(value)} size="md" loading={loading} />
       <span className="flex items-center gap-1 text-xs text-text-muted">
-        {loading ? <span className="size-4" /> : value != null && <Icon fresh={value >= 60} className="size-4" />}
+        {loading ? <span className="size-4" /> : value != null && <Icon score={value} className="size-4" />}
         {caption}
       </span>
     </span>
