@@ -22,6 +22,7 @@ import getTmdbImageUrl from "@/utils/tmdbImage"
 import { mdblistScoresQuery } from "@/features/media_details/hooks/useMdblistScores"
 
 const PANEL_CARD_CLASS = "bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
+const UNBOXED_TABS = new Set(["similar", "scores"])
 
 const SECTION_HEADER_CLASS = "text-sm font-semibold text-text-muted uppercase tracking-widest mb-3"
 
@@ -162,15 +163,15 @@ export default function DetailPage() {
           fill
         />
 
-        {/* Text and data tabs sit in a card; the Similar poster row sits straight on the page */}
-        <div className={activeTab === "similar" ? undefined : PANEL_CARD_CLASS}>
+        {/* Text and data tabs sit in a card. The Similar poster row and the score tiles, which are
+            cards themselves, sit straight on the page */}
+        <div className={UNBOXED_TABS.has(activeTab) ? undefined : PANEL_CARD_CLASS}>
 
           <TabPanel id="overview" activeTab={activeTab} animate={tabSwitched}>
             <OverviewTab data={data}></OverviewTab>
           </TabPanel>
 
           <TabPanel id="scores" activeTab={activeTab} animate={tabSwitched}>
-            <h3 className={SECTION_HEADER_CLASS}>Platform Scores</h3>
             <ScoresTab media={data} />
           </TabPanel>
 

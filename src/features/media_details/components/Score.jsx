@@ -15,39 +15,32 @@ const SCORE_TIERS = [
   { min: -Infinity, classes: "border-white/5 text-white/40", icon: null }
 ];
 
-// `value` (0–100) picks the tier; `label` overrides the text when the shown number uses another scale
-function Score({ value, label, size = 'md' }) {
+function Score({ value }) {
   const hasValue = value !== undefined && value !== null;
-  const displayValue = label ?? (hasValue ? value : "--");
+  const displayValue = hasValue ? value : "--";
 
   const activeTier = SCORE_TIERS.find(tier =>
     hasValue ? value >= tier.min : tier.min === -Infinity
   );
 
   const { icon } = activeTier
-  const isSm = size === 'sm'
 
   // The circle grows when it carries an icon so the popcorn sits above the number
-  const sizeClasses = isSm
-    ? "w-14 h-14 text-lg border-[1.5px]"
-    : icon
-      ? "w-36 h-36 text-3xl border-2"
-      : "w-28 h-28 text-4xl border-2";
-
-  // sm sits inside cards that lift on hover, and a moving backdrop-blur is re-rendered every frame
+  const sizeClasses = icon
+    ? "w-36 h-36 text-3xl border-2"
+    : "w-28 h-28 text-4xl border-2";
 
   return (
     <div
       className={`
         flex flex-col items-center justify-center gap-0.5 font-black tracking-tighter
         rounded-full bg-surface-900/50 shadow-inner
-        transition-all duration-300
-        ${isSm ? "" : "backdrop-blur-md"}
+        transition-all duration-300 backdrop-blur-md
         ${sizeClasses}
         ${activeTier.classes}
       `}
     >
-      {icon && !isSm && (
+      {icon && (
         <img
           src={icon.src}
           width={icon.w}
