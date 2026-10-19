@@ -128,6 +128,20 @@ body {
     border-color: rgba(121, 80, 242, 0.65);
   }
 
+  /* Score tiles: a faint wash over the page, hover only lightens and lifts. After .bento-card:hover
+     so these win at equal specificity. */
+  .bento-grid--scores .bento-card {
+    background-color: rgb(255 255 255 / 0.025);
+    border-color: rgb(255 255 255 / 0.05);
+  }
+
+  .bento-grid--scores .bento-card:hover,
+  .bento-grid--scores .bento-card:focus-visible {
+    background-color: rgb(255 255 255 / 0.05);
+    border-color: rgb(255 255 255 / 0.05);
+    box-shadow: none;
+  }
+
   .bento-card__icon {
     @apply text-2xl text-primary-light shrink-0;
   }
