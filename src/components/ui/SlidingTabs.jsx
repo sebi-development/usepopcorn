@@ -1,7 +1,10 @@
-import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react"
+import { useRef, useEffect, useLayoutEffect, useCallback } from "react"
 
 // ease-out-quint: leaves quickly, settles softly
 const EASING = "cubic-bezier(0.22, 1, 0.36, 1)"
+
+// Hidden until first measured. Static, so React never rewrites the values measure() sets.
+const PILL_STYLE = { width: 0, opacity: 0, transitionTimingFunction: EASING }
 
 export default function SlidingTabs({
   tabs,
@@ -20,9 +23,11 @@ export default function SlidingTabs({
   // sizing to their content. Tabs may carry a `shortLabel` shown only below sm.
   fill = false,
 }) {
-  // null until first measured. `animate` is true only when the active tab changed: first paint,
-  // resizes and font swaps snap the pill into place instead of making it chase the layout.
-  const [pill, setPill] = useState(null)
+  // The pill is positioned on its DOM node, not through state: a state update after measuring
+  // would re-render the tabs a second time on every switch. `animate` is true only when the active
+  // tab changed: first paint, resizes and font swaps snap the pill into place instead of making it
+  // chase the layout.
+  const pillRef = useRef(null)
   const tabRefs = useRef([])
   const containerRef = useRef(null)
   const prevActiveRef = useRef(activeTab)
@@ -30,11 +35,13 @@ export default function SlidingTabs({
 
   const measure = useCallback((animate) => {
     const el = tabRefs.current[tabs.findIndex(tab => tab.id === activeTab)]
-    if (!el) return
-    const x = el.offsetLeft
-    const width = el.offsetWidth
-    setPill(p => (p && p.x === x && p.width === width ? p : { x, width, animate }))
-  }, [tabs, activeTab])
+    const pill = pillRef.current
+    if (!el || !pill) return
+    pill.style.transitionDuration = animate ? `${duration}ms` : "0ms"
+    pill.style.width = `${el.offsetWidth}px`
+    pill.style.transform = `translateX(${el.offsetLeft}px)`
+    pill.style.opacity = "1"
+  }, [tabs, activeTab, duration])
 
   // Layout effect: the pill starts moving in the same frame the label changes colour
   useLayoutEffect(() => {
@@ -59,14 +66,9 @@ export default function SlidingTabs({
       {/* Moved with transform (compositor) rather than left. No backdrop-blur of its own: the
           container already blurs, and a moving blur is re-rendered on every frame. */}
       <div
+        ref={pillRef}
         className={`absolute left-0 top-1 bottom-1 bg-white/10 border border-white/10 shadow-sm will-change-transform transition-[transform,width] motion-reduce:transition-none ${pillRadius} ${pillClassName}`}
-        style={{
-          width: pill?.width ?? 0,
-          transform: `translateX(${pill?.x ?? 0}px)`,
-          opacity: pill ? 1 : 0,
-          transitionDuration: pill?.animate ? `${duration}ms` : "0ms",
-          transitionTimingFunction: EASING,
-        }}
+        style={PILL_STYLE}
       />
 
       {tabs.map((tab, index) => {
