@@ -8,22 +8,17 @@ import BentoGrid from "@/components/ui/BentoGrid"
 import ScoreRing from "@/features/media_details/components/ScoreRing"
 import { TomatoIcon, PopcornIcon } from "@/features/media_details/components/RtIcons"
 
-// Below sm each platform is one compact row (label left, score right) instead of a 140px tile.
-// min-w-0: a grid item won't shrink below its content width, so without it a wide score row
-// would stretch the one-column grid past the panel instead of letting the label wrap.
+// Below sm each platform is a compact row. min-w-0 lets the label wrap instead of stretching the grid.
 const SCORE_CARD_CLASS = "flex flex-row-reverse items-center justify-between gap-3 min-w-0 p-4 sm:flex-col sm:p-6 sm:min-h-35"
 
-// Each platform draws its own line between good and bad, so the ring tone uses its thresholds on
-// the 0–100 value: green from `good`, amber from `mixed`, red below. One palette across the tiles
-// keeps green meaning good everywhere.
+// Each platform's own good / mixed thresholds (0–100) in one palette, so green means good everywhere
 const toneFrom = (good, mixed) => (pct) => pct == null ? null : pct >= good ? "success" : pct >= mixed ? "warning" : "danger"
 const IMDB_TONE = toneFrom(70, 50)
 const METACRITIC_TONE = toneFrom(61, 40)
 const RT_TONE = toneFrom(60, 60)
 const CSFD_TONE = toneFrom(70, 30)
 
-// react-icons has no ČSFD logo. A brand-red tile with the Č is a few bytes of markup and needs no
-// image request; it takes the same className (size, shrink) as the icons next to it.
+// react-icons has no ČSFD logo
 function CsfdIcon({ className }) {
   return (
     <span className={`${className} grid place-items-center rounded-[5px] bg-[#BA0300] text-[13px] font-black leading-none text-white`}>
@@ -32,9 +27,7 @@ function CsfdIcon({ className }) {
   )
 }
 
-// One RT meter: its ring, captioned with RT's own mark for the state (fresh or rotten tomato, full
-// or tipped bucket). While loading, an empty slot holds the mark's place so the caption doesn't
-// slide when it lands; a missing score shows "–" and no mark.
+// While loading, an empty slot holds the mark's place so the caption doesn't move when it lands
 function RottenMeter({ value, icon: Icon, caption, loading }) {
   return (
     <span className="flex flex-col items-center gap-1.5">
@@ -57,10 +50,7 @@ const RottenScore = memo(function RottenScore({ critics, audience, loading }) {
   )
 })
 
-// Each source has its own query, so a slow lookup or a failure only affects its own tiles: a ring
-// pulses as a bare track while loading (same box as the loaded ring, so nothing shifts) and shows
-// "–" when there's no score. DetailPage prefetches the queries on page open, so they usually read a
-// filled cache.
+// One query per source, so a slow or failed lookup only affects its own tiles. DetailPage prefetches both.
 function CriticScoresTab({ media }) {
   const { id: tmdbId, type, imdb_id: imdbId } = media
   const { data: csfd, isLoading: csfdLoading } = useCsfdScore(imdbId)
@@ -119,7 +109,7 @@ function CriticScoresTab({ media }) {
               <span className="text-sm font-semibold leading-tight text-text">
                 {name}
               </span>
-              {/* Every tile shares the same hover, so the arrow is what marks the ones that link out */}
+              {/* The arrow marks the tiles that link out */}
               {url && (
                 <>
                   <HiArrowTopRightOnSquare className="w-3.5 h-3.5 shrink-0 max-[359px]:hidden" aria-hidden="true" />

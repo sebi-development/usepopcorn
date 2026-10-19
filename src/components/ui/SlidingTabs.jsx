@@ -3,7 +3,7 @@ import { useRef, useEffect, useLayoutEffect, useCallback } from "react"
 // ease-out-quint: leaves quickly, settles softly
 const EASING = "cubic-bezier(0.22, 1, 0.36, 1)"
 
-// Hidden until first measured. Static, so React never rewrites the values measure() sets.
+// Static, so React never overwrites the values measure() sets
 const PILL_STYLE = { width: 0, opacity: 0, transitionTimingFunction: EASING }
 
 export default function SlidingTabs({
@@ -23,10 +23,8 @@ export default function SlidingTabs({
   // sizing to their content. Tabs may carry a `shortLabel` shown only below sm.
   fill = false,
 }) {
-  // The pill is positioned on its DOM node, not through state: a state update after measuring
-  // would re-render the tabs a second time on every switch. `animate` is true only when the active
-  // tab changed: first paint, resizes and font swaps snap the pill into place instead of making it
-  // chase the layout.
+  // The pill is styled on its DOM node, not via state, so a switch renders once. Only a tab change
+  // animates; first paint and resizes snap.
   const pillRef = useRef(null)
   const tabRefs = useRef([])
   const containerRef = useRef(null)

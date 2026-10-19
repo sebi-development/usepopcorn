@@ -14,10 +14,10 @@ const UNBOXED_TABS = new Set(["similar", "scores"])
 
 const SECTION_HEADER_CLASS = "text-sm font-semibold text-text-muted uppercase tracking-widest mb-3"
 
-// Few users open it, so its chunk is only requested on the first click of the tab
+// Its chunk loads on the first click of the tab
 const SimilarTab = lazy(() => import("@/features/media_details/components/tabs/SimilarTab"))
 
-// Shown only if the chunk takes longer than the usual loading delay (delayed-reveal)
+// Shown only if the chunk is slow (delayed-reveal)
 function SimilarFallback() {
   return (
     <div className="flex gap-3 overflow-hidden md:px-6 delayed-reveal">
@@ -43,16 +43,13 @@ function TabPanel({ id, activeTab, animate, children }) {
   )
 }
 
-// The tab bar and its panels. The tab state lives here rather than in DetailPage, so a tab switch
-// re-renders only this area (the bar and the opened tab), never the poster, details or actions.
+// Owns the tab state, so a tab switch re-renders this area only, not DetailPage
 function DetailTabs({ media, tmdbId, type }) {
   const [activeTab, setActiveTab] = useState("overview")
   const [seasonsTabVisited, setSeasonsTabVisited] = useState(false)
   const [tabSwitched, setTabSwitched] = useState(false)
 
-  // DetailPage stays mounted when :id changes (e.g. a card in the Similar tab), and so does this
-  // when the new title is already cached, so the tab state is reset during render, before the new
-  // title paints with a tab it may not have
+  // A cached title keeps this mounted, so reset during render: it never paints a tab it may not have
   const [tabsForId, setTabsForId] = useState(tmdbId)
   if (tabsForId !== tmdbId) {
     setTabsForId(tmdbId)
@@ -81,7 +78,7 @@ function DetailTabs({ media, tmdbId, type }) {
     return list
   }, [type, hasSimilar])
 
-  // ── Bulk season fetch — triggered on first Seasons tab click ──
+  // Bulk season fetch, enabled by the first Seasons click
   const { isLoading: isSeasonsLoading } = useAllSeasonDetails(
     tmdbId,
     media.seasons,
@@ -91,7 +88,6 @@ function DetailTabs({ media, tmdbId, type }) {
   return (
     <div className="[grid-area:about] flex flex-col gap-5 mb-8 md:mb-14">
 
-      {/* The Sliding Tabs Header */}
       <SlidingTabs
         tabs={tabs}
         activeTab={activeTab}
@@ -99,8 +95,7 @@ function DetailTabs({ media, tmdbId, type }) {
         fill
       />
 
-      {/* Text and data tabs sit in a card. The Similar poster row and the score tiles, which are
-          cards themselves, sit straight on the page */}
+      {/* Tabs sit in a card, except those made of cards themselves */}
       <div className={UNBOXED_TABS.has(activeTab) ? undefined : PANEL_CARD_CLASS}>
 
         <TabPanel id="overview" activeTab={activeTab} animate={tabSwitched}>

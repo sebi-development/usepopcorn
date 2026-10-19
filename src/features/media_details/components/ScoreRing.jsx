@@ -1,7 +1,6 @@
 import { memo } from 'react'
 
-// Ring sizes by the tile they sit in: one score per tile (lg) or the Rotten Tomatoes pair (md).
-// Below sm the tiles are compact rows, so the rings shrink with them.
+// lg: one score per tile, md: the Rotten Tomatoes pair. Smaller in the phone rows.
 const SIZES = {
   lg: 'size-16 text-base sm:size-28 sm:text-[1.625rem]',
   md: 'size-14 text-sm sm:size-20 sm:text-lg',
@@ -13,14 +12,12 @@ const TONES = {
   danger: 'text-danger',
 }
 
-// Lengths are in pathLength units (the circle is 100 long). A round cap reaches past its dash by
-// half the stroke width (ARC_CAP for the 9-wide arc and track), so those dashes are inset by it to
-// end where the score does. MARK is half the end mark's dash; its own cap rounds it into a pill.
+// In pathLength units (the circle is 100 long). Round caps overhang their dash by ARC_CAP, so
+// dashes are inset by it to end exactly at the score.
 const GAP = 4
 const ARC_CAP = 1.8
 const MARK = 0.3
 
-// `pathLength` makes a dash [start, end] a plain slice of 0–100
 function Dash({ start, end, ...props }) {
   const length = Math.max(end - start, 0.01)
   return (
@@ -38,12 +35,8 @@ function Dash({ start, end, ...props }) {
   )
 }
 
-// A score as a ring gauge: the arc runs clockwise from 6 o'clock to `pct` (0–100), a white mark
-// sits in the gap after it and a dim track fills the rest. `tone` colours the arc; the caller picks
-// it from the platform's own thresholds. `suffix` (e.g. %) is set smaller so the number keeps the
-// room. The halo is a wider faint copy of the arc, not a blur filter, so the ring costs nothing
-// when its card lifts on hover. While `loading` it is the bare track, pulsing: the same box as the
-// loaded ring, so the score landing shifts nothing.
+// Arc from 6 o'clock to `pct` (0–100), coloured by `tone`. The halo is a wide faint stroke, not a
+// blur filter (the tiles lift on hover). Loading keeps the same box, so the score lands without a shift.
 function ScoreRing({ pct, label, suffix, tone, size = 'lg', loading }) {
   const hasValue = !loading && pct != null
   const p = hasValue ? Math.min(Math.max(pct, 0), 100) : 0

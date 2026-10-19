@@ -128,9 +128,8 @@ body {
     border-color: rgba(121, 80, 242, 0.65);
   }
 
-  /* Score tiles sit straight on the page, so they're a faint white wash over it rather than an
-     opaque surface, and hover only lightens the wash and lifts (no border or glow change).
-     After the .bento-card:hover rules so these win at equal specificity. */
+  /* Score tiles: a faint wash over the page, hover only lightens and lifts. After .bento-card:hover
+     so these win at equal specificity. */
   .bento-grid--scores .bento-card {
     background-color: rgb(255 255 255 / 0.025);
     border-color: rgb(255 255 255 / 0.05);

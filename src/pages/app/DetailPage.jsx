@@ -21,23 +21,18 @@ export default function DetailPage() {
   const { state } = useLocation()
   const type = state?.type || 'movie'
 
-  // A title always opens at the top. The router doesn't reset scroll on navigation, and on
-  // back/forward the browser would restore its saved position after this runs. The restore
-  // mode is stored per history entry, so `manual` opts out only the detail entries; cleanup
-  // hands `auto` back to whichever page comes next. Layout effect: the old position never paints.
+  // Open each title at the top. `manual` is stored per history entry, so only detail entries skip
+  // the browser's scroll restore; layout effect, so the old position never paints.
   useLayoutEffect(() => {
     history.scrollRestoration = "manual"
     window.scrollTo(0, 0)
     return () => { history.scrollRestoration = "auto" }
   }, [tmdbId])
 
-  // ── Media ────────────────────────────────────────────────
   const { data, isLoading, error: errorDetailData } = useMediaDetails(tmdbId, type)
 
-  // Start the score lookups early, so the Scores tab is usually filled by the time it's opened.
-  // A prefetch only fills the cache and doesn't subscribe, so this page doesn't re-render when the
-  // results land; ScoresTab, which reads them, does. MDBList is keyed by the id and type from the
-  // URL, so it starts at once; ČSFD needs the IMDb id, which arrives with the title's details.
+  // Prefetch the scores so the Scores tab opens filled. A prefetch doesn't subscribe, so this page
+  // doesn't re-render when they land. ČSFD waits for the IMDb id from the details.
   const queryClient = useQueryClient()
   const imdbId = data?.imdb_id
   useEffect(() => {
@@ -63,14 +58,12 @@ export default function DetailPage() {
         />
       </div>
 
-      {/* Media details */}
       <div className="[grid-area:info]">
         <DetailCard media={data} id={id} />
       </div>
 
       <ActionSectionContainer media={data} tmdbId={tmdbId} type={type} />
 
-      {/* Tabbed Content Area. It owns the tab state, so switching tabs doesn't re-render this page */}
       <DetailTabs media={data} tmdbId={tmdbId} type={type} />
     </div>
   )
