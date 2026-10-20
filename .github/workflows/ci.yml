@@ -41,4 +41,4 @@ jobs:
           VITE_SUPABASE_URL: https://ci.supabase.co
           VITE_SUPABASE_ANON_KEY: ci
           VITE_TMDB_BASE_URL: https://api.themoviedb.org/3
-          VITE_TMDB_API_KEY: ci
+          VITE_TMDB_V3_KEY: ci
