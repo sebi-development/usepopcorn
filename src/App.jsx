@@ -11,10 +11,9 @@ import { profileStatsQuery } from "@/features/profile/hooks/useProfileStats"
 import { bestRatedQuery } from "@/features/profile/hooks/useBestRated"
 
 // ─── T0: Critical first-paint bundle ──────────────────────────────────────────
-// Only what the user sees before they've done anything: landing, login, register.
+// Only the landing page: it is the public entry. Login and Register (and react-hook-form) are lazy so
+// a signed-in load of /browse doesn't download them; PublicLayout prefetches them on idle.
 import LandingPage from "@/pages/public/LandingPage"
-import LoginPage from "@/pages/auth/LoginPage"
-import RegisterPage from "@/pages/auth/RegisterPage"
 import NotFoundPage from "@/pages/public/NotFoundPage"
 
 // Every other page is a route-level `lazy`: the router loads the module before it renders the
@@ -26,6 +25,10 @@ const page = (load) => async () => ({ Component: (await load()).default })
 
 // ─── T1: prefetched the moment session resolves in AppLayout ─────────────────
 const BrowsePage = page(() => import("@/pages/app/BrowsePage"))
+
+// ─── Auth forms: prefetched by PublicLayout on idle ──────────────────────────
+const LoginPage = page(() => import("@/pages/auth/LoginPage"))
+const RegisterPage = page(() => import("@/pages/auth/RegisterPage"))
 
 // ─── T2: commonly visited, prefetched in the first idle slot ─────────────────
 const DetailPage = page(() => import("@/pages/app/DetailPage"))
@@ -68,8 +71,8 @@ const router = createBrowserRouter([
     hydrateFallbackElement: publicFallback,
     children: [
       { path: '/', element: <LandingPage /> },
-      { path: '/login', element: <LoginPage /> },
-      { path: '/register', element: <RegisterPage /> },
+      { path: '/login', lazy: LoginPage },
+      { path: '/register', lazy: RegisterPage },
       { path: '/forgot-password', lazy: ForgotPasswordPage },
       { path: '/reset-password', lazy: ResetPasswordPage },
       { path: '*', element: <NotFoundPage /> }

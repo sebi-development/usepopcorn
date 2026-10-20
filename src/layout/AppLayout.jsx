@@ -6,18 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import BackgroundMesh from '@/components/ui/BackgroundMesh'
 import { mediaStateQuery } from '@/features/interactions/hooks/useMediaState'
 import queryKeys from '@/lib/queryKeys'
-
-// Prefetch a lazy chunk without blocking — resolves the dynamic import so
-// the module is cached by the time the user navigates to it.
-function prefetch(factory) {
-  factory().catch(() => {/* network fail is fine — the route's lazy() imports it again on navigation */})
-}
-
-// ric with a setTimeout fallback for environments without requestIdleCallback.
-function onIdle(cb) {
-  if ('requestIdleCallback' in window) requestIdleCallback(cb, { timeout: 3000 })
-  else setTimeout(cb, 200)
-}
+import { prefetch, onIdle } from '@/utils/prefetch'
 
 // Full-screen spinner while the session resolves; also the router's fallback on a cold load
 // while the page module downloads, so the two waits look like one
