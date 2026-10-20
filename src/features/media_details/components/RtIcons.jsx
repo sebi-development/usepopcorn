@@ -1,5 +1,3 @@
-// Rotten Tomatoes' marks as inline SVG (no requests). RT calls a score fresh from 60%.
-
 const FRESH_TOMATO_BODY = (
   <g fill="#fa320a">
     <path d="M20.15 40.83c-28.15 27.62-13.66 61.01-5.73 71.93 35.25 41.95 92.79 25.34 111.89-5.91 4.76-8.2 22.55-53.47-23.98-78.01z" />
