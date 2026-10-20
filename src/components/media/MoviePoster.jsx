@@ -1,7 +1,8 @@
 import { memo, useState } from "react"
 import { FiImage } from "react-icons/fi"
 
-function MoviePoster({ src, alt, className = '' }) {
+// `priority` is for a poster that is its page's LCP: fetched at once, ahead of other images
+function MoviePoster({ src, srcSet, sizes, alt, className = '', priority = false }) {
   const [status, setStatus] = useState('loading')
 
   return (
@@ -20,8 +21,11 @@ function MoviePoster({ src, alt, className = '' }) {
 
       <img
         src={src}
+        srcSet={srcSet}
+        sizes={sizes}
         alt={alt}
-        loading="lazy"
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : undefined}
         onLoad={() => setStatus('loaded')}
         onError={() => setStatus('error')}
         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${status === 'loaded' ? 'opacity-100' : 'opacity-0'

@@ -21,7 +21,10 @@ import SkeletonBox from "@/components/ui/SkeletonBox"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 import { mdblistScoresQuery } from "@/features/media_details/hooks/useMdblistScores"
 
-const PANEL_CARD_CLASS = "bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
+// TMDB poster widths for the srcset; no w780, so a retina desktop keeps today's w500
+const POSTER_SIZES = [185, 342, 500]
+
+const PANEL_CARD_CLASS ="bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
 
 const SECTION_HEADER_CLASS = "text-sm font-semibold text-text-muted uppercase tracking-widest mb-3"
 
@@ -139,8 +142,12 @@ export default function DetailPage() {
       <div className="[grid-area:poster]">
         <MoviePoster
           src={getTmdbImageUrl(data?.poster_path, 'w500')}
+          // The poster column is 6.5rem on phones: w185/w342 there instead of w500
+          srcSet={data?.poster_path && POSTER_SIZES.map((w) => `${getTmdbImageUrl(data.poster_path, `w${w}`)} ${w}w`).join(', ')}
+          sizes="(min-width: 768px) 300px, 6.5rem"
           alt={data?.title}
           className="w-full aspect-2/3 rounded-card"
+          priority
         />
       </div>
 
