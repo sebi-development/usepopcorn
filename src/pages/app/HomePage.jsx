@@ -93,7 +93,7 @@ export default function HomePage() {
             </p>
             <div className="mt-auto">
               {/* Stretched over the card like its three neighbours, instead of a 16px-tall text target */}
-              <ArrowLink to="/profile" stretched className="text-primary-light text-xs sm:text-sm font-semibold">
+              <ArrowLink to="/profile" stretched className="text-primary-lighter text-xs sm:text-sm font-semibold">
                 View all
               </ArrowLink>
             </div>

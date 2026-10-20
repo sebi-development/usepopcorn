@@ -330,7 +330,7 @@ The project is linked to the production database through the Supabase CLI (a dev
 | Backend / DB | **PL/pgSQL / SQL RPCs** | Aggregation runs next to the data, and the wire carries small pre-shaped results. The tradeoff is that logic lives in the database and needs migration discipline, and the DB CPU is shared across users. |
 | Backend / DB | **Supabase Realtime** (`postgres_changes`) | Push-based invalidation for feed and average ratings, with server-side row filters, instead of polling. |
 | Backend / DB | **Supabase Edge Functions** (Deno) | The only server-side code: two score lookups that need a secret or can't run in a browser. Shared modules in `supabase/functions/_shared` hold CORS, the service-role client, the TTL policy and stale-while-revalidate. |
-| External | **TMDB API** (v4 bearer token) | Primary catalogue: trending, discover, details, recommendations, images. |
+| External | **TMDB API** (v3 API key as a query param, so requests skip the CORS preflight) | Primary catalogue: trending, discover, details, recommendations, images. |
 | External | **MDBList API** | IMDb, Rotten Tomatoes (critics and audience) and Metacritic scores by TMDB id, so titles without an IMDb id still get scores. Called only from the `mdblist-scores` Edge Function and cached in `mdblist_cache`, which keeps usage far below the free tier's 1,000 requests a day. |
 | External | **ČSFD** (node-csfd-api, Wikidata) | The ČSFD rating. Wikidata maps the IMDb id to the ČSFD id exactly; the `csfd-score` Edge Function reads the rating server-side (ČSFD has no API, no CORS and a bot challenge) and caches it in `csfd_cache`. |
 
@@ -342,7 +342,7 @@ The project is linked to the production database through the Supabase CLI (a dev
 
 - A current Node.js LTS (Vite 8 requires a recent Node) and **pnpm**
 - A Supabase project with the schema, RLS policies and RPC functions from section 3 (migrations since 2026-10-01 are in `supabase/migrations/`, the earlier schema is only in the live database)
-- A TMDB account (v4 read-access token)
+- A TMDB account (v3 API key)
 - An [MDBList](https://mdblist.com/api/) API key (the free tier is enough). It is a Supabase secret, not a `.env` variable: `pnpm exec supabase secrets set MDBLIST_API_KEY=<key>`
 
 ### Environment contract
@@ -354,9 +354,9 @@ Copy `.env.example` to `.env`. All variables are read through `import.meta.env` 
 VITE_SUPABASE_URL=https://<project-ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<supabase-anon-public-key>
 
-# TMDB (v3 base URL, v4 read-access bearer token)
+# TMDB (Settings → API: the v3 "API Key", sent as a query param)
 VITE_TMDB_BASE_URL=https://api.themoviedb.org/3
-VITE_TMDB_API_KEY=<tmdb-v4-read-access-token>
+VITE_TMDB_V3_KEY=<tmdb-v3-api-key>
 ```
 
 `.env` is git-ignored. `.env.example` is tracked.

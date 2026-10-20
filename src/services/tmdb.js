@@ -1,13 +1,13 @@
 const BASE_URL = import.meta.env.VITE_TMDB_BASE_URL
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY
+const API_KEY = import.meta.env.VITE_TMDB_V3_KEY
 
 // ── TMDB queries ──────────────────────────────────────────────
+// The v3 key goes in the query string: a GET without an Authorization header is a simple CORS
+// request, so it skips the preflight round trip (TMDB caches a preflight only 10 min, per URL).
 async function tmdbFetch(endpoint) {
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
-    headers: {
-      Authorization: `Bearer ${API_KEY}`
-    }
-  })
+  const url = new URL(`${BASE_URL}${endpoint}`)
+  url.searchParams.set('api_key', API_KEY)
+  const res = await fetch(url)
   if (!res.ok) throw new Error(`TMDB error: ${res.status}`)
   return res.json()
 }
