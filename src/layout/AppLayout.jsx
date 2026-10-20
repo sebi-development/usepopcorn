@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import BackgroundMesh from '@/components/ui/BackgroundMesh'
 import { mediaStateQuery } from '@/features/interactions/hooks/useMediaState'
 import queryKeys from '@/lib/queryKeys'
-import { prefetch, onIdle } from '@/utils/prefetch'
+import { prefetch, onIdle, whenQueriesSettle } from '@/utils/prefetch'
 
 // Full-screen spinner while the session resolves; also the router's fallback on a cold load
 // while the page module downloads, so the two waits look like one
@@ -43,8 +43,8 @@ function AppLayout() {
   }, [queryClient])
 
   // Prefetch cascade — fires once per session, never on re-renders.
-  // T1 → T2 → T3, each tier in its own idle slot so they don't
-  // race with the user's first navigation to /browse.
+  // T1 at once; T2 and T3 only after the first screen's queries settle, each in its own idle slot,
+  // so on a slow link they don't take bandwidth from that screen's data and LCP image.
   useEffect(() => {
     if (!session || prefetchedRef.current) return
     prefetchedRef.current = true
@@ -54,16 +54,16 @@ function AppLayout() {
     // Favorite/watchlist/own-rating state every card reads, warm before the first cards render.
     queryClient.prefetchQuery(mediaStateQuery(session.user.id))
 
-    // T2: ProfilePage and DetailPage — commonly visited but not immediate.
-    onIdle(() => {
+    whenQueriesSettle(queryClient, () => {
+      // T2: ProfilePage and DetailPage — commonly visited but not immediate.
       prefetch(() => import('@/pages/app/ProfilePage'))
       prefetch(() => import('@/pages/app/DetailPage'))
-    })
 
-    // T3: Community and Stats — lowest traffic, load last.
-    onIdle(() => {
-      prefetch(() => import('@/pages/app/CommunityPage'))
-      prefetch(() => import('@/pages/app/ProfileStatsPage'))
+      // T3: Community and Stats — lowest traffic, load last.
+      onIdle(() => {
+        prefetch(() => import('@/pages/app/CommunityPage'))
+        prefetch(() => import('@/pages/app/ProfileStatsPage'))
+      })
     })
   }, [session, queryClient])
 
