@@ -12,7 +12,7 @@ import { bestRatedQuery } from "@/features/profile/hooks/useBestRated"
 
 // ─── T0: Critical first-paint bundle ──────────────────────────────────────────
 // Only the landing page: it is the public entry. Login and Register (and react-hook-form) are lazy so
-// a signed-in load of /browse doesn't download them; PublicLayout prefetches them on idle.
+// a signed-in load of /browse doesn't download them; PublicLayout prefetches them after the first paint.
 import LandingPage from "@/pages/public/LandingPage"
 import NotFoundPage from "@/pages/public/NotFoundPage"
 
@@ -26,11 +26,11 @@ const page = (load) => async () => ({ Component: (await load()).default })
 // ─── T1: prefetched the moment session resolves in AppLayout ─────────────────
 const BrowsePage = page(() => import("@/pages/app/BrowsePage"))
 
-// ─── Auth forms: prefetched by PublicLayout on idle ──────────────────────────
+// ─── Auth forms: prefetched by PublicLayout after the first paint ──────────────────────────
 const LoginPage = page(() => import("@/pages/auth/LoginPage"))
 const RegisterPage = page(() => import("@/pages/auth/RegisterPage"))
 
-// ─── T2: commonly visited, prefetched in the first idle slot ─────────────────
+// ─── T2: commonly visited, prefetched once the first screen's queries settle ─────────────────
 const DetailPage = page(() => import("@/pages/app/DetailPage"))
 const ProfilePage = page(() => import("@/pages/app/ProfilePage"))
 const ForgotPasswordPage = page(() => import("@/pages/auth/ForgotPasswordPage"))

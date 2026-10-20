@@ -15,6 +15,7 @@ export function onIdle(cb) {
 export function afterFirstPaint(cb) {
   if (performance.getEntriesByName('first-contentful-paint').length) return onIdle(cb)
   if (!PerformanceObserver.supportedEntryTypes?.includes('paint')) {
+    if (document.readyState === 'complete') return onIdle(cb)
     return addEventListener('load', () => onIdle(cb), { once: true })
   }
   const observer = new PerformanceObserver((list) => {

@@ -24,7 +24,7 @@ import { mdblistScoresQuery } from "@/features/media_details/hooks/useMdblistSco
 // TMDB poster widths for the srcset; no w780, so a retina desktop keeps today's w500
 const POSTER_SIZES = [185, 342, 500]
 
-const PANEL_CARD_CLASS ="bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
+const PANEL_CARD_CLASS = "bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
 
 const SECTION_HEADER_CLASS = "text-sm font-semibold text-text-muted uppercase tracking-widest mb-3"
 
