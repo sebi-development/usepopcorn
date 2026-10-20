@@ -7,6 +7,7 @@ import BackgroundMesh from '@/components/ui/BackgroundMesh'
 import { mediaStateQuery } from '@/features/interactions/hooks/useMediaState'
 import queryKeys from '@/lib/queryKeys'
 import { prefetch, onIdle, whenQueriesSettle } from '@/utils/prefetch'
+import { saveHomePoster } from '@/utils/homePoster'
 
 // Full-screen spinner while the session resolves; also the router's fallback on a cold load
 // while the page module downloads, so the two waits look like one
@@ -37,6 +38,8 @@ function AppLayout() {
       setSession(session)
       // Keep cache in sync on auth changes
       queryClient.setQueryData(queryKeys.currentUser, session?.user ?? null)
+      // Signed out: drop the remembered Home poster (the next user's loader would fetch it)
+      if (!session) saveHomePoster(null)
     })
 
     return () => subscription.unsubscribe()
