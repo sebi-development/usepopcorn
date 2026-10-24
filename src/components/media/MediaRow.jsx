@@ -19,7 +19,7 @@ function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
     <button
       type="button"
       onClick={onToggle}
-      className="flex items-center gap-1.5 text-sm text-text-muted hover:text-text hover:bg-surface-500 px-3 py-3 md:py-1.5 rounded-md transition-colors duration-200 cursor-pointer"
+      className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm text-text-muted hover:text-text hover:bg-surface-500 px-2 md:px-3 py-3 md:py-1.5 rounded-md transition-colors duration-200 cursor-pointer"
     >
       {isLoadingFirstPage ? (
         <span className="w-3.5 h-3.5 border-2 border-text-muted/40 border-t-text-muted rounded-full animate-spin" />
@@ -155,9 +155,9 @@ function MediaRow({
   if (isLoading) return (
     <div className={delaySkeleton ? "delayed-reveal" : undefined}>
       {(heading || expandable) && (
-        <div className="flex items-center justify-between mb-4 md:px-6">
+        <div className="flex items-center justify-between gap-2 mb-4 md:px-6">
           <h2 className="text-text font-semibold text-xl">{heading}</h2>
-          {expandable && <span aria-hidden="true" className="invisible text-sm px-3 py-3 md:py-1.5">View all</span>}
+          {expandable && <span aria-hidden="true" className="invisible shrink-0 whitespace-nowrap text-sm px-2 md:px-3 py-3 md:py-1.5">View all</span>}
         </div>
       )}
       <div className="relative group/row">
@@ -184,7 +184,7 @@ function MediaRow({
     <div ref={containerRef}>
       {/* Optional: a host that titles the row itself (e.g. a detail page tab) passes no heading */}
       {(heading || expandable) && (
-        <div className="flex items-center justify-between mb-4 md:px-6">
+        <div className="flex items-center justify-between gap-2 mb-4 md:px-6">
           <h2 className="text-text font-semibold text-xl">{heading}</h2>
           {expandable && (
             <ExpandToggle
