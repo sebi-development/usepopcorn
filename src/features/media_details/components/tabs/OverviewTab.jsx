@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { HiArrowDown, HiArrowUp } from 'react-icons/hi2'
 import formatCurrency from '@/utils/formatCurrency'
 import countryToFlag from '@/utils/countryToFlag'
 import ProviderBadge from '@/features/media_details/components/ProviderBadge'
@@ -18,6 +19,31 @@ function formatReleaseStatus(status) {
     return 'Upcoming'
   }
   return status
+}
+
+// Industry rule of thumb: after marketing and the theatres' cut, a film breaks even at ~2.5× its budget
+const BREAK_EVEN_MULTIPLE = 2.5
+// TMDB revenue lags while a film is still in theatres, so no verdict before its run is mostly over
+const THEATRICAL_RUN_MS = 90 * 24 * 60 * 60 * 1000
+
+function formatRevenue({ budget, revenue, release_date }) {
+  const formatted = formatCurrency(revenue)
+  if (!formatted || !budget || !release_date || Date.now() - Date.parse(release_date) < THEATRICAL_RUN_MS) return formatted
+
+  const multiple = revenue / budget
+  const isHit = multiple >= BREAK_EVEN_MULTIPLE
+  const Arrow = isHit ? HiArrowUp : HiArrowDown
+  return (
+    <span className="inline-flex items-center gap-1">
+      {formatted}
+      <Arrow
+        size={14}
+        role="img"
+        title={`${isHit ? 'Box office hit' : 'Box office flop'}: earned ${multiple.toFixed(1)}× its budget (break-even ≈ ${BREAK_EVEN_MULTIPLE}×)`}
+        className={isHit ? 'text-success' : 'text-danger'}
+      />
+    </span>
+  )
 }
 
 export default function OverviewTab({ data }) {
@@ -45,7 +71,7 @@ export default function OverviewTab({ data }) {
       { label: 'Rating', value: data?.certification || 'NR' },
       (!isTV && data?.regionalReleaseDate && data.regionalReleaseDate !== data.release_date) ? { label: 'Local Release', value: formatDate(data?.regionalReleaseDate) } : null,
       !isTV && { label: 'Budget', value: formatCurrency(data?.budget) },
-      !isTV && { label: 'Revenue', value: formatCurrency(data?.revenue) },
+      !isTV && { label: 'Revenue', value: formatRevenue(data ?? {}) },
       { label: 'Country', value: formattedCountries || null },
       { label: 'Content', value: data?.explicit ? '🔞 Adult Content' : null }
     ].filter((item) => item && item.value != null);
