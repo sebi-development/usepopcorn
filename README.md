@@ -361,6 +361,8 @@ VITE_TMDB_V3_KEY=<tmdb-v3-api-key>
 
 `.env` is git-ignored. `.env.example` is tracked.
 
+`pnpm build` fails with the missing names if any variable in `.env.example` is unset or empty, so a deploy (Vercel runs the same build) can't ship without them. `VITE_` values are baked in at build time: after changing one on Vercel, redeploy.
+
 ### Commands
 
 ```bash
