@@ -8,7 +8,6 @@ import BentoGrid from "@/components/ui/BentoGrid"
 import ScoreRing from "@/features/media_details/components/ScoreRing"
 import { TomatoIcon, PopcornIcon } from "@/features/media_details/components/RtIcons"
 
-// Below sm each platform is a compact row. min-w-0 lets the label wrap instead of stretching the grid.
 const SCORE_CARD_CLASS = "flex flex-row-reverse items-center justify-between gap-3 min-w-0 p-4 sm:flex-col sm:p-6 sm:min-h-35"
 
 // Each platform's own good / mixed thresholds (0–100) in one palette, so green means good everywhere
@@ -40,7 +39,6 @@ function RottenMeter({ value, icon: Icon, caption, loading }) {
   )
 }
 
-// Tomatometer (critics) and Popcornmeter (audience) side by side
 const RottenScore = memo(function RottenScore({ critics, audience, loading }) {
   return (
     <span className="flex items-start gap-3 sm:gap-5">
