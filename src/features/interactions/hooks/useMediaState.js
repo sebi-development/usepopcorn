@@ -40,16 +40,16 @@ export default function useMediaState() {
   return data ?? EMPTY
 }
 
-const countFavorites = (raw) => raw.favorites.length
+const countWatchlist = (raw) => raw.watchlist.length
 
-// For a component that only shows the number: it re-renders when the count changes, not on
-// every watchlist toggle or rating.
-export function useFavoritesCount() {
+// For a component that only needs the number: it re-renders when the count changes, not on
+// every favorite toggle or rating, and never needs the full watchlist.
+export function useWatchlistCount() {
   const currentUser = useCurrentUser()
   const id = currentUser?.id
 
-  const { data } = useQuery({ ...mediaStateQuery(id), enabled: !!id, select: countFavorites })
-  return data ?? 0
+  const { data } = useQuery({ ...mediaStateQuery(id), enabled: !!id, select: countWatchlist })
+  return data
 }
 
 const hasNoActivity = (raw) =>

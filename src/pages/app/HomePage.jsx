@@ -1,7 +1,8 @@
 import useRecommendationSeeds from '@/features/browse/hooks/useRecommendationSeeds'
 import RecommendationRow from '@/features/browse/components/RecommendationRow'
-import useInteractions from '@/features/interactions/hooks/useInteractions'
-import { useFavoritesCount, useHasNoActivity } from '@/features/interactions/hooks/useMediaState'
+import { useHasNoActivity } from '@/features/interactions/hooks/useMediaState'
+import WatchlistCard from '@/features/interactions/components/WatchlistCard'
+import WatchlistRow from '@/features/interactions/components/WatchlistRow'
 import useProfileStats from '@/features/profile/hooks/useProfileStats'
 import useCurrentUser from '@/features/auth/hooks/useCurrentUser'
 import useCategoryMedia from '@/features/browse/hooks/useCategoryMedia'
@@ -12,11 +13,7 @@ import { getGenreNames } from '@/utils/genres'
 import InfoCard from '@/components/ui/InfoCard'
 import Button from '@/components/ui/Button'
 import { Link } from 'react-router'
-import ArrowLink from '@/components/ui/ArrowLink'
 import useProfileStreak from '@/features/profile/hooks/useProfileStreak'
-import FeatureCard, { FeatureCardSkeleton } from '@/components/ui/FeatureCard'
-import Chip from '@/components/ui/Chip'
-import { HiHeart } from 'react-icons/hi2'
 import { PopcornIcon } from '@/components/ui/Logo'
 import useBestRated from '@/features/profile/hooks/useBestRated'
 import BestRatedCard from '@/features/profile/components/BestRatedCard'
@@ -27,8 +24,6 @@ export default function HomePage() {
   const currentUser = useCurrentUser()
 
   const seeds = useRecommendationSeeds(currentUser?.id)
-  const { data: watchlist, isLoading: isLoadingWatchlist, error: watchlistError } = useInteractions('watchlist')
-  const favoritesCount = useFavoritesCount()
   const hasNoActivity = useHasNoActivity()
   const { data: streakData, isLoading: isLoadingStreak, isError: isErrorStreak, isLoadingExtended, extendedStreak, isSaturated } = useProfileStreak(currentUser?.id)
   const { movie: bestMovie, tv: bestSeries, isLoading: isLoadingBestRated } = useBestRated(currentUser?.id)
@@ -78,27 +73,7 @@ export default function HomePage() {
         <BestRatedCard kind="movie" pick={bestMovie} isLoading={isLoadingCards} />
         <BestRatedCard kind="tv" pick={bestSeries} isLoading={isLoadingCards} />
 
-        {isLoadingCards ? (
-          <FeatureCardSkeleton />
-        ) : (
-          <FeatureCard
-            heroBackground="linear-gradient(135deg, #a855f7 0%, #ec4899 100%)"
-            floatingIcon={<HiHeart className="text-2xl sm:text-4xl text-pink-500" />}
-          >
-            <Chip size="sm" colorRgb="236, 72, 153" className="self-start max-w-full">
-              <span className="truncate">Favorites</span>
-            </Chip>
-            <p className="text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2">
-              You've loved {favoritesCount} titles.
-            </p>
-            <div className="mt-auto">
-              {/* Stretched over the card like its three neighbours, instead of a 16px-tall text target */}
-              <ArrowLink to="/profile" stretched className="text-primary-lighter text-xs sm:text-sm font-semibold">
-                View all
-              </ArrowLink>
-            </div>
-          </FeatureCard>
-        )}
+        <WatchlistCard />
       </div>
 
       <RecommendationRow seed={seeds.movie} type="movie" isLoadingSeed={seeds.isLoading} />
@@ -121,18 +96,7 @@ export default function HomePage() {
         />
       )}
 
-      {/* Nothing saved, no row: an empty "Your watchlist" heading is just noise */}
-      {(isLoadingWatchlist || watchlistError || watchlist?.length > 0) && (
-        <MediaRow
-          heading="Your watchlist"
-          data={watchlist}
-          isLoading={isLoadingWatchlist}
-          isError={Boolean(watchlistError)}
-          delaySkeleton
-          showInfo={false}
-          rank={false}
-        />
-      )}
+      <WatchlistRow />
     </main>
   )
 }

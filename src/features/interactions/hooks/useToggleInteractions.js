@@ -51,6 +51,7 @@ export default function useToggleInteractions(type) {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey })
       queryClient.invalidateQueries({ queryKey: stateKey })
+      if (type === 'watchlist') queryClient.invalidateQueries({ queryKey: queryKeys.watchlistPick.all(currentUser?.id) })
     },
   })
 
