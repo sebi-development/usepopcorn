@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { HiArrowDown, HiArrowUp } from 'react-icons/hi2'
+import Tooltip from '@/components/ui/Tooltip'
 import formatCurrency from '@/utils/formatCurrency'
 import countryToFlag from '@/utils/countryToFlag'
 import ProviderBadge from '@/features/media_details/components/ProviderBadge'
@@ -18,6 +20,29 @@ function formatReleaseStatus(status) {
     return 'Upcoming'
   }
   return status
+}
+
+const BREAK_EVEN_MULTIPLE = 2.5
+const THEATRICAL_RUN_MS = 90 * 24 * 60 * 60 * 1000
+
+function formatRevenue({ budget, revenue, release_date }) {
+  const formatted = formatCurrency(revenue)
+  if (!formatted || !budget || !release_date || Date.now() - Date.parse(release_date) < THEATRICAL_RUN_MS) return formatted
+
+  const multiple = Math.floor((revenue / budget) * 10) / 10
+  const isHit = multiple >= BREAK_EVEN_MULTIPLE
+  const Arrow = isHit ? HiArrowUp : HiArrowDown
+  return (
+    // inline-flex shrink-wraps Tooltip's block wrapper, so the tip centres on the figure
+    <span className="inline-flex">
+      <Tooltip side='right' label={`${isHit ? 'Hit' : 'Flop'}: ${multiple}× its budget (break-even ~${BREAK_EVEN_MULTIPLE}×)`}>
+        <span className="flex items-center gap-1 cursor-help">
+          {formatted}
+          <Arrow size={14} aria-hidden="true" className={isHit ? 'text-success' : 'text-danger'} />
+        </span>
+      </Tooltip>
+    </span>
+  )
 }
 
 export default function OverviewTab({ data }) {
@@ -45,7 +70,7 @@ export default function OverviewTab({ data }) {
       { label: 'Rating', value: data?.certification || 'NR' },
       (!isTV && data?.regionalReleaseDate && data.regionalReleaseDate !== data.release_date) ? { label: 'Local Release', value: formatDate(data?.regionalReleaseDate) } : null,
       !isTV && { label: 'Budget', value: formatCurrency(data?.budget) },
-      !isTV && { label: 'Revenue', value: formatCurrency(data?.revenue) },
+      !isTV && { label: 'Revenue', value: formatRevenue(data ?? {}) },
       { label: 'Country', value: formattedCountries || null },
       { label: 'Content', value: data?.explicit ? '🔞 Adult Content' : null }
     ].filter((item) => item && item.value != null);

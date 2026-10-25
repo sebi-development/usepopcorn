@@ -12,12 +12,9 @@ import SeasonsTab from "@/features/media_details/components/tabs/SeasonsTab"
 const PANEL_CARD_CLASS = "bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
 const UNBOXED_TABS = new Set(["similar", "scores"])
 
-const SECTION_HEADER_CLASS = "text-sm font-semibold text-text-muted uppercase tracking-widest mb-3"
-
 // Its chunk loads on the first click of the tab
 const SimilarTab = lazy(() => import("@/features/media_details/components/tabs/SimilarTab"))
 
-// Shown only if the chunk is slow (delayed-reveal)
 function SimilarFallback() {
   return (
     <div className="flex gap-3 overflow-hidden md:px-6 delayed-reveal">
@@ -112,7 +109,6 @@ function DetailTabs({ media, tmdbId, type }) {
 
         {hasSimilar && (
           <TabPanel id="similar" activeTab={activeTab} animate={tabSwitched}>
-            <h3 className={SECTION_HEADER_CLASS}>Similar Titles</h3>
             <div className="md:-ml-6">
               <Suspense fallback={<SimilarFallback />}>
                 <SimilarTab items={media.similar} type={type} />

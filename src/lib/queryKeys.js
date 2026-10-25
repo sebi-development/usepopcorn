@@ -10,6 +10,11 @@ const queryKeys = {
   // ── Signed-in user's titles ──────────────────────────────────
   mediaState: (userId) => ['mediaState', userId],
   interactions: (type, userId) => ['interactions', type, userId],
+  // Home's daily pick; the day is in the key so the next day's pick is a fresh fetch
+  watchlistPick: {
+    all: (userId) => ['watchlistPick', userId],
+    day: (userId, day) => ['watchlistPick', userId, day],
+  },
 
   // ── Profiles ─────────────────────────────────────────────────
   profile: (userId) => ['profile', userId],

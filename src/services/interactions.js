@@ -10,6 +10,13 @@ export async function getInteractions(type, userId) {
   return data
 }
 
+// One title from the signed-in user's watchlist for `day` (YYYY-MM-DD); null when the watchlist is empty
+export async function getWatchlistPick(day) {
+  const { data, error } = await supabase.rpc('get_watchlist_pick', { p_day: day }).maybeSingle()
+  if (error) throw new Error(error.message)
+  return data
+}
+
 export async function toggleInteraction(type, mediaData, currentUserId) {
   const { data, error } = await supabase
     .from('user_media_interactions')

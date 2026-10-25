@@ -9,12 +9,12 @@ import queryClient from "@/lib/queryClient"
 import { mediaStateQuery } from "@/features/interactions/hooks/useMediaState"
 import { profileStatsQuery } from "@/features/profile/hooks/useProfileStats"
 import { bestRatedQuery } from "@/features/profile/hooks/useBestRated"
+import { watchlistPickQuery } from "@/features/interactions/hooks/useWatchlistPick"
 
 // ─── T0: Critical first-paint bundle ──────────────────────────────────────────
-// Only what the user sees before they've done anything: landing, login, register.
+// Only the landing page: it is the public entry. Login and Register (and react-hook-form) are lazy so
+// a signed-in load of /browse doesn't download them; PublicLayout prefetches them after the first paint.
 import LandingPage from "@/pages/public/LandingPage"
-import LoginPage from "@/pages/auth/LoginPage"
-import RegisterPage from "@/pages/auth/RegisterPage"
 import NotFoundPage from "@/pages/public/NotFoundPage"
 
 // Every other page is a route-level `lazy`: the router loads the module before it renders the
@@ -27,7 +27,11 @@ const page = (load) => async () => ({ Component: (await load()).default })
 // ─── T1: prefetched the moment session resolves in AppLayout ─────────────────
 const BrowsePage = page(() => import("@/pages/app/BrowsePage"))
 
-// ─── T2: commonly visited, prefetched in the first idle slot ─────────────────
+// ─── Auth forms: prefetched by PublicLayout after the first paint ──────────────────────────
+const LoginPage = page(() => import("@/pages/auth/LoginPage"))
+const RegisterPage = page(() => import("@/pages/auth/RegisterPage"))
+
+// ─── T2: commonly visited, prefetched once the first screen's queries settle ─────────────────
 const DetailPage = page(() => import("@/pages/app/DetailPage"))
 const ProfilePage = page(() => import("@/pages/app/ProfilePage"))
 const ForgotPasswordPage = page(() => import("@/pages/auth/ForgotPasswordPage"))
@@ -38,9 +42,9 @@ const ProfileStatsPage = page(() => import("@/pages/app/ProfileStatsPage"))
 const CommunityPage = page(() => import("@/pages/app/CommunityPage"))
 
 // A route loader runs in parallel with the route's `lazy` import, so Home's above-the-fold queries
-// (its cards wait on stats and best-rated; the best-rated poster is the page's LCP) start next to the
-// BrowsePage chunk download instead of after it. Fire-and-forget: the hooks pick up the in-flight
-// or cached results, and nothing here blocks the render.
+// (its cards wait on stats, best-rated and the watchlist pick; the best-rated poster is the page's
+// LCP) start next to the BrowsePage chunk download instead of after it. Fire-and-forget: the hooks
+// pick up the in-flight or cached results, and nothing here blocks the render.
 async function browseLoader({ request }) {
   const category = new URL(request.url).searchParams.get('category')
   if (category && category !== 'home') return null
@@ -50,6 +54,7 @@ async function browseLoader({ request }) {
     queryClient.prefetchQuery(mediaStateQuery(userId))
     queryClient.prefetchQuery(profileStatsQuery(userId))
     queryClient.prefetchQuery(bestRatedQuery(userId))
+    queryClient.prefetchQuery(watchlistPickQuery(userId))
   }
   return null
 }
@@ -68,8 +73,8 @@ const router = createBrowserRouter([
     hydrateFallbackElement: publicFallback,
     children: [
       { path: '/', element: <LandingPage /> },
-      { path: '/login', element: <LoginPage /> },
-      { path: '/register', element: <RegisterPage /> },
+      { path: '/login', lazy: LoginPage },
+      { path: '/register', lazy: RegisterPage },
       { path: '/forgot-password', lazy: ForgotPasswordPage },
       { path: '/reset-password', lazy: ResetPasswordPage },
       { path: '*', element: <NotFoundPage /> }

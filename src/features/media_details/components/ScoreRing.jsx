@@ -1,6 +1,5 @@
 import { memo } from 'react'
 
-// lg: one score per tile, md: the Rotten Tomatoes pair. Smaller in the phone rows.
 const SIZES = {
   lg: 'size-16 text-base sm:size-28 sm:text-[1.625rem]',
   md: 'size-14 text-sm sm:size-20 sm:text-lg',
@@ -35,8 +34,6 @@ function Dash({ start, end, ...props }) {
   )
 }
 
-// Arc from 6 o'clock to `pct` (0–100), coloured by `tone`. The halo is a wide faint stroke, not a
-// blur filter (the tiles lift on hover). Loading keeps the same box, so the score lands without a shift.
 function ScoreRing({ pct, label, suffix, tone, size = 'lg', loading }) {
   const hasValue = !loading && pct != null
   const p = hasValue ? Math.min(Math.max(pct, 0), 100) : 0
