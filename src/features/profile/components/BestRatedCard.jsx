@@ -5,7 +5,7 @@ import FeatureCard, { FeatureCardSkeleton } from '@/components/ui/FeatureCard'
 import Chip from '@/components/ui/Chip'
 import RatingBadge from '@/components/media/RatingBadge'
 import { PERIODS } from '@/utils/periods'
-import { bestRatedPosterSources } from '@/utils/homePoster'
+import getTmdbImageUrl from '@/utils/tmdbImage'
 
 const KINDS = {
   movie: {
@@ -40,7 +40,9 @@ export default memo(function BestRatedCard({ pick, kind, period = 'month', isLoa
       heroBackground={pick?.poster_path ? undefined : gradient}
       heroContent={pick?.poster_path && (
         <img
-          {...bestRatedPosterSources(pick.poster_path)}
+          src={getTmdbImageUrl(pick.poster_path, 'w342')}
+          srcSet={`${getTmdbImageUrl(pick.poster_path, 'w185')} 185w, ${getTmdbImageUrl(pick.poster_path, 'w342')} 342w`}
+          sizes="(min-width: 640px) 180px, 45vw"
           alt=""
           fetchPriority="high"
           className="w-full h-full object-cover"

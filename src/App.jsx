@@ -10,7 +10,6 @@ import { mediaStateQuery } from "@/features/interactions/hooks/useMediaState"
 import { profileStatsQuery } from "@/features/profile/hooks/useProfileStats"
 import { bestRatedQuery } from "@/features/profile/hooks/useBestRated"
 import { watchlistPickQuery } from "@/features/interactions/hooks/useWatchlistPick"
-import { preloadHomePoster, saveHomePoster } from "@/utils/homePoster"
 
 // ─── T0: Critical first-paint bundle ──────────────────────────────────────────
 // Only the landing page: it is the public entry. Login and Register (and react-hook-form) are lazy so
@@ -49,18 +48,12 @@ const CommunityPage = page(() => import("@/pages/app/CommunityPage"))
 async function browseLoader({ request }) {
   const category = new URL(request.url).searchParams.get('category')
   if (category && category !== 'home') return null
-  // Before the session read, which can wait on a token refresh
-  preloadHomePoster()
   const { data } = await supabase.auth.getSession()
   const userId = data.session?.user.id
   if (userId) {
     queryClient.prefetchQuery(mediaStateQuery(userId))
     queryClient.prefetchQuery(profileStatsQuery(userId))
-    const bestRated = bestRatedQuery(userId)
-    queryClient.prefetchQuery(bestRated).then(() => {
-      const picks = queryClient.getQueryData(bestRated.queryKey)
-      if (picks) saveHomePoster(picks.movie?.poster_path ?? picks.tv?.poster_path)
-    })
+    queryClient.prefetchQuery(bestRatedQuery(userId))
     queryClient.prefetchQuery(watchlistPickQuery(userId))
   }
   return null
