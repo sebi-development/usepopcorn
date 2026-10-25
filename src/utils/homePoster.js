@@ -1,8 +1,7 @@
 import getTmdbImageUrl from '@/utils/tmdbImage'
 
-// Home's LCP is the first best-rated poster, whose path only arrives with an RPC. The last one seen is
-// kept between visits so the /browse loader can fetch it while that RPC runs. The entry is single-use:
-// read and removed at load, written again when the tab is hidden. A stale path costs one unused image.
+// Home's LCP is the first best-rated poster, whose path only arrives with an RPC. The last one seen
+// is kept so the /browse loader can fetch it while that RPC runs; a stale path costs one unused image.
 const KEY = 'home-poster'
 
 // The best-rated card's <img> sources. The early fetch uses the same srcset and sizes, so the browser
@@ -24,10 +23,7 @@ export function saveHomePoster(path) {
 
 export function preloadHomePoster() {
   let path
-  try {
-    path = localStorage.getItem(KEY)
-    localStorage.removeItem(KEY)
-  } catch { return }
+  try { path = localStorage.getItem(KEY) } catch { return }
   if (!path) return
   const { src, srcSet, sizes } = bestRatedPosterSources(path)
   const img = new Image()
@@ -35,16 +31,4 @@ export function preloadHomePoster() {
   img.sizes = sizes
   img.srcset = srcSet
   img.src = src
-}
-
-let remembering = false
-
-// Saves getPath() when the page is hidden (tab switch, close, navigation away), so the entry only
-// exists while the app isn't open. Safe to call on every load: it registers once.
-export function rememberHomePosterOnHide(getPath) {
-  if (remembering) return
-  remembering = true
-  addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') saveHomePoster(getPath())
-  })
 }

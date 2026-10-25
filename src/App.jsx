@@ -10,7 +10,7 @@ import { mediaStateQuery } from "@/features/interactions/hooks/useMediaState"
 import { profileStatsQuery } from "@/features/profile/hooks/useProfileStats"
 import { bestRatedQuery } from "@/features/profile/hooks/useBestRated"
 import { watchlistPickQuery } from "@/features/interactions/hooks/useWatchlistPick"
-import { preloadHomePoster, rememberHomePosterOnHide } from "@/utils/homePoster"
+import { preloadHomePoster, saveHomePoster } from "@/utils/homePoster"
 
 // ─── T0: Critical first-paint bundle ──────────────────────────────────────────
 // Only the landing page: it is the public entry. Login and Register (and react-hook-form) are lazy so
@@ -57,10 +57,9 @@ async function browseLoader({ request }) {
     queryClient.prefetchQuery(mediaStateQuery(userId))
     queryClient.prefetchQuery(profileStatsQuery(userId))
     const bestRated = bestRatedQuery(userId)
-    queryClient.prefetchQuery(bestRated)
-    rememberHomePosterOnHide(() => {
+    queryClient.prefetchQuery(bestRated).then(() => {
       const picks = queryClient.getQueryData(bestRated.queryKey)
-      return picks?.movie?.poster_path ?? picks?.tv?.poster_path
+      if (picks) saveHomePoster(picks.movie?.poster_path ?? picks.tv?.poster_path)
     })
     queryClient.prefetchQuery(watchlistPickQuery(userId))
   }
