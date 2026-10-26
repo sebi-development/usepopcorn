@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, lazy, Suspense, memo } from "react"
 import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers, HiOutlineListBullet, HiOutlineSparkles } from "react-icons/hi2"
+import { TbMasksTheater } from "react-icons/tb"
 
 import useAllSeasonDetails from "@/features/media_details/hooks/useAllSeasonDetails"
 import SlidingTabs from "@/components/ui/SlidingTabs"
@@ -10,12 +11,13 @@ import OverviewTab from "@/features/media_details/components/tabs/OverviewTab"
 import SeasonsTab from "@/features/media_details/components/tabs/SeasonsTab"
 
 const PANEL_CARD_CLASS = "bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
-const UNBOXED_TABS = new Set(["similar", "scores"])
+const UNBOXED_TABS = new Set(["cast", "similar", "scores"])
 
-// Its chunk loads on the first click of the tab
+// Their chunks load on the first click of the tab
+const CastTab = lazy(() => import("@/features/media_details/components/tabs/CastTab"))
 const SimilarTab = lazy(() => import("@/features/media_details/components/tabs/SimilarTab"))
 
-function SimilarFallback() {
+function RowFallback() {
   return (
     <div className="flex gap-3 overflow-hidden md:px-6 delayed-reveal">
       {Array.from({ length: 6 }).map((_, i) => (
@@ -63,17 +65,21 @@ function DetailTabs({ media, tmdbId, type }) {
 
   // Titles TMDB has no recommendations for get no Similar tab
   const hasSimilar = media.similar?.length > 0
+  // A movie's cast is known from its details; a series' only once the tab fetches it
+  const hasCast = type === 'tv' || media.cast?.length > 0
 
   const tabs = useMemo(() => {
     const list = [
-      { id: "overview", label: "Overview", shortLabel: "Overview", icon: <HiOutlineInformationCircle size={18} /> },
+      // "Info" on phones: six series tabs must fit a 320px screen
+      { id: "overview", label: "Overview", shortLabel: "Info", icon: <HiOutlineInformationCircle size={18} /> },
+      hasCast && { id: "cast", label: "Cast", shortLabel: "Cast", icon: <TbMasksTheater size={18} /> },
       { id: "scores", label: "Critic Scores", shortLabel: "Scores", icon: <HiOutlineStar size={18} /> },
       { id: "social", label: "Friend Activity", shortLabel: "Friends", icon: <HiOutlineUsers size={18} /> },
+      hasSimilar && { id: "similar", label: "Similar Titles", shortLabel: "Similar", icon: <HiOutlineSparkles size={18} /> },
+      type === 'tv' && { id: "seasons", label: "Episodes", shortLabel: "Episodes", icon: <HiOutlineListBullet size={18} /> },
     ]
-    if (hasSimilar) list.push({ id: "similar", label: "Similar Titles", shortLabel: "Similar", icon: <HiOutlineSparkles size={18} /> })
-    if (type === 'tv') list.push({ id: "seasons", label: "Episodes", shortLabel: "Episodes", icon: <HiOutlineListBullet size={18} /> })
-    return list
-  }, [type, hasSimilar])
+    return list.filter(Boolean)
+  }, [type, hasSimilar, hasCast])
 
   // Bulk season fetch, enabled by the first Seasons click
   const { isLoading: isSeasonsLoading } = useAllSeasonDetails(
@@ -99,6 +105,16 @@ function DetailTabs({ media, tmdbId, type }) {
           <OverviewTab data={media}></OverviewTab>
         </TabPanel>
 
+        {hasCast && (
+          <TabPanel id="cast" activeTab={activeTab} animate={tabSwitched}>
+            <div className="md:-ml-6">
+              <Suspense fallback={<RowFallback />}>
+                <CastTab media={media} tmdbId={tmdbId} type={type} />
+              </Suspense>
+            </div>
+          </TabPanel>
+        )}
+
         <TabPanel id="scores" activeTab={activeTab} animate={tabSwitched}>
           <ScoresTab media={media} />
         </TabPanel>
@@ -110,7 +126,7 @@ function DetailTabs({ media, tmdbId, type }) {
         {hasSimilar && (
           <TabPanel id="similar" activeTab={activeTab} animate={tabSwitched}>
             <div className="md:-ml-6">
-              <Suspense fallback={<SimilarFallback />}>
+              <Suspense fallback={<RowFallback />}>
                 <SimilarTab items={media.similar} type={type} />
               </Suspense>
             </div>

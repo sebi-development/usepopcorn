@@ -4,6 +4,7 @@ import { extractRegionalData } from "@/utils/extractRegionalData";
 import queryKeys from "@/lib/queryKeys";
 import { CACHE } from "@/lib/queryClient";
 import { toMediaItem } from "@/utils/tmdbItem";
+import { toMovieCast } from "@/utils/tmdbPerson";
 
 const SIMILAR_LIMIT = 12;
 
@@ -35,6 +36,7 @@ function toMediaDetails(data, type, userCountry) {
       revenue: data.revenue,
       regionalReleaseDate,
       director: data.credits?.crew?.find(c => c.job === 'Director')?.name ?? null,
+      cast: toMovieCast(data.credits?.cast),
     };
   }
 

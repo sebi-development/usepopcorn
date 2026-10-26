@@ -88,6 +88,8 @@ function MediaRow({
   // grid/expand additions — all optional, row-only usage is unaffected
   expandable = false, isExpanded = false, isPending = false, onToggleExpand,
   gridItems, gridError, page = 1, totalPages = 1, onPageChange,
+  // Renders an item that isn't a title (e.g. a cast member) in place of MediaCard
+  renderItem,
 }) {
   // Movie and TV ids overlap, so a list mixing both (a person's credits) keys by type too
   const keyOf = useCallback(
@@ -134,6 +136,7 @@ function MediaRow({
   const isLoadingFirstPage = isExpanded && !gridItems
 
   function renderCard(item, rankValue) {
+    if (renderItem) return renderItem(item)
     const cardId = item.tmdb_id || item.id
     return (
       <MediaCard

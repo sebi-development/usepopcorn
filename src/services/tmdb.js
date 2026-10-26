@@ -21,7 +21,8 @@ export async function searchContent(query, type = 'movie', year) {
 }
 
 export async function getMediaDetails(id, type = 'movie') {
-  // credits is only read for a movie's director, so series don't request it.
+  // A movie's credits give its director and the Cast tab. Series skip them: their credits cover the
+  // latest season only, so the tab fetches getTvAggregateCredits on open instead.
   // recommendations feeds the Similar tab and tells the page whether to show it, without a second request.
   const append = type === 'movie'
     ? '?append_to_response=release_dates,watch%2Fproviders,credits,recommendations' // movies endpoint
@@ -31,6 +32,12 @@ export async function getMediaDetails(id, type = 'movie') {
 
 export async function getSeasonDetails(tvId, seasonNumber) {
   return tmdbFetch(`/tv/${tvId}/season/${seasonNumber}`)
+}
+
+// Every season's cast, sorted by episode count. TMDB can't limit it, so it is fetched only when the
+// Cast tab opens and cut to the top few in its hook.
+export async function getTvAggregateCredits(tvId) {
+  return tmdbFetch(`/tv/${tvId}/aggregate_credits`)
 }
 
 // ── PEOPLE ──────────────────────────────────────────────────
