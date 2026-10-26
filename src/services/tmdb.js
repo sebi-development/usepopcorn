@@ -48,6 +48,10 @@ export async function getPerson(id) {
   return tmdbFetch(`/person/${id}?append_to_response=combined_credits`)
 }
 
+export async function searchPeople(query) {
+  return tmdbFetch(`/search/person?${new URLSearchParams({ query })}`)
+}
+
 // ── CATEGORIES ──────────────────────────────────────────────
 // Shared shape across movie and series: trending, popular, top_rated.
 

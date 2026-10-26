@@ -6,6 +6,7 @@ import SlidingTabs from '@/components/ui/SlidingTabs'
 const SEARCH_TABS = [
   { id: 'movie', label: 'Movies' },
   { id: 'tv', label: 'Series' },
+  { id: 'person', label: 'People' },
 ]
 
 function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
@@ -20,7 +21,7 @@ function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
         value={value}
         onChange={onChange}
         autoFocus
-        placeholder="Search movies & series..."
+        placeholder="Search movies, series & people..."
         className="w-full h-11 bg-transparent text-text text-lg placeholder:text-text-muted outline-none"
       />
       <SlidingTabs

@@ -34,7 +34,7 @@ function ActiveSearchModal({ onClose }) {
       />
       {query.length > 0 && (
         <>
-          {SearchFilters && <SearchFilters year={year} onChange={setYear} />}
+          {SearchFilters && filter !== 'person' && <SearchFilters year={year} onChange={setYear} />}
           <SearchResults
             media_type={filter}
             results={searchResults?.results}
