@@ -33,6 +33,14 @@ export async function getSeasonDetails(tvId, seasonNumber) {
   return tmdbFetch(`/tv/${tvId}/season/${seasonNumber}`)
 }
 
+// ── PEOPLE ──────────────────────────────────────────────────
+
+// One request for the person page: combined_credits is not paginated, so it holds every credit
+// and the page filters them client-side
+export async function getPerson(id) {
+  return tmdbFetch(`/person/${id}?append_to_response=combined_credits`)
+}
+
 // ── CATEGORIES ──────────────────────────────────────────────
 // Shared shape across movie and series: trending, popular, top_rated.
 

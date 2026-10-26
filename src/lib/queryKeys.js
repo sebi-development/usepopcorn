@@ -59,6 +59,9 @@ const queryKeys = {
     users: (query) => ['users', 'search', query],
   },
 
+  // ── People (TMDB) ────────────────────────────────────────────
+  person: (personId) => ['person', personId],
+
   // ── Titles (TMDB) and their scores (MDBList, ČSFD) ───────────
   media: {
     details: (type, tmdbId, country) => ['mediaDetails', type, tmdbId, country],

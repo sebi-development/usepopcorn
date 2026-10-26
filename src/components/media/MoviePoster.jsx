@@ -3,7 +3,8 @@ import { FiImage } from "react-icons/fi"
 
 // `priority` is for a poster that is its page's LCP: fetched at once, ahead of other images
 function MoviePoster({ src, srcSet, sizes, alt, className = '', priority = false }) {
-  const [status, setStatus] = useState('loading')
+  // An <img> without a src fires neither load nor error, so a missing image starts as the fallback
+  const [status, setStatus] = useState(src ? 'loading' : 'error')
 
   return (
     <div className={`relative bg-surface-100/50 overflow-hidden ${className}`}>

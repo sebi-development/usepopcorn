@@ -41,6 +41,10 @@ const ResetPasswordPage = page(() => import("@/pages/auth/ResetPasswordPage"))
 const ProfileStatsPage = page(() => import("@/pages/app/ProfileStatsPage"))
 const CommunityPage = page(() => import("@/pages/app/CommunityPage"))
 
+// ─── T4: rarely visited, never prefetched: chunk and data load on navigation ──────────
+// No loader: one would put its query factory (and the TMDB service) in the entry bundle
+const PersonPage = page(() => import("@/pages/app/PersonPage"))
+
 // A route loader runs in parallel with the route's `lazy` import, so Home's above-the-fold queries
 // (its cards wait on stats, best-rated and the watchlist pick; the best-rated poster is the page's
 // LCP) start next to the BrowsePage chunk download instead of after it. Fire-and-forget: the hooks
@@ -87,6 +91,7 @@ const router = createBrowserRouter([
     children: [
       { path: '/browse', lazy: BrowsePage, loader: browseLoader },
       { path: '/browse/:id', lazy: DetailPage },
+      { path: '/person/:id', lazy: PersonPage },
       { path: '/profile', lazy: ProfilePage },
       { path: '/community', lazy: CommunityPage },
       { path: '/profile/stats', lazy: ProfileStatsPage },

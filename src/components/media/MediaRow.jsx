@@ -89,6 +89,12 @@ function MediaRow({
   expandable = false, isExpanded = false, isPending = false, onToggleExpand,
   gridItems, gridError, page = 1, totalPages = 1, onPageChange,
 }) {
+  // Movie and TV ids overlap, so a list mixing both (a person's credits) keys by type too
+  const keyOf = useCallback(
+    (item) => `${item.media_type || item.type || mediaType}:${item.tmdb_id || item.id}`,
+    [mediaType]
+  )
+
   // Row data — an array of normalised items (see src/utils/pagination.js)
   // TMDB's popularity-sorted lists shift between page requests, so a title can come back on two
   // pages. Rendering it twice would also give two cards the same key.
@@ -97,13 +103,13 @@ function MediaRow({
     const seen = new Set()
     return data
       .filter((item) => {
-        const id = item.tmdb_id || item.id
-        if (seen.has(id)) return false
-        seen.add(id)
+        const key = keyOf(item)
+        if (seen.has(key)) return false
+        seen.add(key)
         return true
       })
       .slice(0, limit)
-  }, [data, limit])
+  }, [data, limit, keyOf])
 
   // One subscription per row; cards receive primitives so only the affected card re-renders
   const { favorites, watchlist, ratings } = useMediaState()
@@ -206,7 +212,7 @@ function MediaRow({
                 className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 transition-opacity duration-200 ${isPending ? "opacity-60" : "opacity-100"}`}
               >
                 {gridItems.map((item) => (
-                  <div key={item.tmdb_id || item.id}>
+                  <div key={keyOf(item)}>
                     {/* rank numbers don't mean much past page 1 of an
                         arbitrary genre browse, so grid mode never shows them */}
                     {renderCard(item, undefined)}
@@ -237,7 +243,7 @@ function MediaRow({
           {/* Scrollable row */}
           <div ref={scrollRef} className={`${SCROLLER_CLASS} scroll-smooth`}>
             {media.map((item, index) => (
-              <div key={item.tmdb_id || item.id} className={CARD_SLOT_CLASS}>
+              <div key={keyOf(item)} className={CARD_SLOT_CLASS}>
                 {renderCard(item, rank ? index + 1 : undefined)}
               </div>
             ))}
