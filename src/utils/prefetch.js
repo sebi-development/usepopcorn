@@ -28,13 +28,26 @@ export function afterFirstPaint(cb) {
 
 // Calls cb in an idle slot once no query is fetching, so prefetches don't share a slow link with the
 // first screen's data. Checks again after each wait: the render a result triggers can start new queries.
-export function whenQueriesSettle(queryClient, cb) {
-  onIdle(() => {
-    if (!queryClient.isFetching()) return cb()
-    const unsubscribe = queryClient.getQueryCache().subscribe(() => {
+// maxWait runs cb anyway, so a hung or constantly refetching query can't hold the prefetches back forever.
+export function whenQueriesSettle(queryClient, cb, maxWait = 10_000) {
+  let unsubscribe
+  let done = false
+  const run = () => {
+    if (done) return
+    done = true
+    clearTimeout(deadline)
+    unsubscribe?.()
+    cb()
+  }
+  const deadline = setTimeout(run, maxWait)
+  const check = () => onIdle(() => {
+    if (done) return
+    if (!queryClient.isFetching()) return run()
+    unsubscribe = queryClient.getQueryCache().subscribe(() => {
       if (queryClient.isFetching()) return
       unsubscribe()
-      whenQueriesSettle(queryClient, cb)
+      check()
     })
   })
+  check()
 }
