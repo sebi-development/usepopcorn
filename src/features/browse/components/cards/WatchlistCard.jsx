@@ -32,7 +32,6 @@ export default memo(function WatchlistCard() {
           <Link to={`/browse/${pick.tmdb_id}`} state={{ type: pick.media_type }} className={STRETCHED}>
             {pick.title}
           </Link>
-          {count > 0 && <p className="mt-auto text-[10px] sm:text-xs text-text-muted">{count} on your watchlist</p>}
         </>
       ) : count > 0 ? (
         // The pick failed to load but titles exist

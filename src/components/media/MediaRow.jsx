@@ -13,6 +13,7 @@ import Chip from "@/components/ui/Chip"
 // overscroll-x-contain: reaching the end of a row must not turn into the browser's swipe-back
 const SCROLLER_CLASS = "flex gap-3 overflow-x-auto overscroll-x-contain -mx-4 px-4 md:mx-0 md:px-6 pb-2 scrollbar-hide"
 const CARD_SLOT_CLASS = "flex-none w-32 sm:w-40 md:w-44"
+const COUNT_CLASS = "ml-2 inline-flex align-middle rounded-full bg-surface-300 px-2 py-0.5 text-xs font-medium text-text-muted tabular-nums"
 
 function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
   return (
@@ -90,7 +91,10 @@ function MediaRow({
   gridItems, gridError, page = 1, totalPages = 1, onPageChange,
   // Renders an item that isn't a title (e.g. a cast member) in place of MediaCard
   renderItem,
+  // Total shown as a badge after the heading, e.g. a list longer than the row's `limit`
+  count,
 }) {
+  const title = count == null ? heading : <>{heading}<span className={COUNT_CLASS}>{count}</span></>
   // Movie and TV ids overlap, so a list mixing both (a person's credits) keys by type too
   const keyOf = useCallback(
     (item) => `${item.media_type || item.type || mediaType}:${item.tmdb_id || item.id}`,
@@ -165,7 +169,7 @@ function MediaRow({
     <div className={delaySkeleton ? "delayed-reveal" : undefined}>
       {(heading || expandable) && (
         <div className="flex items-center justify-between gap-2 mb-4 md:px-6">
-          <h2 className="text-text font-semibold text-xl">{heading}</h2>
+          <h2 className="text-text font-semibold text-xl">{title}</h2>
           {expandable && <span aria-hidden="true" className="invisible shrink-0 whitespace-nowrap text-sm px-2 md:px-3 py-3 md:py-1.5">View all</span>}
         </div>
       )}
@@ -183,7 +187,7 @@ function MediaRow({
 
   if (isError) return (
     <div>
-      {heading && <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>}
+      {heading && <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{title}</h2>}
       <AlertBanner variant="danger" message="Couldn't load this. Please try again." />
     </div>
   )
@@ -194,7 +198,7 @@ function MediaRow({
       {/* Optional: a host that titles the row itself (e.g. a detail page tab) passes no heading */}
       {(heading || expandable) && (
         <div className="flex items-center justify-between gap-2 mb-4 md:px-6">
-          <h2 className="text-text font-semibold text-xl">{heading}</h2>
+          <h2 className="text-text font-semibold text-xl">{title}</h2>
           {expandable && (
             <ExpandToggle
               isExpanded={isExpanded}

@@ -1,13 +1,13 @@
 import useRecommendationSeeds from '@/features/browse/hooks/useRecommendationSeeds'
 import RecommendationRow from '@/features/browse/components/RecommendationRow'
 import { useHasNoActivity } from '@/features/interactions/hooks/useMediaState'
-import WatchlistCard from '@/features/interactions/components/WatchlistCard'
-import WatchlistRow from '@/features/interactions/components/WatchlistRow'
+import WatchlistCard from '@/features/browse/components/cards/WatchlistCard'
+import Watchlist from '@/features/profile/components/Watchlist'
 import useProfileStats from '@/features/profile/hooks/useProfileStats'
 import useCurrentUser from '@/features/auth/hooks/useCurrentUser'
 import useCategoryMedia from '@/features/browse/hooks/useCategoryMedia'
 import MediaRow from '@/components/media/MediaRow'
-import StreakCard from '@/features/profile/components/StreakCard'
+import StreakCard from '@/features/browse/components/cards/StreakCard'
 import { useMemo } from 'react'
 import { getGenreNames } from '@/utils/genres'
 import InfoCard from '@/components/ui/InfoCard'
@@ -16,7 +16,7 @@ import { Link } from 'react-router'
 import useProfileStreak from '@/features/profile/hooks/useProfileStreak'
 import { PopcornIcon } from '@/components/ui/Logo'
 import useBestRated from '@/features/profile/hooks/useBestRated'
-import BestRatedCard from '@/features/profile/components/BestRatedCard'
+import BestRatedCard from '@/features/browse/components/cards/BestRatedCard'
 
 const WELCOME_ICON = <PopcornIcon className="text-4xl" />
 
@@ -96,7 +96,7 @@ export default function HomePage() {
         />
       )}
 
-      <WatchlistRow />
+      <Watchlist heading="Your watchlist" />
     </main>
   )
 }
