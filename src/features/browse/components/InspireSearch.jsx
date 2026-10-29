@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { FiSearch, FiLoader } from 'react-icons/fi'
 import useSearch from '@/features/search/hooks/useSearch'
+import useDebounce from '@/hooks/useDebounce'
 import Chip from '@/components/ui/Chip'
 
 const MAX_RESULTS = 6
@@ -18,8 +19,8 @@ function toSeed(item, type) {
 }
 
 // The button's ::after stretches over the whole row, so the row is one click target while the
-// year Chip stays outside the button (a Chip is a <button> itself). The Chip is decoration for
-// sighted users; the year is repeated for screen readers inside the button.
+// year Chip stays outside the button. The Chip is decoration for sighted users; the year is
+// repeated for screen readers inside the button.
 const Suggestion = memo(function Suggestion({ seed, onSelect }) {
   return (
     <li className="relative flex items-center gap-2 min-h-11 md:min-h-8 px-2 py-1 rounded-md text-text-muted hover:bg-surface-300/60 hover:text-text has-focus-visible:bg-surface-300/60 transition-colors duration-200">
@@ -60,7 +61,8 @@ const InspireSearch = memo(function InspireSearch({ type, isOpen, onSelect }) {
     if (!isOpen) setQuery('')
   }
 
-  const { data, isFetching } = useSearch(trimmed, type)
+  const debounced = useDebounce(trimmed, 200)
+  const { data, isFetching } = useSearch(debounced, type)
 
   // A hidden instance (display: none) can't take focus, so only the visible one reacts
   useEffect(() => {

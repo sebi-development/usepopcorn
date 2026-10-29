@@ -1,10 +1,21 @@
-import { memo } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { LuLoaderCircle } from 'react-icons/lu'
 
-// The icon and the text field of the search row; the type tabs are a sibling (ActiveSearchModal), so a
-// tab switch doesn't re-render this and a keystroke doesn't re-render them.
-function SearchInput({ value, onChange, isLoading }) {
+const DEBOUNCE_MS = 200
+
+// Uncontrolled: typing renders nothing; the panel gets the text after a pause (at once when cleared)
+function SearchInput({ onQueryChange, isLoading }) {
+  const timer = useRef()
+  useEffect(() => () => clearTimeout(timer.current), [])
+
+  function handleChange(e) {
+    const { value } = e.target
+    clearTimeout(timer.current)
+    if (!value) return onQueryChange('')
+    timer.current = setTimeout(() => onQueryChange(value), DEBOUNCE_MS)
+  }
+
   return (
     <>
       {isLoading
@@ -13,8 +24,7 @@ function SearchInput({ value, onChange, isLoading }) {
       }
       <input
         type="text"
-        value={value}
-        onChange={onChange}
+        onChange={handleChange}
         autoFocus
         placeholder="Search movies, series & people..."
         className="w-full h-11 bg-transparent text-text text-lg placeholder:text-text-muted outline-none"
