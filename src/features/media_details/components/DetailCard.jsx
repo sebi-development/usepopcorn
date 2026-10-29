@@ -53,7 +53,8 @@ function DetailCard({ media }) {
               <Chip
                 size="sm"
                 colorRgb="161, 161, 170"
-                label={`Directed by ${director}`}
+                label={`Directed by ${director.name}`}
+                to={`/person/${director.id}`}
               />
             )}
           </>

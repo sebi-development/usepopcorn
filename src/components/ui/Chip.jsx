@@ -1,4 +1,5 @@
 import { memo, useMemo } from 'react';
+import { Link } from 'react-router';
 
 const SIZES = {
   md: { button: 'px-4 py-1.5', content: 'gap-2 text-xs', icon: 'w-3.5 h-3.5' },
@@ -17,6 +18,8 @@ const Chip = memo(function Chip({
   size = 'md',
   className = "",
   onClick,
+  // renders a link instead of a button, so it opens in a new tab like any link
+  to,
   // aria-* and other button attributes
   ...rest
 }) {
@@ -41,12 +44,15 @@ const Chip = memo(function Chip({
       : '';
   const focusStyles = variant === 'outline' ? 'focus-visible:ring-2 focus-visible:ring-primary-light/60' : ''
 
+  const interactive = onClick || to
+  const Tag = to ? Link : 'button'
+  const tagProps = to ? { to } : { type: 'button', disabled: !onClick }
+
   return (
-    <button
-      type="button"
+    <Tag
+      {...tagProps}
       onClick={onClick}
-      disabled={!onClick}
-      className={`relative inline-flex items-center justify-center ${button} rounded-full outline-none transition-transform ${onClick ? 'cursor-pointer active:scale-95' : 'cursor-default'} ${variantStyles} ${focusStyles} ${className}`}
+      className={`relative inline-flex items-center justify-center ${button} rounded-full outline-none transition-transform ${interactive ? 'cursor-pointer active:scale-95' : 'cursor-default'} ${variantStyles} ${focusStyles} ${className}`}
       style={dynamicStyles}
       {...rest}
     >
@@ -87,7 +93,7 @@ const Chip = memo(function Chip({
         {Icon && <Icon className={icon} />}
         {children ? children : <span className="mt-[1px]">{label}</span>}
       </div>
-    </button>
+    </Tag>
   );
 });
 

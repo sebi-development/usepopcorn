@@ -10,6 +10,12 @@ export const toMovieCast = (cast = []) => cast.slice(0, CAST_LIMIT).map((c) => (
   character: c.character,
 }))
 
+// A movie's first credited director; the id links the detail page to their person page
+export function toDirector(crew = []) {
+  const director = crew.find((c) => c.job === 'Director')
+  return director ? { id: director.id, name: director.name } : null
+}
+
 // A series' aggregate_credits.cast, sorted by episode count; roles[0] is TMDB's main role
 export const toTvCast = (cast = []) => cast.slice(0, CAST_LIMIT).map((c) => ({
   id: c.id,
