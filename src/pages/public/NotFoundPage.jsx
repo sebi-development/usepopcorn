@@ -6,7 +6,6 @@ export default function NotFoundPage() {
 
   return (
     <main className="min-h-[80dvh] flex flex-col items-center justify-center px-6 text-center">
-      {/* Semantic Screen Reader Fallback */}
       <h1 className="sr-only">404 - Oops! Page Not Found</h1>
 
       {/* ASCII Art Group */}
@@ -28,16 +27,9 @@ export default function NotFoundPage() {
         </h3>
       </div>
 
-      {/* Standard Typography */}
       <h3 className="text-xl md:text-3xl font-bold text-text mb-4 tracking-wide">
         Page not found
       </h3>
-      
-      <hr className="w-16 border-surface-300 mb-2" />
-
-      <p className="text-text-muted text-xs md:text-sm max-w-md mb-8 leading-relaxed">
-        The signal was lost in the void. The page you're looking for doesn't exist, has been moved, or you lack the required clearance.
-      </p>
 
       <Button as={Link} to="/browse" variant="solid" className="px-8 py-3">
         Take me home

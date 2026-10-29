@@ -11,11 +11,10 @@ const ICON = <BsBookmarkFill className="text-xl sm:text-3xl text-violet-200" />
 const CHIP_RGB = '121, 80, 242'
 
 const TEXT = 'text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2'
-// Stretched link: the ::after covers the whole card so it is one click target
 const STRETCHED = `${TEXT} hover:text-text transition-colors after:absolute after:inset-0 after:z-20`
 
-// Home's "Tonight's pick": the server picks one watchlist title per day (get_watchlist_pick)
 export default memo(function WatchlistCard() {
+  // The server picks one watchlist title per day (get_watchlist_pick)
   const { data: pick, isLoading } = useWatchlistPick()
   const count = useWatchlistCount()
 
@@ -24,7 +23,7 @@ export default memo(function WatchlistCard() {
   return (
     <FeatureCard heroBackground={GRADIENT} floatingIcon={ICON}>
       <Chip size="sm" colorRgb={CHIP_RGB} className="self-start max-w-full">
-        <span className="truncate">{pick ? "Tonight's pick" : 'Watchlist'}</span>
+        <span className="truncate">{pick ? "Today's pick" : 'Watchlist'}</span>
       </Chip>
       {pick ? (
         <>
