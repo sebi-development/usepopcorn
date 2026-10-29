@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { HiOutlineLockClosed } from 'react-icons/hi2'
 
 import tier1 from '@/assets/rating-icons/rating-icon-tier1.avif?no-inline'
 import tier2 from '@/assets/rating-icons/rating-icon-tier2.avif?no-inline'
@@ -15,7 +16,18 @@ const SCORE_TIERS = [
   { min: -Infinity, classes: "border-white/5 text-white/40", icon: null }
 ];
 
-function Score({ value }) {
+// `locked`: not released yet. Same size as the empty circle, so nothing shifts.
+function Score({ value, locked = false }) {
+  if (locked) return (
+    <div
+      role="img"
+      aria-label="Rating locked until release"
+      className="flex items-center justify-center w-28 h-28 rounded-full border-2 border-dashed border-white/10 bg-surface-900/30 text-white/30"
+    >
+      <HiOutlineLockClosed size={32} />
+    </div>
+  )
+
   const hasValue = value !== undefined && value !== null;
   const displayValue = hasValue ? value : "--";
 

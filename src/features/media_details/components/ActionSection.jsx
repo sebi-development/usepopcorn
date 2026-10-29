@@ -1,4 +1,5 @@
 import { useState, memo } from "react"
+import { HiOutlineLockClosed } from "react-icons/hi2"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import StarRating from "@/features/ratings/components/StarRating"
 import DeleteRating from "@/features/ratings/components/DeleteRating"
@@ -12,22 +13,32 @@ const dockBtnClass = "flex items-center justify-center w-11 h-11 md:w-10 md:h-10
 export default memo(function ActionSection({ media, userScore, averageScore, isWatchlisted, isFavorited, onRate, onDelete }) {
   const [isRatingMode, setIsRatingMode] = useState(false)
   const hasRated = !!userScore
+  // Locked until the primary or the user's regional release date has passed; an earlier rating stays editable
+  const today = new Date().toISOString().slice(0, 10)
+  const isReleased = [media?.release_date || media?.first_air_date, media?.regionalReleaseDate].some((day) => day && day <= today)
+  const isLocked = !hasRated && !isReleased
 
   const ratingPanelRef = useOutsideClick(() => setIsRatingMode(false))
 
   return (
     <div className="[grid-area:rating] flex flex-col items-center justify-center py-2 md:py-6 gap-4 md:gap-8 w-full">
 
-      <Score value={averageScore != null ? Math.round(averageScore * 10) : null} />
+      <Score value={averageScore != null ? Math.round(averageScore * 10) : null} locked={isLocked} />
 
       <div className="w-full relative flex items-center justify-center min-h-14 md:h-14">
         <button
           onClick={() => setIsRatingMode(true)}
-          className={`absolute min-h-13 md:min-h-0 px-6 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 hover:border-white/20 transition-all duration-200 cursor-pointer ${
+          disabled={isLocked}
+          className={`absolute min-h-13 md:min-h-0 px-6 py-2.5 rounded-xl border border-white/10 text-sm font-medium text-text-muted hover:text-white hover:bg-white/5 hover:border-white/20 transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:text-text-muted disabled:hover:bg-transparent disabled:hover:border-white/10 ${
             isRatingMode ? 'opacity-0 pointer-events-none scale-95' : 'opacity-100 scale-100'
           }`}
         >
-          {hasRated ? (
+          {isLocked ? (
+            <span className="flex items-center gap-2">
+              <HiOutlineLockClosed size={16} />
+              Rating opens on release
+            </span>
+          ) : hasRated ? (
             <span className="flex items-center gap-2">
               Your rating: <strong className="text-amber-400">{userScore}/10</strong>
             </span>
