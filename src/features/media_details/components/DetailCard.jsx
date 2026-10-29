@@ -1,10 +1,14 @@
-import { memo } from 'react'
+import { Fragment, memo } from 'react'
+import { Link } from 'react-router'
 import formatRuntime from '@/utils/formatRuntime'
 import Chip from '@/components/ui/Chip'
 
+// "Joe Russo & Anthony Russo", "A, B & C"
+const separatorAt = (index, count) => (index === 0 ? '' : index === count - 1 ? ' & ' : ', ')
+
 function DetailCard({ media }) {
   const isTV = media.type === 'tv'
-  const { director, network } = media
+  const { directors = [], network } = media
 
   return (
     <div className="[grid-area:info] flex flex-col gap-3 md:gap-6">
@@ -49,13 +53,26 @@ function DetailCard({ media }) {
                 label={formatRuntime(media.runtime)}
               />
             )}
-            {director && (
+            {directors.length === 1 ? (
               <Chip
                 size="sm"
                 colorRgb="161, 161, 170"
-                label={`Directed by ${director.name}`}
-                to={`/person/${director.id}`}
+                label={`Directed by ${directors[0].name}`}
+                to={`/person/${directors[0].id}`}
               />
+            ) : directors.length > 1 && (
+              // Co-directors share one chip, a link per name
+              <Chip size="sm" colorRgb="161, 161, 170">
+                <span className="mt-[1px]">
+                  Directed by{' '}
+                  {directors.map((d, i) => (
+                    <Fragment key={d.id}>
+                      {separatorAt(i, directors.length)}
+                      <Link to={`/person/${d.id}`} className="hover:underline underline-offset-2">{d.name}</Link>
+                    </Fragment>
+                  ))}
+                </span>
+              </Chip>
             )}
           </>
         )}
