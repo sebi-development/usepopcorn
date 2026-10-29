@@ -7,18 +7,26 @@ const SIZES = {
   xs: { button: 'px-2 py-0.5', content: 'gap-1 text-[10px]', icon: 'w-2.5 h-2.5' },
 }
 
+const VARIANT_STYLES = {
+  glow: '',
+  ghost: 'bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-sm text-text',
+  outline: 'border border-surface-300 text-text-muted hover:text-text hover:border-text-muted/40',
+  count: 'bg-surface-300 text-text-muted tabular-nums',
+}
+const OUTLINE_ACTIVE = 'border border-primary-light/70 bg-primary/10 text-primary-light'
+
 const Chip = memo(function Chip({ 
   label, 
   icon: Icon, 
   children,
-  variant = 'glow', // 'glow' | 'ghost' | 'outline'
+  variant = 'glow', // 'glow' | 'ghost' | 'outline' | 'count'
   // outline only: selected look (primary outline + tint)
   active = false,
   colorRgb = "121, 80, 242",
   size = 'md',
   className = "",
   onClick,
-  // renders a link instead of a button, so it opens in a new tab like any link
+  // a Link; with neither `to` nor `onClick` a span (a disabled button would swallow its card's clicks)
   to,
   // aria-* and other button attributes
   ...rest
@@ -35,18 +43,12 @@ const Chip = memo(function Chip({
 
   const { button, content, icon } = SIZES[size]
   
-  const variantStyles = variant === 'ghost'
-    ? 'bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-sm text-text'
-    : variant === 'outline'
-      ? active
-        ? 'border border-primary-light/70 bg-primary/10 text-primary-light'
-        : 'border border-surface-300 text-text-muted hover:text-text hover:border-text-muted/40'
-      : '';
+  const variantStyles = variant === 'outline' && active ? OUTLINE_ACTIVE : VARIANT_STYLES[variant]
   const focusStyles = variant === 'outline' ? 'focus-visible:ring-2 focus-visible:ring-primary-light/60' : ''
 
   const interactive = onClick || to
-  const Tag = to ? Link : 'button'
-  const tagProps = to ? { to } : { type: 'button', disabled: !onClick }
+  const Tag = to ? Link : onClick ? 'button' : 'span'
+  const tagProps = to ? { to } : onClick ? { type: 'button' } : {}
 
   return (
     <Tag

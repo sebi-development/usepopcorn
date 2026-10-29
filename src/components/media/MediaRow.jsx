@@ -13,7 +13,6 @@ import Chip from "@/components/ui/Chip"
 // overscroll-x-contain: reaching the end of a row must not turn into the browser's swipe-back
 const SCROLLER_CLASS = "flex gap-3 overflow-x-auto overscroll-x-contain -mx-4 px-4 md:mx-0 md:px-6 pb-2 scrollbar-hide"
 const CARD_SLOT_CLASS = "flex-none w-32 sm:w-40 md:w-44"
-const COUNT_CLASS = "ml-2 inline-flex align-middle rounded-full bg-surface-300 px-2 py-0.5 text-xs font-medium text-text-muted tabular-nums"
 
 function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
   return (
@@ -91,10 +90,10 @@ function MediaRow({
   gridItems, gridError, page = 1, totalPages = 1, onPageChange,
   // Renders an item that isn't a title (e.g. a cast member) in place of MediaCard
   renderItem,
-  // Total shown as a badge after the heading, e.g. a list longer than the row's `limit`
+  // Shown as a count chip after the heading
   count,
 }) {
-  const title = count == null ? heading : <>{heading}<span className={COUNT_CLASS}>{count}</span></>
+  const title = count == null ? heading : <>{heading}<Chip variant="count" size="sm" label={count} className="ml-2 align-middle" /></>
   // Movie and TV ids overlap, so a list mixing both (a person's credits) keys by type too
   const keyOf = useCallback(
     (item) => `${item.media_type || item.type || mediaType}:${item.tmdb_id || item.id}`,
