@@ -17,14 +17,17 @@ const SORTS = {
 
 const ROLE = { key: 'role', label: 'Role', kind: 'select', options: [{ value: 'acting', label: 'Acting' }, { value: 'directing', label: 'Directing' }] }
 const TYPE = { key: 'type', label: 'Type', kind: 'select', options: [{ value: 'movie', label: 'Movies' }, { value: 'tv', label: 'Series' }] }
-// Popular is the default, so it needs no option
-const SORT = { key: 'sort', label: 'Sort', kind: 'select', options: [{ value: 'newest', label: 'Newest' }, { value: 'rated', label: 'Top rated' }] }
+// Newest is the default, so it needs no option
+const SORT = { key: 'sort', label: 'Sort', kind: 'select', options: [{ value: 'popular', label: 'Popular' }, { value: 'rated', label: 'Top rated' }] }
 
 const defaultRole = (person) => (person.known_for_department === 'Directing' || !person.acting.length ? 'directing' : 'acting')
 
 // Filter defs (shape in src/utils/filters.js) offering only what this person's credits have
 function getDefs(person) {
   const credits = [...person.acting, ...person.directing]
+  const years = [...new Set(credits.map((c) => c.release_date?.slice(0, 4)).filter(Boolean))]
+    .sort((a, b) => b.localeCompare(a))
+    .map((year) => ({ value: year, label: year }))
   const genres = [...new Set(credits.flatMap((c) => c.genre_ids ?? []))]
     .map((id) => ({ value: String(id), label: MOVIE_GENRES[id] ?? TV_GENRES[id] }))
     .sort((a, b) => a.label.localeCompare(b.label))
@@ -32,6 +35,7 @@ function getDefs(person) {
     person.acting.length > 0 && person.directing.length > 0 && ROLE,
     new Set(credits.map((c) => c.media_type)).size > 1 && TYPE,
     { key: 'genre', label: 'Genre', kind: 'multi', options: genres },
+    years.length > 1 && { key: 'year', label: 'Year', kind: 'select', options: years },
     SORT,
   ].filter(Boolean)
 }
@@ -47,10 +51,12 @@ function Filmography({ person }) {
   )
 
   const shown = useMemo(() => {
-    const { role, type, genre, sort } = filters
+    const { role, type, genre, year, sort } = filters
     return person[role ?? defaultRole(person)]
-      .filter((c) => (!type || c.media_type === type) && (!genre || genre.some((g) => c.genre_ids?.includes(Number(g)))))
-      .sort(SORTS[sort ?? 'popular'])
+      .filter((c) => (!type || c.media_type === type)
+        && (!genre || genre.some((g) => c.genre_ids?.includes(Number(g))))
+        && (!year || c.release_date?.startsWith(year)))
+      .sort(SORTS[sort ?? 'newest'])
   }, [person, filters])
 
   // New filters mean a new result set: back to its first page
