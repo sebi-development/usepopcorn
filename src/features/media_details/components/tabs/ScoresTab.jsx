@@ -10,14 +10,12 @@ import { TomatoIcon, PopcornIcon } from "@/features/media_details/components/RtI
 
 const SCORE_CARD_CLASS = "flex flex-row-reverse items-center justify-between gap-3 min-w-0 p-4 sm:flex-col sm:p-6 sm:min-h-35"
 
-// Each platform's own good / mixed thresholds (0–100) in one palette, so green means good everywhere
 const toneFrom = (good, mixed) => (pct) => pct == null ? null : pct >= good ? "success" : pct >= mixed ? "warning" : "danger"
 const IMDB_TONE = toneFrom(70, 50)
 const METACRITIC_TONE = toneFrom(61, 40)
 const RT_TONE = toneFrom(60, 60)
 const CSFD_TONE = toneFrom(70, 30)
 
-// react-icons has no ČSFD logo
 function CsfdIcon({ className }) {
   return (
     <span className={`${className} grid place-items-center rounded-[5px] bg-[#BA0300] text-[13px] font-black leading-none text-white`}>
