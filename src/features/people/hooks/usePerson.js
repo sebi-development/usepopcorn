@@ -10,11 +10,19 @@ const APPEARANCE_GENRES = [10763, 10764, 10767]
 
 const isRole = (c) => !SELF.test(c.character) && !c.genre_ids?.some((g) => APPEARANCE_GENRES.includes(g))
 
-// vote_count ranks "Known for" and the Popular sort
-const toCredit = (c) => ({ ...toMediaItem(c), vote_count: c.vote_count })
+// vote_count ranks Known for and Popular; order, episode_count and character tell a part from a cameo
+const toCredit = (c) => ({
+  ...toMediaItem(c),
+  vote_count: c.vote_count,
+  order: c.order,
+  episode_count: c.episode_count,
+  character: c.character,
+})
 
-// One card per title: a show where someone played several characters is credited once per role
-const uniqueTitles = (credits) => [...new Map(credits.map((c) => [`${c.media_type}:${c.id}`, c])).values()]
+// One card per title, keeping the credit with the most episodes (not a one-episode "uncredited" extra)
+const uniqueTitles = (credits) => [
+  ...new Map(credits.toSorted((a, b) => (a.episode_count ?? 0) - (b.episode_count ?? 0)).map((c) => [`${c.media_type}:${c.id}`, c])).values(),
+]
 
 // Only acting and directing credits reach the cache; writing, production and other crew are dropped
 function toPerson(data) {

@@ -1,11 +1,17 @@
 import { memo, useMemo, useState } from "react"
 import MediaRow from "@/components/media/MediaRow"
 import FilterBar from "@/components/filters/FilterBar"
+import Chip from "@/components/ui/Chip"
 import useUrlFilters from "@/hooks/useUrlFilters"
 import { PAGE_SIZE } from "@/utils/pagination"
 import { MOVIE_GENRES, TV_GENRES } from "@/utils/genres"
 
 const KNOWN_FOR_LIMIT = 10
+const MAX_PER_CHARACTER = 2
+// Votes rank the title, not the part, so Known for skips cameos: top 15 billing or 5+ episodes
+const isMajorRole = (c) => (c.media_type === 'movie' ? c.order < 15 : c.episode_count >= 5)
+// "Natasha Romanoff / Black Widow" -> "natasha romanoff", "Woody (voice)" -> "woody"
+const characterOf = (c) => c.character?.split('/')[0].replace(/\(.*?\)/g, '').trim().toLowerCase()
 // Below this many votes an average says little, so Top rated puts the title last
 const MIN_VOTES = 50
 
@@ -45,10 +51,20 @@ function Filmography({ person }) {
   const defs = useMemo(() => getDefs(person), [person])
   const { filters, setFilter, clearFilters } = useUrlFilters(defs)
 
-  const knownFor = useMemo(
-    () => person[defaultRole(person)].toSorted(SORTS.popular).slice(0, KNOWN_FOR_LIMIT),
-    [person]
-  )
+  // At most two per character, so one franchise can't fill the row
+  const knownFor = useMemo(() => {
+    const major = person.acting.filter(isMajorRole)
+    const credits = defaultRole(person) === 'directing' ? person.directing : major.length ? major : person.acting
+    const perCharacter = new Map()
+    return credits
+      .toSorted(SORTS.popular)
+      .filter((c) => {
+        const name = characterOf(c)
+        perCharacter.set(name, (perCharacter.get(name) ?? 0) + 1)
+        return !name || perCharacter.get(name) <= MAX_PER_CHARACTER
+      })
+      .slice(0, KNOWN_FOR_LIMIT)
+  }, [person])
 
   const shown = useMemo(() => {
     const { role, type, genre, year, sort } = filters
@@ -74,7 +90,7 @@ function Filmography({ person }) {
 
       <div className="flex flex-col gap-4">
         <h2 className="text-text font-semibold text-xl md:px-6">
-          Filmography <span className="text-text-muted font-normal">· {shown.length}</span>
+          Filmography <Chip variant="count" size="sm" label={shown.length} className="ml-2 align-middle" />
         </h2>
         <FilterBar defs={defs} filters={filters} onChange={setFilter} onClear={clearFilters} className="md:px-6" />
         {shown.length === 0 ? (
