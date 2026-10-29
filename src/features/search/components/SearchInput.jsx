@@ -1,17 +1,12 @@
+import { memo } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { LuLoaderCircle } from 'react-icons/lu'
-import SlidingTabs from '@/components/ui/SlidingTabs'
 
-// Static — kept at module scope so SlidingTabs never sees a new reference on re-renders.
-const SEARCH_TABS = [
-  { id: 'movie', label: 'Movies' },
-  { id: 'tv', label: 'Series' },
-  { id: 'person', label: 'People' },
-]
-
-function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
+// The icon and the text field of the search row; the type tabs are a sibling (ActiveSearchModal), so a
+// tab switch doesn't re-render this and a keystroke doesn't re-render them.
+function SearchInput({ value, onChange, isLoading }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2 border-b border-surface-100">
+    <>
       {isLoading
         ? <LuLoaderCircle className="text-text-muted shrink-0 animate-spin" size={20} />
         : <FiSearch className="text-text-muted shrink-0" size={20} />
@@ -24,21 +19,8 @@ function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
         placeholder="Search movies, series & people..."
         className="w-full h-11 bg-transparent text-text text-lg placeholder:text-text-muted outline-none"
       />
-      <SlidingTabs
-        tabs={SEARCH_TABS}
-        activeTab={filter}
-        onChange={onFilterChange}
-        containerPadding="p-0.5"
-        containerGap="gap-0"
-        containerRadius="rounded-lg"
-        pillRadius="rounded-md"
-        tabRadius="rounded-md"
-        className="bg-surface-100 backdrop-blur-none border-none"
-        pillClassName="bg-surface-500 backdrop-blur-none border-none"
-        tabClassName="px-3 py-0.5 text-xs"
-      />
-    </div>
+    </>
   )
 }
 
-export default SearchInput
+export default memo(SearchInput)

@@ -1,4 +1,4 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { searchContent, searchPeople } from "@/services/tmdb";
 import useDebounce from "@/hooks/useDebounce";
 import { toMediaItem } from "@/utils/tmdbItem";
@@ -20,7 +20,8 @@ export default function useSearch(query, filter, year) {
     enabled: debouncedQuery.length > 0,
     // One entry per typed term: nothing to reuse once the text changes
     ...CACHE.ephemeral,
-    placeholderData: keepPreviousData
+    // Keep the last results while typing, not across a tab switch, where they'd render as the new type
+    placeholderData: (previous, previousQuery) => (previousQuery?.queryKey[1] === filter ? previous : undefined),
   })
 
   return { data, isLoading, isFetching, error }
