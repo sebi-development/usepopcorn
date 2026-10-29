@@ -1,5 +1,4 @@
 import { memo, useMemo } from 'react';
-import { Link } from 'react-router';
 
 const SIZES = {
   md: { button: 'px-4 py-1.5', content: 'gap-2 text-xs', icon: 'w-3.5 h-3.5' },
@@ -25,9 +24,8 @@ const Chip = memo(function Chip({
   colorRgb = "121, 80, 242",
   size = 'md',
   className = "",
+  // without it a span, not a disabled button, which would swallow its card's clicks
   onClick,
-  // a Link; with neither `to` nor `onClick` a span (a disabled button would swallow its card's clicks)
-  to,
   // aria-* and other button attributes
   ...rest
 }) {
@@ -46,15 +44,13 @@ const Chip = memo(function Chip({
   const variantStyles = variant === 'outline' && active ? OUTLINE_ACTIVE : VARIANT_STYLES[variant]
   const focusStyles = variant === 'outline' ? 'focus-visible:ring-2 focus-visible:ring-primary-light/60' : ''
 
-  const interactive = onClick || to
-  const Tag = to ? Link : onClick ? 'button' : 'span'
-  const tagProps = to ? { to } : onClick ? { type: 'button' } : {}
+  const Tag = onClick ? 'button' : 'span'
 
   return (
     <Tag
-      {...tagProps}
+      type={onClick ? 'button' : undefined}
       onClick={onClick}
-      className={`relative inline-flex items-center justify-center ${button} rounded-full outline-none transition-transform ${interactive ? 'cursor-pointer active:scale-95' : 'cursor-default'} ${variantStyles} ${focusStyles} ${className}`}
+      className={`relative inline-flex items-center justify-center ${button} rounded-full outline-none transition-transform ${onClick ? 'cursor-pointer active:scale-95' : 'cursor-default'} ${variantStyles} ${focusStyles} ${className}`}
       style={dynamicStyles}
       {...rest}
     >

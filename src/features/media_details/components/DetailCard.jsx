@@ -3,6 +3,8 @@ import { Link } from 'react-router'
 import formatRuntime from '@/utils/formatRuntime'
 import Chip from '@/components/ui/Chip'
 
+// The name links are 10px tall: an invisible ::before pads each tap area vertically
+const NAME_LINK_CLASS = "relative before:absolute before:-inset-y-2.5 before:inset-x-0 hover:underline underline-offset-2"
 // "Joe Russo & Anthony Russo", "A, B & C"
 const separatorAt = (index, count) => (index === 0 ? '' : index === count - 1 ? ' & ' : ', ')
 
@@ -53,22 +55,14 @@ function DetailCard({ media }) {
                 label={formatRuntime(media.runtime)}
               />
             )}
-            {directors.length === 1 ? (
-              <Chip
-                size="sm"
-                colorRgb="161, 161, 170"
-                label={`Directed by ${directors[0].name}`}
-                to={`/person/${directors[0].id}`}
-              />
-            ) : directors.length > 1 && (
-              // Co-directors share one chip, a link per name
+            {directors.length > 0 && (
               <Chip size="sm" colorRgb="161, 161, 170">
                 <span className="mt-[1px]">
                   Directed by{' '}
                   {directors.map((d, i) => (
                     <Fragment key={d.id}>
                       {separatorAt(i, directors.length)}
-                      <Link to={`/person/${d.id}`} className="hover:underline underline-offset-2">{d.name}</Link>
+                      <Link to={`/person/${d.id}`} className={NAME_LINK_CLASS}>{d.name}</Link>
                     </Fragment>
                   ))}
                 </span>

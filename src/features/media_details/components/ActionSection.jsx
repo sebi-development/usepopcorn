@@ -13,7 +13,6 @@ const dockBtnClass = "flex items-center justify-center w-11 h-11 md:w-10 md:h-10
 export default memo(function ActionSection({ media, userScore, averageScore, isWatchlisted, isFavorited, onRate, onDelete }) {
   const [isRatingMode, setIsRatingMode] = useState(false)
   const hasRated = !!userScore
-  // Locked until the primary or the user's regional release date has passed; an earlier rating stays editable
   const today = new Date().toISOString().slice(0, 10)
   const isReleased = [media?.release_date || media?.first_air_date, media?.regionalReleaseDate].some((day) => day && day <= today)
   const isLocked = !hasRated && !isReleased
