@@ -174,9 +174,10 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
   Object.assign(window.WebSocket, { CONNECTING: 0, OPEN: 1, CLOSING: 2, CLOSED: 3 })
 }
 
-// What the audit measures on a rendered page.
-export const AUDIT = `(() => {
-  const vw = window.innerWidth, vh = window.innerHeight
+// What the audit measures on a rendered page. `vw` is the emulated width, not innerWidth: Chromium's
+// mobile emulation widens innerWidth to fit content that overflows, which hid the overflow.
+export const auditScript = (vw) => `(() => {
+  const vw = ${vw}, vh = window.innerHeight
   const visible = (el) => {
     const r = el.getBoundingClientRect(), cs = getComputedStyle(el)
     if (r.width === 0 || r.height === 0 || cs.visibility === 'hidden' || cs.display === 'none' || Number(cs.opacity) === 0) return false
@@ -212,10 +213,18 @@ export const AUDIT = `(() => {
   const pinned = [...document.querySelectorAll('body *')].filter((el) => { const p = getComputedStyle(el).position; return (p === 'sticky' || p === 'fixed') && visible(el) })
     .map((el) => { const r = el.getBoundingClientRect(); return { el: el.tagName.toLowerCase() + '.' + String(el.className).split(' ').filter(Boolean).slice(0, 3).join('.'), pos: getComputedStyle(el).position, h: Math.round(r.height), pctOfViewport: Math.round(r.height / vh * 100) } })
     .filter((p) => p.h > 0 && p.pctOfViewport < 100)
-  const wide = [...document.querySelectorAll('body *')].filter((el) => { const r = el.getBoundingClientRect(); return r.right > vw + 1 && visible(el) && getComputedStyle(el).position !== 'fixed' })
-    .filter((el) => { for (let p = el.parentElement; p; p = p.parentElement) { const o = getComputedStyle(p).overflowX; if (o === 'auto' || o === 'scroll' || o === 'hidden' || o === 'clip') return false } return true })
-    .slice(0, 5).map((el) => label(el))
-  return { viewport: vw + 'x' + vh, pageOverflowX: document.documentElement.scrollWidth - vw, small, zoomInputs, pinned, wide }
+  // Overflow is measured with the html/body clip lifted, so it reports what the clip would hide.
+  // Invisible elements count: a hidden tooltip still widens the page.
+  const root = document.documentElement, body = document.body
+  root.style.overflowX = body.style.overflowX = 'visible'
+  const pageOverflowX = root.scrollWidth - vw
+  const over = [...document.querySelectorAll('body *')].filter((el) => { const r = el.getBoundingClientRect(); return r.right > vw + 1 && r.width > 0 && getComputedStyle(el).position !== 'fixed' })
+    .filter((el) => { for (let p = el.parentElement; p && p !== body; p = p.parentElement) { if (getComputedStyle(p).overflowX !== 'visible') return false } return true })
+  // Where the overflow starts: an offender whose parent still fits
+  const overSet = new Set(over)
+  const wide = over.filter((el) => !overSet.has(el.parentElement)).slice(0, 5).map((el) => label(el))
+  root.style.overflowX = body.style.overflowX = ''
+  return { viewport: vw + 'x' + vh, pageOverflowX, small, zoomInputs, pinned, wide }
 })()`
 
 export async function openPage({ width = 375, height = 812, loggedIn = true } = {}) {
@@ -256,7 +265,7 @@ export async function openPage({ width = 375, height = 812, loggedIn = true } = 
     send, evaluate, waitFor, sleep, errors,
     goto: async (path, settle = 1500) => { await send('Page.navigate', { url: APP() + path }); await sleep(settle) },
     shot: async (name) => { const { data } = await send('Page.captureScreenshot', { format: 'png' }); fs.writeFileSync(`${SHOTS}${name}.png`, Buffer.from(data, 'base64')); return `${SHOTS}${name}.png` },
-    audit: () => evaluate(AUDIT),
+    audit: () => evaluate(auditScript(width)),
     calls: (t = 'sb') => evaluate(`window.__sb.calls.filter(c => c.t === ${JSON.stringify(t)}).map(c => c.method + ' ' + c.path)`),
     resetCalls: () => evaluate('window.__sb.calls.length = 0'),
     click: (selector) => evaluate(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); if (!el) throw new Error('no element: ' + ${JSON.stringify(selector)}); el.click(); return true })()`),

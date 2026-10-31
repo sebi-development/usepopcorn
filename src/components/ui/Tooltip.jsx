@@ -25,9 +25,10 @@ function Tooltip({ label, children, side = 'top', disabled = false }) {
   return (
     <div className="relative group">
       {children}
+      {/* Hover-only: on touch the invisible bubble would still widen the page */}
       <div
         className={`
-          pointer-events-none absolute ${positions[side]} z-50
+          pointer-events-none absolute ${positions[side]} z-50 pointer-coarse:hidden
           px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap
           bg-surface-100 text-text-muted border border-white/10
           opacity-0 group-hover:opacity-100

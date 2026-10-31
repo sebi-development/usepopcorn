@@ -11,7 +11,7 @@ const FriendActivityItem = memo(function FriendActivityItem({ friend }) {
 
       <Link
         to={`/profile/${friend.user_id}`}
-        className="flex items-center gap-2.5 shrink-0 min-w-[120px] group cursor-pointer"
+        className="flex items-center gap-2.5 min-w-[min(7.5rem,40%)] group cursor-pointer"
       >
         <Avatar
           username={friend.username}
@@ -31,7 +31,8 @@ const FriendActivityItem = memo(function FriendActivityItem({ friend }) {
 
       <div className="w-[1px] h-10 bg-white/5 shrink-0 mx-3.5 rounded-full" />
 
-      <div className="flex-1 flex flex-col gap-2 min-w-0">
+      {/* A floor, so a long username shrinks the link instead of pushing the score off-screen */}
+      <div className="flex-1 flex flex-col gap-2 min-w-24">
         <div className="flex items-end justify-between">
           <span className="text-[10px] font-medium text-text-muted opacity-70 uppercase tracking-wider">
             Score

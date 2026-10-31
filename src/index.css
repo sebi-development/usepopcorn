@@ -42,7 +42,12 @@ body {
   color: var(--color-text);
   background-color: var(--color-surface-900);
   padding: 0;
-  /* Safety net: `clip` (unlike `hidden`) doesn't create a scroll container, so sticky still works */
+}
+
+/* The app's horizontal boundary. Both elements: WebKit ignores a clip body passes to the viewport.
+   `clip` (unlike `hidden`) doesn't create a scroll container, so sticky still works. */
+html,
+body {
   overflow-x: clip;
 }
 

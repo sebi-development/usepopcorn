@@ -78,3 +78,4 @@ for (const [name, r] of Object.entries(report)) {
 }
 const under32 = [...seen.values()].filter((v) => v === 'UNDER-32').length
 console.log(`\n# distinct undersized targets: ${seen.size} (${under32} under the 32px floor)`)
+console.log(`# screens wider than the viewport: ${Object.values(report).filter((r) => r.pageOverflowX > 0).length}`)

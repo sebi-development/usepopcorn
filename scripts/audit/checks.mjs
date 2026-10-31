@@ -18,8 +18,8 @@ const hit = await page.evaluate(`(() => { const b = document.querySelector('.ove
 ok('"Show details" tap area extends ~10px past the 24px chevron', hit.inside && hit.left9 && hit.up9 && !hit.left14, JSON.stringify(hit))
 const dots = await page.evaluate(`(() => { const b = document.querySelector('button[aria-label="Card actions"]'); const r = b.getBoundingClientRect(); const at = (x, y) => b.contains(document.elementFromPoint(x, y)); return { size: Math.round(r.width) + 'x' + Math.round(r.height), left5: at(r.left - 5, r.top + 10), up5: at(r.left + 10, r.top - 5), below: at(r.left + 10, r.bottom + 3) } })()`)
 ok('card menu dots: 32px control, tap area grows sideways/up only', dots.size === '32x32' && dots.left5 && dots.up5 && !dots.below, JSON.stringify(dots))
-const css = await page.evaluate(`({ touch: getComputedStyle(document.querySelector('button')).touchAction, tap: getComputedStyle(document.documentElement).webkitTapHighlightColor, bodyOverflowX: getComputedStyle(document.body).overflowX, rowOverscroll: getComputedStyle(document.querySelector('.overflow-x-auto.scroll-smooth')).overscrollBehaviorX })`)
-ok('touch-action / tap highlight / overscroll', css.touch === 'manipulation' && /rgba\(0, 0, 0, 0\)/.test(css.tap) && css.rowOverscroll === 'contain', JSON.stringify(css))
+const css = await page.evaluate(`({ touch: getComputedStyle(document.querySelector('button')).touchAction, tap: getComputedStyle(document.documentElement).webkitTapHighlightColor, htmlOverflowX: getComputedStyle(document.documentElement).overflowX, bodyOverflowX: getComputedStyle(document.body).overflowX, rowOverscroll: getComputedStyle(document.querySelector('.overflow-x-auto.scroll-smooth')).overscrollBehaviorX })`)
+ok('touch-action / tap highlight / overscroll / html+body clip', css.touch === 'manipulation' && /rgba\(0, 0, 0, 0\)/.test(css.tap) && css.rowOverscroll === 'contain' && css.htmlOverflowX === 'clip' && css.bodyOverflowX === 'clip', JSON.stringify(css))
 await page.resetCalls()
 await page.close()
 
@@ -66,5 +66,23 @@ for (const [w, h] of [[320, 568], [375, 667], [430, 932]]) {
   await page.goto('/', 1500)
   const l = await page.evaluate(`(() => { const b = [...document.querySelectorAll('a')].find(a => a.textContent.includes('Get started')).getBoundingClientRect(); return { bottom: Math.round(b.bottom), h: Math.round(b.height), vh: innerHeight } })()`)
   ok(`landing ${w}x${h}: primary CTA fully above the fold`, l.bottom <= l.vh && l.h === 52, JSON.stringify(l))
+  await page.close()
+}
+
+// 6. Detail page: no tab and no rating panel makes the page wider than the phone (measured with
+// the html/body clip lifted, so content the clip would cut off still fails)
+for (const [w, h] of [[320, 568], [375, 667]]) {
+  page = await openPage({ width: w, height: h })
+  await reloadTo(page, '/browse/550', { type: 'movie' })
+  const overflow = {}
+  for (const tab of await page.evaluate(`[...document.querySelectorAll('[role=tab]')].map(t => t.textContent.trim())`)) {
+    await page.evaluate(`[...document.querySelectorAll('[role=tab]')].find(t => t.textContent.trim() === ${JSON.stringify(tab)}).click()`)
+    await page.sleep(1500)
+    overflow[tab] = (await page.audit()).pageOverflowX
+  }
+  await page.evaluate(`[...document.querySelectorAll('button')].find(b => /Add rating|Your rating/.test(b.textContent)).click()`)
+  await page.sleep(400)
+  overflow.ratingPanel = (await page.audit()).pageOverflowX
+  ok(`detail ${w}x${h}: no tab or panel widens the page`, Object.values(overflow).every((px) => px <= 0), JSON.stringify(overflow))
   await page.close()
 }
