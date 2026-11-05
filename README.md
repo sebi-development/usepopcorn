@@ -1,6 +1,6 @@
 # usePopcorn
 
-A movie and series discovery and social tracking platform. Users browse TMDB catalogues, rate titles, follow other users, and get analytics on their own viewing history. Analytics, aggregation and social-graph queries run inside PostgreSQL as 12 custom PL/pgSQL / SQL functions. The client receives pre-shaped `jsonb` or scalar results, not raw rows to reduce.
+A movie and series discovery and social tracking platform. Users browse TMDB catalogues and the people behind each title, rate titles, follow other users, and get analytics on their own viewing history. Analytics, aggregation and social-graph queries run inside PostgreSQL as 12 custom PL/pgSQL / SQL functions. The client receives pre-shaped `jsonb` or scalar results, not raw rows to reduce.
 
 <p align="center">
   <a href="https://usepopcorn.sebik.me/"><img alt="Live demo" src="https://img.shields.io/badge/%F0%9F%8D%BF_live_demo-usepopcorn.sebik.me-6D4AE0?style=for-the-badge"></a>
@@ -36,7 +36,7 @@ A movie and series discovery and social tracking platform. Users browse TMDB cat
 | | |
 |---|---|
 | <img src="docs/screenshots/landing.jpg" alt="Landing page: 'Your personal cinema companion' with Get started and Sign in buttons and feature cards"><br>**Landing.** Eager-loaded first paint, auth entry points. | <img src="docs/screenshots/browse-filters.jpg" alt="Browse page with the Genre filter pill grown into its searchable option list above a row of upcoming movies"><br>**Browse + URL-driven filters.** Genre, year, country, language. Filtered at TMDB, shareable as a link. |
-| <img src="docs/screenshots/title-page.jpg" alt="Title page for The Batman with poster, genres, popcorn score badge, the user's own 9/10 rating and watchlist, favourite and share actions"><br>**Title page.** One request via `append_to_response`, optimistic rating and favourite / watchlist toggles. | <img src="docs/screenshots/similar-titles.jpg" alt="Similar Titles tab on The Batman page showing a row of related posters with rating chips"><br>**Overview · Critic Scores · Friend Activity · Similar Titles.** Everything about a title in one tabbed page. |
+| <img src="docs/screenshots/title-page.jpg" alt="Title page for The Batman with poster, genres, popcorn score badge, the user's own 9/10 rating and watchlist, favourite and share actions"><br>**Title page.** One request via `append_to_response`, optimistic rating and favourite / watchlist toggles. | <img src="docs/screenshots/similar-titles.jpg" alt="Similar Titles tab on The Batman page showing a row of related posters with rating chips"><br>**Overview · Cast · Critic Scores · Friend Activity · Similar Titles.** Everything about a title in one tabbed page. |
 | <img src="docs/screenshots/stats.jpg" alt="Stats page with titles rated, average rating, movie watch time, most watched genres, current rank and a yearly activity heatmap"><br>**Profile analytics.** Totals, top genres and the weekly heatmap are each computed by one PostgreSQL function. | <img src="docs/screenshots/recommendations.jpg" alt="Because you loved The Lord of the Rings: The Fellowship of the Ring, an expanded grid of recommended titles with the user's own rating chips"><br>**Recommendations.** Seeded from the user's best-rated title of the month, expands into a paged grid. |
 
 ### What makes this more than a TMDB client
@@ -47,7 +47,8 @@ A movie and series discovery and social tracking platform. Users browse TMDB cat
 | **No application server** | The browser talks to Supabase and TMDB directly; external scores (MDBList, ČSFD) come through two Supabase Edge Functions that hold the keys and cache the results in Postgres. Authorization is Row Level Security on every table plus `SECURITY INVOKER` read functions, with `anon` locked out. [Security notes](#security-notes) |
 | **Realtime social feed** | Followed users' ratings arrive over `postgres_changes` with server-side row filters, keyset-paged, and filterable by type, score, genre, friend and period. |
 | **One cache vocabulary** | Five named cache tiers and a `queryKeys` factory that ESLint enforces, so a query, its invalidation and its realtime subscription cannot drift apart. [Cache strategy](#22-client-cache-strategy-and-speculative-prefetching) |
-| **URL is the state** | Browse and feed filters are one shared, URL-driven layer. A filtered view is a link, and Back restores it. [Filtering](#221-url-driven-filtering) |
+| **URL is the state** | Browse, feed and filmography filters are one shared, URL-driven layer. A filtered view is a link, and Back restores it. [Filtering](#221-url-driven-filtering) |
+| **People, not just titles** | A person page from one TMDB request: a filterable filmography, the user's progress through that person's work computed from their own ratings, and awards from Wikidata's public SPARQL endpoint. Title pages add cast and crew rows from credits the page already fetched. [People](#25-people-and-credits) |
 | **Database as code** | Every schema change is a migration file, applied with the Supabase CLI. Live RPC definitions are snapshotted in `supabase/functions-reference/`. [Workflow](#database-workflow) |
 | **Continuous integration** | Every pull request runs lint and a production build in GitHub Actions ([`ci.yml`](.github/workflows/ci.yml)). |
 
@@ -62,6 +63,7 @@ If you have five minutes, these files show the shape of the codebase:
 | How is realtime wired to the cache? | [`src/features/social/hooks/useFeedRealtime.js`](src/features/social/hooks/useFeedRealtime.js) |
 | How do paged lists share one system? | [`src/hooks/usePagedList.js`](src/hooks/usePagedList.js), [`src/utils/pagination.js`](src/utils/pagination.js) |
 | How are filters modelled? | [`src/hooks/useUrlFilters.js`](src/hooks/useUrlFilters.js), [`src/utils/filters.js`](src/utils/filters.js) |
+| How is a third-party payload trimmed? | [`src/features/people/hooks/usePerson.js`](src/features/people/hooks/usePerson.js), [`src/utils/tmdbPerson.js`](src/utils/tmdbPerson.js) |
 | How are routes split and prefetched? | [`src/App.jsx`](src/App.jsx), [`src/layout/AppLayout.jsx`](src/layout/AppLayout.jsx) |
 | What does the database look like? | [`supabase/migrations/`](supabase/migrations), [`supabase/functions-reference/`](supabase/functions-reference) |
 
@@ -81,7 +83,7 @@ Data moves through three layers, and each layer has one job.
 
 | Layer | Location | Responsibility |
 |---|---|---|
-| **Services** | `src/services/*` | Plain async functions with no React. `tmdb.js` wraps `fetch`. `mdblist.js` / `csfd.js` read a score cache table and call their Edge Function only when the row is missing or expired. The rest (`ratings`, `follows`, `profiles`, `interactions`, `files`) call Supabase through one shared client (`src/lib/supabase.js`). Every function throws `Error` so React Query can surface it. |
+| **Services** | `src/services/*` | Plain async functions with no React. `tmdb.js` wraps `fetch`. `wikidata.js` asks Wikidata's public SPARQL endpoint (a plain GET, no key). `mdblist.js` / `csfd.js` read a score cache table and call their Edge Function only when the row is missing or expired. The rest (`ratings`, `follows`, `profiles`, `interactions`, `files`) call Supabase through one shared client (`src/lib/supabase.js`). Every function throws `Error` so React Query can surface it. |
 | **Hooks** | `src/features/<feature>/hooks/*` | `useQuery` / `useInfiniteQuery` / `useMutation` wrappers. Third-party payloads (TMDB, MDBList, ČSFD) are normalised in the `queryFn`, not in `select`, so the cache holds only the fields the UI reads (a raw TMDB title is ~200 KB, a season ~100 KB). Mutations use optimistic updates: `onMutate` snapshot, `onError` rollback, `onSettled` invalidate. |
 | **Components** | `src/features/<feature>/components`, `src/components/{ui,media}`, `src/pages/*` | Presentation. Shared primitives are `React.memo`-ed. |
 
@@ -127,7 +129,7 @@ Every query spreads a cache tier from `CACHE` in `src/lib/queryClient.js` instea
 
 One case sits outside the tiers on purpose: the current user (`∞` / `∞`, seeded from the session and changed only by the auth listener or `setQueryData`). External scores use the `media` tier: their long-lived cache is the Postgres table behind each Edge Function (7–90 days by title age), not the browser.
 
-**Trimmed cache payloads.** TMDB responses are reduced in the `queryFn`, and list items go through `toMediaItem` (`src/utils/tmdbItem.js`). Series details no longer request credits. In a scripted session (Home, three browse rows, three movies, two series with episodes, a search, a profile) the cached data went from 2090 KB to 108 KB.
+**Trimmed cache payloads.** TMDB responses are reduced in the `queryFn`, and list items go through `toMediaItem` (`src/utils/tmdbItem.js`). Series details no longer request credits. Credits are cut the same way: the top 20 cast, and a crew row of a few people out of 37–76 KB of raw crew. In a scripted session (Home, three browse rows, three movies, two series with episodes, a search, a profile) the cached data went from 2090 KB to 108 KB.
 
 **Shared page 1.** A row that shows the first page of a numbered grid uses `queryKeys.gridPage(base, 1)`, so expanding it is a cache hit. "Am I following X" is read from the followed-ids list (`useFollowingIds`), which `useFollow` patches optimistically, so a profile makes no per-user follow requests.
 
@@ -161,14 +163,15 @@ Pages are data-router `lazy` routes, not `React.lazy` + `<Suspense>`. The router
 
 ### 2.2.1 URL-driven filtering
 
-Browse and the Community feed share one filter layer. The URL is the single source of truth, so a filtered view is a shareable link and Back restores it. Filtering is done at the source (TMDB `/discover`, the `get_user_feed` RPC), never by trimming a loaded list on the client.
+Browse, the Community feed and a person's filmography share one filter layer. The URL is the single source of truth, so a filtered view is a shareable link and Back restores it. Browse and the feed filter at the source (TMDB `/discover`, the `get_user_feed` RPC), never by trimming a loaded list on the client. The filmography is the one exception, because its single request already holds every credit.
 
 | Surface | Filters | Source | `multi` (OR) |
 |---|---|---|---|
 | Browse (movies / series) | genre, year, country, language | TMDB `/discover`, values pipe-joined | genre, country, language. `/discover` takes one exact year, so year is a `select`. |
 | Friends Activity feed | type, score, genre, friend, period | optional parameters of `get_user_feed` (`p_type`, `p_min_score`, `p_genre_ids`, `p_user_ids`, `p_since`) | genre, friend |
+| Person filmography | role, type, genre, year, your rating, sort | client-side over the one cached `combined_credits` response. No TMDB endpoint filters a person's credits for both movies and series, and `/discover/tv` ignores `with_cast`. | genre |
 
-- **Defs, not special cases.** A surface describes its filters as `{ key, label, kind: 'select' | 'multi', options }` (`features/browse/constants/filters.js`, `features/social/constants/feedFilters.js`). `useUrlFilters(defs)` parses the URL into a normalised `filters` object with a stable identity, so it goes straight into query keys without re-keying on every render. `FilterBar` / `FilterPill` render pills and removable value chips from the same defs.
+- **Defs, not special cases.** A surface describes its filters as `{ key, label, kind: 'select' | 'multi', options }` (`features/browse/constants/filters.js`, `features/social/constants/feedFilters.js`). `useUrlFilters(defs)` parses the URL into a normalised `filters` object with a stable identity, so it goes straight into query keys without re-keying on every render. `FilterBar` / `FilterPill` render pills and removable value chips from the same defs. The filmography builds its defs from the credits in view, so it only offers genres and years (with a released title) that the person actually has. Its Role is read from the URL first, because the other options depend on it.
 - **Unfiltered stays untouched.** Categories without a filter keep their own TMDB endpoints and keys. Any active filter switches to `/discover` under `queryKeys.media.discover`; the feed gets one `queryKeys.feed.list(userId, filters)` entry per combination under `feed.all(userId)`, which realtime and follow/unfollow refresh together.
 - **One request per burst of ticks.** A multi pill keeps its picks as a draft and commits them 400 ms after the last tick or when it closes, so ticking three genres is one URL change, one request and one cache entry. A pick that returns to the committed value cancels the pending commit.
 - **Short-lived cache entries.** Filtered lists take the `filtered` override (`gcTime` 2 min), so exploring combinations does not accumulate memory.
@@ -191,7 +194,22 @@ Browse and the Community feed share one filter layer. The URL is the single sour
 - **Grid.** Cards use `aspect-2/3 h-full w-full`, so every card in a grid row matches the tallest sibling. The hero occupies a fixed 72% of the card height, and card grids reflow with responsive CSS Grid columns, not JS measurement.
 - **Design tokens.** Colours and radii are defined once in `@theme` in `src/index.css` (`--color-primary`, `--color-surface-*`, `--radius-card`). Tailwind v4 generates utilities from these tokens.
 - **Phone layout (320-430 px).** Controls reach 44 px below `md`, either by size or by an invisible `::before` that pads the tap area without moving anything, and get `touch-action: manipulation`. Form inputs are 16 px below `md` so iOS Safari does not zoom the page on focus, and primary actions are 52 px tall. Hover-only controls (avatar edit / remove, row scroll arrows) are not tappable while invisible. Full-height layouts use `dvh`, not `vh`. `pnpm audit:mobile` checks tap targets and overflow per screen.
-- **Rendering discipline.** Presentational components are memoised, callbacks passed down use `useCallback`, and static arrays and objects are hoisted out of render bodies. Light tab panels toggle with `hidden`/`block` plus `role="tabpanel"` and `aria-hidden` and are not unmounted, so their DOM and query subscriptions persist across tab switches.
+- **Rendering discipline.** Presentational components are memoised, callbacks passed down use `useCallback`, and static arrays and objects are hoisted out of render bodies. Light tab panels toggle with `hidden`/`block` plus `role="tabpanel"` and `aria-hidden` and are not unmounted, so their DOM and query subscriptions persist across tab switches. Heavier tab areas (the title page, the person header) mount only the open panel through `useTabs` + `TabPanel`, so a panel's request and work start on its first open, and the tabs reset when a cached page is reused for another title or person.
+
+### 2.5 People and credits
+
+Search finds people as well as titles, and a cast card or a director's name opens their page (`/person/:id`). It is the lowest route tier: never prefetched and without a loader, since not every user opens a person.
+
+| Piece | Source | How it stays light |
+|---|---|---|
+| Person page | One request: `/person/{id}?append_to_response=combined_credits` | `toPerson` keeps acting and directing credits only and drops appearances that aren't acting work: "Self", parts played by their own name, archive footage, news / reality / talk shows. One entry per title. |
+| Filmography | the cached credits | Filtered and paged client-side (2.2.1). "Known for" ranks a director's films, or an actor's major parts (top-15 billing or 5+ episodes), by votes, at most two per character, so one franchise can't fill the row. |
+| Your collection | the cached media state, plus one `/discover` request | The user's progress through the person's own released titles (feature films with a credited part, series with 5+ episodes), with five collector levels. Credits carry no runtime, so short films are found by `with_cast` / `with_crew` and `with_runtime.lte=39` (up to 3 pages, trimmed to ids). If that request fails, shorts count. |
+| Awards | Wikidata SPARQL by TMDB person id (`P4985`) | A plain GET with no key and no custom headers, so the browser sends no CORS preflight. Trimmed in the `queryFn` to eight major ceremonies, state honours and up to 20 wins linked to their TMDB title. Nothing is stored in the database. |
+| Cast tab | movie: `credits` in the details request. series: `/tv/{id}/aggregate_credits` on the tab's first open | Top 20 cast. TMDB's series `credits` cover only the latest season, so the aggregate is used. It can't be limited server-side (up to ~500 KB raw for a long show), which is why it waits for the tab. |
+| Crew row | the same two responses | Directors (movies) or creators (series), then up to 2 writers, the novel's author, the composer and the cinematographer, one card per person with the jobs joined ("Director, Writer"). A pick without a photo is dropped rather than replaced by a lesser name. No extra request, and ~0.5 KB per title reaches the cache. |
+
+The credit normalizers live in `src/utils/tmdbPerson.js`, which the entry chunk already carries for people search. Moved into their own module, Rolldown split them into an extra chunk request for the title page, so they stay put.
 
 ---
 
@@ -291,10 +309,16 @@ The project is linked to the production database through the Supabase CLI (a dev
 - Category rails for movies and series (trending, popular, top rated, now playing / on the air, two rolling *upcoming* windows) and per-genre `/discover` rows.
 - Each row is an infinite-scrolling horizontal strip that expands into a paginated grid, with `keepPreviousData` transitions and next-page prefetch (see 2.2).
 - Filters on every Browse category: genre, year, country and language (multi-select where TMDB can OR the values), URL-driven so a filtered view is a link. See 2.2.1.
-- Debounced title search, overlay results, and user search.
-- Title pages with tabbed Overview / Scores / Seasons / Friend Activity panels. TMDB details are fetched with `append_to_response` (credits, providers, release dates or content ratings, external IDs) to keep it to one request. IMDb, Rotten Tomatoes (critics and audience) and Metacritic scores come from MDBList by TMDB id, and the ČSFD rating by IMDb id, each through its own Edge Function and Postgres cache. Season details load lazily, only after the Seasons tab is visited.
-- Favourites and watchlist toggles (optimistic), for movies and series, behind an actions menu on each card. Cards also show the signed-in user's own rating as a star chip.
+- Debounced title and people search, overlay results, and user search.
+- Title pages with tabbed Overview / Cast / Critic Scores / Friend Activity / Similar Titles / Episodes panels. TMDB details are fetched with `append_to_response` (credits, providers, release dates or content ratings, external IDs) to keep it to one request. IMDb, Rotten Tomatoes (critics and audience) and Metacritic scores come from MDBList by TMDB id, and the ČSFD rating by IMDb id, each through its own Edge Function and Postgres cache. Season details load lazily, only after the Seasons tab is visited.
+- Favourites and watchlist toggles (optimistic), for movies and series, behind an actions menu on each card. Cards also show the signed-in user's own rating as a star chip, and an "Upcoming" chip on unreleased titles, whose rating opens on release.
 - Movie and series recommendation rows seeded from the user's movie and series of the month (`get_best_rated_since`, then TMDB `/recommendations`), widening to the last 3, 6 or 12 months when a type has no pick and labelling the window used.
+
+**People**
+- Cast and crew rows on every title page: the top 20 cast, then the directors or creators, writers, the novel's author, composer and cinematographer. Cast and directors open their person page.
+- Person pages: biography, a "Known for" row of major parts, and the full filmography with Role, Type, Genre, Year, Your rating and Sort filters, URL-driven and paged.
+- "Your collection": a collector level and stats (average, watchlisted, highest rated) over the person's own titles, from the user's ratings. "Your rating → Not rated" in the filmography lists what is left.
+- Awards and nominations at the major ceremonies, plus state honours, from Wikidata.
 
 **Social**
 - Feed of followed users' ratings (`get_user_feed`), live-updated over Realtime and keyset-paged: one page on arrival, then a "Load more" button, capped at three pages.
@@ -332,6 +356,7 @@ The project is linked to the production database through the Supabase CLI (a dev
 | Backend / DB | **Supabase Edge Functions** (Deno) | The only server-side code: two score lookups that need a secret or can't run in a browser. Shared modules in `supabase/functions/_shared` hold CORS, the service-role client, the TTL policy and stale-while-revalidate. |
 | External | **TMDB API** (v3 API key as a query param, so requests skip the CORS preflight) | Primary catalogue: trending, discover, details, recommendations, images. |
 | External | **MDBList API** | IMDb, Rotten Tomatoes (critics and audience) and Metacritic scores by TMDB id, so titles without an IMDb id still get scores. Called only from the `mdblist-scores` Edge Function and cached in `mdblist_cache`, which keeps usage far below the free tier's 1,000 requests a day. |
+| External | **Wikidata** (public SPARQL endpoint) | A person's awards by TMDB person id, queried from the browser with no key and no preflight, and trimmed before it reaches the cache. Also maps IMDb ids to ČSFD ids for the `csfd-score` Edge Function. |
 | External | **ČSFD** (node-csfd-api, Wikidata) | The ČSFD rating. Wikidata maps the IMDb id to the ČSFD id exactly; the `csfd-score` Edge Function reads the rating server-side (ČSFD has no API, no CORS and a bot challenge) and caches it in `csfd_cache`. |
 
 ---
@@ -400,16 +425,17 @@ src/
 ├── features/
 │   ├── auth/              # session, current user, password recovery
 │   ├── browse/            # category rail, rows, useCategoryMedia (row + grid hooks)
-│   ├── media_details/     # detail tabs, TMDB and score hooks, season loading
+│   ├── media_details/     # detail tabs (cast and crew, scores, seasons), TMDB and score hooks
+│   ├── people/            # person page: filmography, collection, awards (Wikidata)
 │   ├── ratings/           # rating UI, optimistic mutations, realtime average
 │   ├── interactions/      # favourites / watchlist
 │   ├── search/            # title and user search
 │   ├── social/            # feed, follows, suggestions, realtime feed
 │   └── profile/           # heatmap, streak, stats, avatar, account deletion
 ├── components/{ui,media,filters}  # shared primitives (FeatureCard, Chip, Modal, MediaRow, FilterBar, FilterPill, …)
-├── services/              # tmdb, mdblist, csfd, ratings, follows, profiles, interactions, files
-├── hooks/                 # generic hooks (usePagedList, usePagedGrid, debounce, focus trap, …)
-├── utils/                 # pure helpers (pagination adapters, tmdbItem, periods, filters)
+├── services/              # tmdb, wikidata, mdblist, csfd, ratings, follows, profiles, interactions, files
+├── hooks/                 # generic hooks (usePagedList, usePagedGrid, useTabs, debounce, focus trap, …)
+├── utils/                 # pure helpers (pagination adapters, tmdbItem, tmdbPerson, periods, filters)
 └── lib/                   # supabase client, queryClient (CACHE tiers), queryKeys factory
 supabase/
 ├── migrations/            # every DB change since 2026-10-01
