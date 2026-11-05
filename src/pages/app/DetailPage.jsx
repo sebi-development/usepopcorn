@@ -56,7 +56,6 @@ export default function DetailPage() {
       <div className="[grid-area:poster]">
         <MoviePoster
           src={getTmdbImageUrl(data?.poster_path, 'w500')}
-          // The poster column is 6.5rem on phones: w185/w342 there instead of w500
           srcSet={data?.poster_path && POSTER_SIZES.map((w) => `${getTmdbImageUrl(data.poster_path, `w${w}`)} ${w}w`).join(', ')}
           sizes="(min-width: 768px) 300px, 6.5rem"
           alt={data?.title}

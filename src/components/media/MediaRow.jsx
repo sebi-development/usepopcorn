@@ -10,7 +10,6 @@ import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
 import Chip from "@/components/ui/Chip"
 
-// overscroll-x-contain: reaching the end of a row must not turn into the browser's swipe-back
 const SCROLLER_CLASS = "flex gap-3 overflow-x-auto overscroll-x-contain -mx-4 px-4 md:mx-0 md:px-6 pb-2 scrollbar-hide"
 const CARD_SLOT_CLASS = "flex-none w-32 sm:w-40 md:w-44"
 

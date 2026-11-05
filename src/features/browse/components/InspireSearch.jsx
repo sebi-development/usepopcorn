@@ -7,8 +7,6 @@ import Chip from '@/components/ui/Chip'
 const MAX_RESULTS = 6
 const PLACEHOLDERS = { movie: 'Movie you like', tv: 'Series you like' }
 
-// The rail is only ~200px wide, so a suggestion is just what identifies a title: name and year.
-// Which type it is doesn't need saying, the search is scoped to the section it was opened from.
 function toSeed(item, type) {
   return {
     tmdb_id: item.id,
@@ -64,7 +62,6 @@ const InspireSearch = memo(function InspireSearch({ type, isOpen, onSelect }) {
   const debounced = useDebounce(trimmed, 200)
   const { data, isFetching } = useSearch(debounced, type)
 
-  // A hidden instance (display: none) can't take focus, so only the visible one reacts
   useEffect(() => {
     if (isOpen) inputRef.current?.focus({ preventScroll: true })
   }, [isOpen])
@@ -98,7 +95,6 @@ const InspireSearch = memo(function InspireSearch({ type, isOpen, onSelect }) {
           onKeyDown={handleKeyDown}
           placeholder={PLACEHOLDERS[type]}
           aria-label={`Find recommendations similar to a ${type === 'tv' ? 'series' : 'movie'}`}
-          // text-base below md: iOS zooms the page when a focused input is under 16px
           className="w-full h-11 md:h-8 pl-8 pr-2 rounded-md bg-surface-900/60 border border-white/5 text-base md:text-sm text-text placeholder:text-text-muted/70 outline-none focus:border-primary-light/50 transition-colors"
         />
       </div>
