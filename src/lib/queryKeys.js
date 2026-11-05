@@ -71,8 +71,8 @@ const queryKeys = {
   media: {
     details: (type, tmdbId, country) => ['mediaDetails', type, tmdbId, country],
     season: (tvId, seasonNumber) => ['seasonDetails', tvId, seasonNumber],
-    // A series' whole cast (a movie's comes with its details)
-    tvCast: (tvId) => ['tvCast', tvId],
+    // A series' whole cast and its crew row (a movie's come with its details)
+    tvCredits: (tvId) => ['tvCredits', tvId],
     csfdScore: (imdbId) => ['csfdScore', imdbId],
     // TMDB movie and TV ids overlap, so the type is part of the key
     mdblistScores: (type, tmdbId) => ['mdblistScores', type, tmdbId],

@@ -3,10 +3,11 @@ import { Link } from "react-router"
 import MoviePoster from "@/components/media/MoviePoster"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
-// A cast member in a MediaRow (see CastTab). w185 only: ~11 KB a photo, h632 would be ~4x that.
-function PersonCard({ id, name, character, profilePath, episodes }) {
-  return (
-    <Link to={`/person/${id}`} className="group/card block">
+// A cast or crew member in a MediaRow (see CastTab). w185 only: ~11 KB a photo, h632 would be ~4x that.
+// `linked={false}` for someone PersonPage can't show: it lists acting and directing credits only.
+function PersonCard({ id, name, character, profilePath, episodes, linked = true }) {
+  const body = (
+    <>
       <MoviePoster
         src={getTmdbImageUrl(profilePath, 'w185')}
         alt={name}
@@ -15,8 +16,11 @@ function PersonCard({ id, name, character, profilePath, episodes }) {
       <p className="mt-2 text-sm font-semibold text-text line-clamp-2">{name}</p>
       {character && <p className="text-xs text-text-muted line-clamp-1">{character}</p>}
       {episodes > 0 && <p className="text-xs text-text-muted">{episodes} eps</p>}
-    </Link>
+    </>
   )
+
+  // Without `group/card` the poster's hover zoom stays off, so an unlinked card doesn't look clickable
+  return linked ? <Link to={`/person/${id}`} className="group/card block">{body}</Link> : <div>{body}</div>
 }
 
 export default memo(PersonCard)

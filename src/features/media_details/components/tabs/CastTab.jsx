@@ -1,7 +1,8 @@
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import MediaRow from "@/components/media/MediaRow"
 import PersonCard from "@/components/media/PersonCard"
-import useTvCast from "@/features/media_details/hooks/useTvCast"
+import useTvCredits from "@/features/media_details/hooks/useTvCredits"
+import { toCrewCards } from "@/utils/tmdbPerson"
 
 const renderPerson = (person) => (
   <PersonCard
@@ -13,23 +14,45 @@ const renderPerson = (person) => (
   />
 )
 
-// Lazy-loaded tab. A movie's cast comes with its details; a series' is fetched on the tab's first open.
+// Only directors open PersonPage; heads come first, so a director's jobs start with "Director"
+const renderCrew = (person) => (
+  <PersonCard
+    id={person.id}
+    name={person.name}
+    character={person.jobs.join(', ')}
+    profilePath={person.profile_path}
+    linked={person.jobs[0] === 'Director'}
+  />
+)
+
+// Lazy-loaded tab. A movie's cast and crew come with its details; a series' are fetched on the tab's first open.
 function CastTab({ media, tmdbId, type }) {
   const isTv = type === 'tv'
-  const tvCast = useTvCast(isTv ? tmdbId : null)
-  const cast = isTv ? tvCast.data : media.cast
+  const tvCredits = useTvCredits(isTv ? tmdbId : null)
+  const { cast, crew } = (isTv ? tvCredits.data : media) ?? {}
+  const crewCards = useMemo(
+    () => crew && toCrewCards(isTv ? media.creators : media.directors, isTv ? 'Creator' : 'Director', crew),
+    [crew, isTv, media]
+  )
 
-  if (cast?.length === 0) return <p className="text-sm text-text-muted md:px-6">No cast information yet.</p>
+  if (cast?.length === 0 && !crewCards?.length) return <p className="text-sm text-text-muted md:px-6">No cast information yet.</p>
 
+  // The crew row appears with the loaded data, below the cast: nothing above it moves
   return (
-    <MediaRow
-      data={cast}
-      isLoading={tvCast.isLoading}
-      isError={!!tvCast.error}
-      delaySkeleton
-      renderItem={renderPerson}
-      rank={false}
-    />
+    <div className="flex flex-col gap-6 md:gap-10">
+      {cast?.length !== 0 && (
+        <MediaRow
+          heading="Cast"
+          data={cast}
+          isLoading={tvCredits.isLoading}
+          isError={!!tvCredits.error}
+          delaySkeleton
+          renderItem={renderPerson}
+          rank={false}
+        />
+      )}
+      {crewCards?.length > 0 && <MediaRow heading="Crew" data={crewCards} renderItem={renderCrew} rank={false} />}
+    </div>
   )
 }
 
