@@ -1,9 +1,11 @@
-import { useState, useMemo, useCallback, lazy, Suspense, memo } from "react"
+import { useMemo, lazy, Suspense, memo } from "react"
 import { HiOutlineInformationCircle, HiOutlineStar, HiOutlineUsers, HiOutlineListBullet, HiOutlineSparkles } from "react-icons/hi2"
 import { TbMasksTheater } from "react-icons/tb"
 
 import useAllSeasonDetails from "@/features/media_details/hooks/useAllSeasonDetails"
+import useTabs from "@/hooks/useTabs"
 import SlidingTabs from "@/components/ui/SlidingTabs"
+import TabPanel from "@/components/ui/TabPanel"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import FriendActivityTab from "@/features/media_details/components/tabs/FriendActivityTab"
 import ScoresTab from "@/features/media_details/components/tabs/ScoresTab"
@@ -27,41 +29,9 @@ function RowFallback() {
   )
 }
 
-function TabPanel({ id, activeTab, animate, children }) {
-  if (activeTab !== id) return null
-
-  return (
-    <div
-      role="tabpanel"
-      id={`panel-${id}`}
-      aria-labelledby={`tab-${id}`}
-      className={animate ? "animate-[overlay-fade_250ms_ease-out] motion-reduce:animate-none" : undefined}
-    >
-      {children}
-    </div>
-  )
-}
-
 // Owns the tab state, so a tab switch re-renders this area only, not DetailPage
 function DetailTabs({ media, tmdbId, type }) {
-  const [activeTab, setActiveTab] = useState("overview")
-  const [seasonsTabVisited, setSeasonsTabVisited] = useState(false)
-  const [tabSwitched, setTabSwitched] = useState(false)
-
-  // A cached title keeps this mounted, so reset during render: it never paints a tab it may not have
-  const [tabsForId, setTabsForId] = useState(tmdbId)
-  if (tabsForId !== tmdbId) {
-    setTabsForId(tmdbId)
-    setActiveTab("overview")
-    setSeasonsTabVisited(false)
-    setTabSwitched(false)
-  }
-
-  const handleTabChange = useCallback((tabId) => {
-    setActiveTab(tabId)
-    setTabSwitched(true)
-    if (tabId === 'seasons') setSeasonsTabVisited(true)
-  }, [])
+  const { activeTab, switched: tabSwitched, visited, selectTab } = useTabs(tmdbId, "overview")
 
   // Titles TMDB has no recommendations for get no Similar tab
   const hasSimilar = media.similar?.length > 0
@@ -85,7 +55,7 @@ function DetailTabs({ media, tmdbId, type }) {
   const { isLoading: isSeasonsLoading } = useAllSeasonDetails(
     tmdbId,
     media.seasons,
-    type === 'tv' && seasonsTabVisited
+    type === 'tv' && visited.has('seasons')
   )
 
   return (
@@ -94,7 +64,7 @@ function DetailTabs({ media, tmdbId, type }) {
       <SlidingTabs
         tabs={tabs}
         activeTab={activeTab}
-        onChange={handleTabChange}
+        onChange={selectTab}
         fill
       />
 
