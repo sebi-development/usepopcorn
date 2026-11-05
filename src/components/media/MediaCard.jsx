@@ -70,18 +70,26 @@ function MediaCard({
         />
       )}
 
-      {/* "Upcoming" (an unreleased title can't be rated), otherwise the row's score or the user's rating */}
-      {(isUpcoming || userRating) && (
-        <div className="absolute bottom-2 left-2 z-10 h-6 flex items-center">
-          <Chip variant="ghost" size="sm" className="shadow-lg font-semibold" label={isUpcoming ? 'Upcoming' : undefined}>
-            {!isUpcoming && <RatingBadge text={userRating} size={14} />}
+      {/* The user's rating (in "Recently rated", that row's score), top-left on the card menu's line:
+          the box matches the menu's dots (32px, 24px on md, plus its 1px border) so their centres meet */}
+      {userRating && (
+        <div className="absolute top-2 left-2 z-10 h-8.5 md:h-6.5 flex items-center">
+          <Chip variant="ghost" size="sm" className="shadow-lg font-semibold">
+            <RatingBadge text={userRating} size={14} />
           </Chip>
         </div>
       )}
 
+      {/* An unreleased title can't be rated: it says so bottom-left, on the info chevron's line */}
+      {isUpcoming && (
+        <div className="absolute bottom-2 left-2 z-10 h-6 flex items-center">
+          <Chip variant="ghost" size="sm" className="shadow-lg font-semibold" label="Upcoming" />
+        </div>
+      )}
+
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-black/80 to-transparent pointer-events-none" />
-      {/* Gives the corner to the chip above */}
-      {rank && !userRating && !isUpcoming && (
+      {/* Gives the corner to the "Upcoming" chip */}
+      {rank && !isUpcoming && (
         <span className="absolute bottom-2 left-3 text-5xl font-black leading-none select-none pointer-events-none text-white/20">
           {rank}
         </span>
