@@ -5,7 +5,7 @@ import { HiArrowTopRightOnSquare } from "react-icons/hi2"
 import useCsfdScore from "@/features/media_details/hooks/useCsfdScore"
 import useMdblistScores from "@/features/media_details/hooks/useMdblistScores"
 import BentoGrid from "@/components/ui/BentoGrid"
-import ScoreRing from "@/features/media_details/components/ScoreRing"
+import ScoreRing from "@/components/ui/ScoreRing"
 import { TomatoIcon, PopcornIcon } from "@/features/media_details/components/RtIcons"
 
 const SCORE_CARD_CLASS = "flex flex-row-reverse items-center justify-between gap-3 min-w-0 p-4 sm:flex-col sm:p-6 sm:min-h-35"

@@ -1,15 +1,18 @@
 import { memo, useMemo, useState } from "react"
+import { useSearchParams } from "react-router"
 import MediaRow from "@/components/media/MediaRow"
 import FilterBar from "@/components/filters/FilterBar"
 import Chip from "@/components/ui/Chip"
 import useUrlFilters from "@/hooks/useUrlFilters"
+import useMediaState from "@/features/interactions/hooks/useMediaState"
 import { PAGE_SIZE } from "@/utils/pagination"
+import { parseFilters } from "@/utils/filters"
 import { MOVIE_GENRES, TV_GENRES } from "@/utils/genres"
+import { isReleased } from "@/utils/tmdbItem"
+import { defaultRole, isMajorRole } from "@/features/people/hooks/usePerson"
 
 const KNOWN_FOR_LIMIT = 10
 const MAX_PER_CHARACTER = 2
-// Votes rank the title, not the part, so Known for skips cameos: top 15 billing or 5+ episodes
-const isMajorRole = (c) => (c.media_type === 'movie' ? c.order < 15 : c.episode_count >= 5)
 // "Natasha Romanoff / Black Widow" -> "natasha romanoff", "Woody (voice)" -> "woody"
 const characterOf = (c) => c.character?.split('/')[0].replace(/\(.*?\)/g, '').trim().toLowerCase()
 // Below this many votes an average says little, so Top rated puts the title last
@@ -21,37 +24,44 @@ const SORTS = {
   rated: (a, b) => (b.vote_count >= MIN_VOTES) - (a.vote_count >= MIN_VOTES) || b.vote_average - a.vote_average,
 }
 
-const ROLE = { key: 'role', label: 'Role', kind: 'select', options: [{ value: 'acting', label: 'Acting' }, { value: 'directing', label: 'Directing' }] }
+const ROLE = { key: 'role', label: 'Role', kind: 'select', options: [{ value: 'acting', label: 'Actor' }, { value: 'directing', label: 'Director' }] }
 const TYPE = { key: 'type', label: 'Type', kind: 'select', options: [{ value: 'movie', label: 'Movies' }, { value: 'tv', label: 'Series' }] }
-// Newest is the default, so it needs no option
 const SORT = { key: 'sort', label: 'Sort', kind: 'select', options: [{ value: 'popular', label: 'Popular' }, { value: 'rated', label: 'Top rated' }] }
+// For completionists: what's left to watch. Not rated lists released titles only, as an unreleased one can't be rated.
+const RATED = { key: 'rated', label: 'Your rating', kind: 'select', options: [{ value: 'no', label: 'Not rated' }, { value: 'yes', label: 'Rated' }] }
 
-const defaultRole = (person) => (person.known_for_department === 'Directing' || !person.acting.length ? 'directing' : 'acting')
+const hasBothRoles = (person) => person.acting.length > 0 && person.directing.length > 0
 
-// Filter defs (shape in src/utils/filters.js) offering only what this person's credits have
-function getDefs(person) {
-  const credits = [...person.acting, ...person.directing]
-  const years = [...new Set(credits.map((c) => c.release_date?.slice(0, 4)).filter(Boolean))]
+// Filter defs offering only what the credits in view (`role`) have. Years are the ones with a title
+// out: no empty year, and no placeholder (TMDB dates some unscheduled projects 2099).
+function getDefs(person, role) {
+  const credits = person[role]
+  const years = [...new Set(credits.filter(isReleased).map((c) => c.release_date.slice(0, 4)))]
     .sort((a, b) => b.localeCompare(a))
     .map((year) => ({ value: year, label: year }))
   const genres = [...new Set(credits.flatMap((c) => c.genre_ids ?? []))]
     .map((id) => ({ value: String(id), label: MOVIE_GENRES[id] ?? TV_GENRES[id] }))
     .sort((a, b) => a.label.localeCompare(b.label))
   return [
-    person.acting.length > 0 && person.directing.length > 0 && ROLE,
+    hasBothRoles(person) && ROLE,
     new Set(credits.map((c) => c.media_type)).size > 1 && TYPE,
     { key: 'genre', label: 'Genre', kind: 'multi', options: genres },
     years.length > 1 && { key: 'year', label: 'Year', kind: 'select', options: years },
+    RATED,
     SORT,
   ].filter(Boolean)
 }
 
-// A person's credits arrive in one request (see usePerson), so filters and pages are client-side
 function Filmography({ person }) {
-  const defs = useMemo(() => getDefs(person), [person])
+  // The role picks the list the other filters' options come from, so it is read before the defs
+  const [searchParams] = useSearchParams()
+  const role = (hasBothRoles(person) && parseFilters(searchParams, [ROLE]).role) || defaultRole(person)
+  const defs = useMemo(() => getDefs(person, role), [person, role])
   const { filters, setFilter, clearFilters } = useUrlFilters(defs)
+  const { ratings } = useMediaState()
+  // Ratings change the list only while it filters by them
+  const ratingsInUse = filters.rated ? ratings : null
 
-  // At most two per character, so one franchise can't fill the row
   const knownFor = useMemo(() => {
     const major = person.acting.filter(isMajorRole)
     const credits = defaultRole(person) === 'directing' ? person.directing : major.length ? major : person.acting
@@ -67,15 +77,15 @@ function Filmography({ person }) {
   }, [person])
 
   const shown = useMemo(() => {
-    const { role, type, genre, year, sort } = filters
-    return person[role ?? defaultRole(person)]
+    const { type, genre, year, rated, sort } = filters
+    return person[role]
       .filter((c) => (!type || c.media_type === type)
         && (!genre || genre.some((g) => c.genre_ids?.includes(Number(g))))
-        && (!year || c.release_date?.startsWith(year)))
+        && (!year || c.release_date?.startsWith(year))
+        && (!rated || (rated === 'yes' ? ratingsInUse.has(c.id) : isReleased(c) && !ratingsInUse.has(c.id))))
       .sort(SORTS[sort ?? 'newest'])
-  }, [person, filters])
+  }, [person, role, filters, ratingsInUse])
 
-  // New filters mean a new result set: back to its first page
   const [page, setPage] = useState(1)
   const [prevFilters, setPrevFilters] = useState(filters)
   if (filters !== prevFilters) {
@@ -96,7 +106,6 @@ function Filmography({ person }) {
         {shown.length === 0 ? (
           <p className="text-sm text-text-muted md:px-6">No titles match these filters.</p>
         ) : (
-          // MediaRow held in its grid mode: the same cards and numbered pages as Browse's "View all"
           <MediaRow
             data={pageItems}
             isExpanded

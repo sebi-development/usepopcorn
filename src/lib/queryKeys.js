@@ -62,6 +62,10 @@ const queryKeys = {
 
   // ── People (TMDB) ────────────────────────────────────────────
   person: (personId) => ['person', personId],
+  // Wikidata, fetched when the person page's Awards tab opens
+  personAwards: (personId) => ['personAwards', personId],
+  // Ids of their short films, fetched when the Collection tab opens; role is 'acting' or 'directing'
+  personShorts: (personId, role) => ['personShorts', personId, role],
 
   // ── Titles (TMDB) and their scores (MDBList, ČSFD) ───────────
   media: {

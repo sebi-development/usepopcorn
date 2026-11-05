@@ -14,3 +14,9 @@ export function toMediaItem(item) {
     adult: item.adult,
   }
 }
+
+// Today as YYYY-MM-DD (UTC), compared as a string with TMDB's release dates
+export const today = () => new Date().toISOString().slice(0, 10)
+
+// Out by today; a title with no date yet isn't
+export const isReleased = (item) => !!item.release_date && item.release_date <= today()
