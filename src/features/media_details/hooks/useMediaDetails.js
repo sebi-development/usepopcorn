@@ -4,6 +4,7 @@ import { extractRegionalData } from "@/utils/extractRegionalData";
 import queryKeys from "@/lib/queryKeys";
 import { CACHE } from "@/lib/queryClient";
 import { toMediaItem } from "@/utils/tmdbItem";
+import { toCreators, toDirectors, toMovieCast, toMovieCrew } from "@/utils/tmdbPerson";
 
 const SIMILAR_LIMIT = 12;
 
@@ -34,7 +35,9 @@ function toMediaDetails(data, type, userCountry) {
       budget: data.budget,
       revenue: data.revenue,
       regionalReleaseDate,
-      director: data.credits?.crew?.find(c => c.job === 'Director')?.name ?? null,
+      directors: toDirectors(data.credits?.crew),
+      crew: toMovieCrew(data.credits?.crew),
+      cast: toMovieCast(data.credits?.cast),
     };
   }
 
@@ -48,6 +51,7 @@ function toMediaDetails(data, type, userCountry) {
     seasons: data.seasons?.map(s => ({ id: s.id, season_number: s.season_number, name: s.name, episode_count: s.episode_count, air_date: s.air_date })) ?? [],
     episode_run_time: data.episode_run_time,
     network: data.networks?.[0]?.name ?? null,
+    creators: toCreators(data.created_by),
   };
 }
 

@@ -25,8 +25,7 @@ function ProfilePage() {
 
   const { profileData, recentRatings, ratingsCount, isLoadingProfile, isLoadingRatings } = useProfileData(targetUserId)
   // Watchlist and favorites are private (RLS returns them to their owner only), so on someone
-  // else's profile the two requests would always come back empty
-  const { data: watchlist, isLoading: isWatchlistLoading } = useInteractions("watchlist", targetUserId, { enabled: isOwnProfile })
+  // else's profile neither is requested. Watchlist fetches its own list.
   const { data: favorites, isLoading: isFavoritesLoading } = useInteractions("favorite", targetUserId, { enabled: isOwnProfile })
   const { followingSet, isLoading: isLoadingFollowing } = useFollowingIds({ enabled: !isOwnProfile })
   const isFollowing = followingSet.has(targetUserId)
@@ -62,7 +61,7 @@ function ProfilePage() {
         />
       )}
 
-      <Watchlist watchlist={watchlist} isLoading={isWatchlistLoading} showInfo={false} />
+      {isOwnProfile && <Watchlist />}
       <Favorites favorites={favorites} isLoading={isFavoritesLoading} showInfo={false} />
       <RecentlyRated
         userId={targetUserId}

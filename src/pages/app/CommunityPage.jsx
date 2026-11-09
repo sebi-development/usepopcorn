@@ -26,8 +26,6 @@ export default function CommunityPage() {
   }, [])
   const { profiles } = useFollowingProfiles({ enabled: friendsRequested || !!filters.friend })
 
-  // Runtime options: followed users for Friend (none followed → empty, so the pill is disabled
-  // without a request), and the genre list of the chosen type
   const filterDefs = useMemo(() => {
     const friendOptions = followingIds?.length === 0
       ? []
@@ -51,8 +49,6 @@ export default function CommunityPage() {
 
   return (
     <main className="max-w-5xl w-full mx-auto sm:px-6 lg:px-8 py-6 md:py-10 pb-12">
-      {/* DOM order is header, widgets, feed so mobile shows the widgets before the feed.
-          On lg the widgets move to a right column spanning both rows. */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr] gap-x-8 gap-y-8 md:gap-y-10 items-start">
 
         <header className="flex flex-col gap-1 lg:col-start-1 lg:row-start-1">
@@ -77,12 +73,9 @@ export default function CommunityPage() {
           <SuggestedUsersWidget />
         </aside>
 
-        {/* overflow-clip, not hidden: hidden makes the section a scroll container, and sticky
-            children (the new-ratings pill, the timeline dots) would stick to it, not the viewport */}
+        {/* overflow-clip, not hidden, so sticky children stick to the viewport */}
         <section ref={sectionRef} className="relative flex flex-col gap-6 overflow-clip min-w-0 scroll-mt-28 lg:col-start-1 lg:row-start-2">
 
-          {/* Always rendered with no height (-mb-6 cancels the gap), so the pill appearing never
-              pushes the feed down */}
           <div aria-live="polite" className="sticky top-28 z-20 h-0 -mb-6 flex justify-center">
             {newCount > 0 && (
               <button
@@ -96,7 +89,6 @@ export default function CommunityPage() {
             )}
           </div>
 
-          {/* Background Line */}
           <div className="absolute top-10 bottom-10 left-4.75 w-0.5 bg-surface-100 rounded-full" />
 
           {isLoading && (

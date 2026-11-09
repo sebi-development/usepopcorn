@@ -15,7 +15,6 @@ export default function useUrlFilters(defs) {
   const filtersKey = JSON.stringify(parseFilters(searchParams, defs))
   const filters = useMemo(() => JSON.parse(filtersKey), [filtersKey])
 
-  // `value` undefined / null clears the key
   const setFilter = useCallback((key, value) => {
     setSearchParams(
       (prev) => writeFilters(prev, defs, { ...parseFilters(prev, defs), [key]: value ?? undefined }),

@@ -9,6 +9,7 @@ function Favorites({ favorites, isLoading, showInfo = false }) {
         limit={15}
         isLoading={isLoading}
         heading="Favorites"
+        count={favorites?.length}
         data={favorites}
         rank={false}
         showFavorite={false}

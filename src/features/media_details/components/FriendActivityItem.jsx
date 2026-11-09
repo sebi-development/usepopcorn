@@ -29,7 +29,7 @@ const FriendActivityItem = memo(function FriendActivityItem({ friend }) {
         </div>
       </Link>
 
-      <div className="w-[1px] h-10 bg-white/5 shrink-0 mx-3.5 rounded-full" />
+      <div className="w-px h-10 bg-white/5 shrink-0 mx-3.5 rounded-full" />
 
       {/* A floor, so a long username shrinks the link instead of pushing the score off-screen */}
       <div className="flex-1 flex flex-col gap-2 min-w-24">

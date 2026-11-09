@@ -56,13 +56,23 @@ const queryKeys = {
   // ── Search ───────────────────────────────────────────────────
   search: {
     media: (type, query, year) => ['search', type, query, year ?? null],
+    people: (query) => ['search', 'person', query],
     users: (query) => ['users', 'search', query],
   },
+
+  // ── People (TMDB) ────────────────────────────────────────────
+  person: (personId) => ['person', personId],
+  // Wikidata, fetched when the person page's Awards tab opens
+  personAwards: (personId) => ['personAwards', personId],
+  // Ids of their short films, fetched when the Collection tab opens; role is 'acting' or 'directing'
+  personShorts: (personId, role) => ['personShorts', personId, role],
 
   // ── Titles (TMDB) and their scores (MDBList, ČSFD) ───────────
   media: {
     details: (type, tmdbId, country) => ['mediaDetails', type, tmdbId, country],
     season: (tvId, seasonNumber) => ['seasonDetails', tvId, seasonNumber],
+    // A series' whole cast and its crew row (a movie's come with its details)
+    tvCredits: (tvId) => ['tvCredits', tvId],
     csfdScore: (imdbId) => ['csfdScore', imdbId],
     // TMDB movie and TV ids overlap, so the type is part of the key
     mdblistScores: (type, tmdbId) => ['mdblistScores', type, tmdbId],

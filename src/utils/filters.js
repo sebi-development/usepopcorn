@@ -53,8 +53,6 @@ export function writeFilters(searchParams, defs, filters) {
 
 export const isEmptyFilters = (filters) => !filters || Object.keys(filters).length === 0
 
-// The cache tier for a list under `filters`: unfiltered it keeps `tier`, filtered it also takes
-// CACHE.filtered, so a combination nobody shows any more leaves memory soon
 export const filteredCache = (tier, filters) => (isEmptyFilters(filters) ? tier : { ...tier, ...CACHE.filtered })
 
 const optionLabel = (def, value) => def.options?.find((option) => option.value === value)?.label

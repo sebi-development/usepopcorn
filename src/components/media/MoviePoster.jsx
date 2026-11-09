@@ -1,9 +1,11 @@
 import { memo, useState } from "react"
 import { FiImage } from "react-icons/fi"
 
-// `priority` is for a poster that is its page's LCP: fetched at once, ahead of other images
-function MoviePoster({ src, srcSet, sizes, alt, className = '', priority = false }) {
-  const [status, setStatus] = useState('loading')
+// `priority` is for a poster that is its page's LCP: fetched at once, ahead of other images.
+// `fallbackLabel` (e.g. the title) replaces "No image".
+function MoviePoster({ src, srcSet, sizes, alt, className = '', priority = false, fallbackLabel }) {
+  // An <img> without a src fires neither load nor error, so a missing image starts as the fallback
+  const [status, setStatus] = useState(src ? 'loading' : 'error')
 
   return (
     <div className={`relative bg-surface-100/50 overflow-hidden ${className}`}>
@@ -15,7 +17,9 @@ function MoviePoster({ src, srcSet, sizes, alt, className = '', priority = false
       {status === 'error' && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-surface-100">
           <FiImage className="text-text-muted opacity-40" />
-          <span className="text-text-muted opacity-40 leading-tight text-center">No image</span>
+          <span className={`text-text-muted leading-tight text-center ${fallbackLabel ? 'px-3 text-sm font-medium line-clamp-3' : 'opacity-40'}`}>
+            {fallbackLabel ?? 'No image'}
+          </span>
         </div>
       )}
 

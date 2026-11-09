@@ -9,6 +9,7 @@ const TONES = {
   success: 'text-success',
   warning: 'text-warning',
   danger: 'text-danger',
+  primary: 'text-primary-lighter',
 }
 
 // In pathLength units (the circle is 100 long). Round caps overhang their dash by ARC_CAP, so

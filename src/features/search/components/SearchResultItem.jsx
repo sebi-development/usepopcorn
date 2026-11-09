@@ -5,14 +5,14 @@ import Chip from "@/components/ui/Chip"
 import { getGenreNames } from "@/utils/genres"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
-const SearchResultItem = memo(function SearchResultItem({ id, title, poster, releaseYear, media_type, genreIds, onClose, animationDelay = 0 }) {
+const SearchResultItem = memo(function SearchResultItem({ id, title, poster, subtitle, media_type, genreIds, tags, onClose, animationDelay = 0 }) {
   const navigate = useNavigate()
-  // Memoize genre lookup to avoid recomputing on every render
-  const genres = useMemo(() => getGenreNames(genreIds, media_type), [genreIds, media_type])
+  // Memoize genre lookup to avoid recomputing on every render; `tags` replaces it (a person's titles)
+  const genres = useMemo(() => tags ?? getGenreNames(genreIds, media_type), [tags, genreIds, media_type])
 
   function handleClick() {
     onClose()
-    navigate(`/browse/${id}`, { state: { type: media_type } })
+    navigate(media_type === 'person' ? `/person/${id}` : `/browse/${id}`, { state: { type: media_type } })
   }
 
   return (
@@ -28,7 +28,7 @@ const SearchResultItem = memo(function SearchResultItem({ id, title, poster, rel
       />
       <div className="flex flex-col gap-1.5 min-w-0">
         <h4 className="text-text font-semibold text-lg truncate">{title}</h4>
-        <span className="text-text-muted text-sm">{releaseYear}</span>
+        <span className="text-text-muted text-sm">{subtitle}</span>
         {genres.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1">
             {genres.map(name => <Chip key={name} label={name} size="sm" />)}

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useLayoutEffect, useCallback } from "react"
+import { memo, useRef, useEffect, useLayoutEffect, useCallback } from "react"
 
 // ease-out-quint: leaves quickly, settles softly
 const EASING = "cubic-bezier(0.22, 1, 0.36, 1)"
@@ -6,7 +6,7 @@ const EASING = "cubic-bezier(0.22, 1, 0.36, 1)"
 // Static, so React never overwrites the values measure() sets
 const PILL_STYLE = { width: 0, opacity: 0, transitionTimingFunction: EASING }
 
-export default function SlidingTabs({
+function SlidingTabs({
   tabs,
   activeTab,
   onChange,
@@ -105,3 +105,6 @@ export default function SlidingTabs({
     </div>
   )
 }
+
+// Memoized: a parent re-render for another reason (e.g. a keystroke next to the tabs) skips it
+export default memo(SlidingTabs)

@@ -10,7 +10,6 @@ import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
 import Chip from "@/components/ui/Chip"
 
-// overscroll-x-contain: reaching the end of a row must not turn into the browser's swipe-back
 const SCROLLER_CLASS = "flex gap-3 overflow-x-auto overscroll-x-contain -mx-4 px-4 md:mx-0 md:px-6 pb-2 scrollbar-hide"
 const CARD_SLOT_CLASS = "flex-none w-32 sm:w-40 md:w-44"
 
@@ -88,7 +87,18 @@ function MediaRow({
   // grid/expand additions — all optional, row-only usage is unaffected
   expandable = false, isExpanded = false, isPending = false, onToggleExpand,
   gridItems, gridError, page = 1, totalPages = 1, onPageChange,
+  // Renders an item that isn't a title (e.g. a cast member) in place of MediaCard
+  renderItem,
+  // Shown as a count chip after the heading
+  count,
 }) {
+  const title = count == null ? heading : <>{heading}<Chip variant="count" size="sm" label={count} className="ml-2 align-middle" /></>
+  // Movie and TV ids overlap, so a list mixing both (a person's credits) keys by type too
+  const keyOf = useCallback(
+    (item) => `${item.media_type || item.type || mediaType}:${item.tmdb_id || item.id}`,
+    [mediaType]
+  )
+
   // Row data — an array of normalised items (see src/utils/pagination.js)
   // TMDB's popularity-sorted lists shift between page requests, so a title can come back on two
   // pages. Rendering it twice would also give two cards the same key.
@@ -97,13 +107,13 @@ function MediaRow({
     const seen = new Set()
     return data
       .filter((item) => {
-        const id = item.tmdb_id || item.id
-        if (seen.has(id)) return false
-        seen.add(id)
+        const key = keyOf(item)
+        if (seen.has(key)) return false
+        seen.add(key)
         return true
       })
       .slice(0, limit)
-  }, [data, limit])
+  }, [data, limit, keyOf])
 
   // One subscription per row; cards receive primitives so only the affected card re-renders
   const { favorites, watchlist, ratings } = useMediaState()
@@ -128,6 +138,7 @@ function MediaRow({
   const isLoadingFirstPage = isExpanded && !gridItems
 
   function renderCard(item, rankValue) {
+    if (renderItem) return renderItem(item)
     const cardId = item.tmdb_id || item.id
     return (
       <MediaCard
@@ -156,7 +167,7 @@ function MediaRow({
     <div className={delaySkeleton ? "delayed-reveal" : undefined}>
       {(heading || expandable) && (
         <div className="flex items-center justify-between gap-2 mb-4 md:px-6">
-          <h2 className="text-text font-semibold text-xl">{heading}</h2>
+          <h2 className="text-text font-semibold text-xl">{title}</h2>
           {expandable && <span aria-hidden="true" className="invisible shrink-0 whitespace-nowrap text-sm px-2 md:px-3 py-3 md:py-1.5">View all</span>}
         </div>
       )}
@@ -174,7 +185,7 @@ function MediaRow({
 
   if (isError) return (
     <div>
-      {heading && <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{heading}</h2>}
+      {heading && <h2 className="text-text font-semibold text-xl mb-4 md:px-6">{title}</h2>}
       <AlertBanner variant="danger" message="Couldn't load this. Please try again." />
     </div>
   )
@@ -185,7 +196,7 @@ function MediaRow({
       {/* Optional: a host that titles the row itself (e.g. a detail page tab) passes no heading */}
       {(heading || expandable) && (
         <div className="flex items-center justify-between gap-2 mb-4 md:px-6">
-          <h2 className="text-text font-semibold text-xl">{heading}</h2>
+          <h2 className="text-text font-semibold text-xl">{title}</h2>
           {expandable && (
             <ExpandToggle
               isExpanded={isExpanded}
@@ -206,7 +217,7 @@ function MediaRow({
                 className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 transition-opacity duration-200 ${isPending ? "opacity-60" : "opacity-100"}`}
               >
                 {gridItems.map((item) => (
-                  <div key={item.tmdb_id || item.id}>
+                  <div key={keyOf(item)}>
                     {/* rank numbers don't mean much past page 1 of an
                         arbitrary genre browse, so grid mode never shows them */}
                     {renderCard(item, undefined)}
@@ -237,7 +248,7 @@ function MediaRow({
           {/* Scrollable row */}
           <div ref={scrollRef} className={`${SCROLLER_CLASS} scroll-smooth`}>
             {media.map((item, index) => (
-              <div key={item.tmdb_id || item.id} className={CARD_SLOT_CLASS}>
+              <div key={keyOf(item)} className={CARD_SLOT_CLASS}>
                 {renderCard(item, rank ? index + 1 : undefined)}
               </div>
             ))}

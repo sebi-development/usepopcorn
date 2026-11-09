@@ -1,43 +1,36 @@
+import { memo, useEffect, useRef } from 'react'
 import { FiSearch } from 'react-icons/fi'
 import { LuLoaderCircle } from 'react-icons/lu'
-import SlidingTabs from '@/components/ui/SlidingTabs'
 
-// Static — kept at module scope so SlidingTabs never sees a new reference on re-renders.
-const SEARCH_TABS = [
-  { id: 'movie', label: 'Movies' },
-  { id: 'tv', label: 'Series' },
-]
+const DEBOUNCE_MS = 200
 
-function SearchInput({ value, onChange, filter, onFilterChange, isLoading }) {
+// Uncontrolled: typing renders nothing; the panel gets the text after a pause (at once when cleared)
+function SearchInput({ onQueryChange, isLoading }) {
+  const timer = useRef()
+  useEffect(() => () => clearTimeout(timer.current), [])
+
+  function handleChange(e) {
+    const { value } = e.target
+    clearTimeout(timer.current)
+    if (!value) return onQueryChange('')
+    timer.current = setTimeout(() => onQueryChange(value), DEBOUNCE_MS)
+  }
+
   return (
-    <div className="flex items-center gap-3 px-4 py-2 border-b border-surface-100">
+    <>
       {isLoading
         ? <LuLoaderCircle className="text-text-muted shrink-0 animate-spin" size={20} />
         : <FiSearch className="text-text-muted shrink-0" size={20} />
       }
       <input
         type="text"
-        value={value}
-        onChange={onChange}
+        onChange={handleChange}
         autoFocus
-        placeholder="Search movies & series..."
+        placeholder="Search movies, series & people..."
         className="w-full h-11 bg-transparent text-text text-lg placeholder:text-text-muted outline-none"
       />
-      <SlidingTabs
-        tabs={SEARCH_TABS}
-        activeTab={filter}
-        onChange={onFilterChange}
-        containerPadding="p-0.5"
-        containerGap="gap-0"
-        containerRadius="rounded-lg"
-        pillRadius="rounded-md"
-        tabRadius="rounded-md"
-        className="bg-surface-100 backdrop-blur-none border-none"
-        pillClassName="bg-surface-500 backdrop-blur-none border-none"
-        tabClassName="px-3 py-0.5 text-xs"
-      />
-    </div>
+    </>
   )
 }
 
-export default SearchInput
+export default memo(SearchInput)

@@ -6,16 +6,25 @@ const SIZES = {
   xs: { button: 'px-2 py-0.5', content: 'gap-1 text-[10px]', icon: 'w-2.5 h-2.5' },
 }
 
+const VARIANT_STYLES = {
+  glow: '',
+  ghost: 'bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-sm text-text',
+  outline: 'border border-surface-300 text-text-muted hover:text-text hover:border-text-muted/40',
+  count: 'bg-surface-300 text-text-muted tabular-nums',
+}
+const OUTLINE_ACTIVE = 'border border-primary-light/70 bg-primary/10 text-primary-light'
+
 const Chip = memo(function Chip({ 
   label, 
   icon: Icon, 
   children,
-  variant = 'glow', // 'glow' | 'ghost' | 'outline'
+  variant = 'glow', // 'glow' | 'ghost' | 'outline' | 'count'
   // outline only: selected look (primary outline + tint)
   active = false,
   colorRgb = "121, 80, 242",
   size = 'md',
   className = "",
+  // without it a span, not a disabled button, which would swallow its card's clicks
   onClick,
   // aria-* and other button attributes
   ...rest
@@ -32,20 +41,15 @@ const Chip = memo(function Chip({
 
   const { button, content, icon } = SIZES[size]
   
-  const variantStyles = variant === 'ghost'
-    ? 'bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-sm text-text'
-    : variant === 'outline'
-      ? active
-        ? 'border border-primary-light/70 bg-primary/10 text-primary-light'
-        : 'border border-surface-300 text-text-muted hover:text-text hover:border-text-muted/40'
-      : '';
+  const variantStyles = variant === 'outline' && active ? OUTLINE_ACTIVE : VARIANT_STYLES[variant]
   const focusStyles = variant === 'outline' ? 'focus-visible:ring-2 focus-visible:ring-primary-light/60' : ''
 
+  const Tag = onClick ? 'button' : 'span'
+
   return (
-    <button
-      type="button"
+    <Tag
+      type={onClick ? 'button' : undefined}
       onClick={onClick}
-      disabled={!onClick}
       className={`relative inline-flex items-center justify-center ${button} rounded-full outline-none transition-transform ${onClick ? 'cursor-pointer active:scale-95' : 'cursor-default'} ${variantStyles} ${focusStyles} ${className}`}
       style={dynamicStyles}
       {...rest}
@@ -87,7 +91,7 @@ const Chip = memo(function Chip({
         {Icon && <Icon className={icon} />}
         {children ? children : <span className="mt-[1px]">{label}</span>}
       </div>
-    </button>
+    </Tag>
   );
 });
 
