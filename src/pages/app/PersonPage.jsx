@@ -2,7 +2,7 @@ import { useLayoutEffect } from "react"
 import { useParams } from "react-router"
 import { HiArrowTopRightOnSquare } from "react-icons/hi2"
 
-import usePerson from "@/features/people/hooks/usePerson"
+import usePerson, { knownForDepartment } from "@/features/people/hooks/usePerson"
 import Filmography from "@/features/people/components/Filmography"
 import PersonTabs from "@/features/people/components/PersonTabs"
 import MoviePoster from "@/components/media/MoviePoster"
@@ -82,7 +82,7 @@ export default function PersonPage() {
           <h1 className="text-xl md:text-4xl font-bold text-text leading-tight tracking-tight break-words">{person.name}</h1>
 
           <div className="flex flex-wrap items-center gap-2">
-            {person.known_for_department && <Chip size="sm" colorRgb={META_CHIP_COLOR} label={departmentLabel(person.known_for_department)} />}
+            {person.known_for_department && <Chip size="sm" colorRgb={META_CHIP_COLOR} label={departmentLabel(knownForDepartment(person))} />}
             {life && <Chip size="sm" colorRgb={META_CHIP_COLOR} label={life} />}
             {person.place_of_birth && <Chip size="sm" colorRgb={META_CHIP_COLOR} label={person.place_of_birth} />}
             {person.imdb_id && (

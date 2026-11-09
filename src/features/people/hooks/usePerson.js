@@ -82,6 +82,17 @@ export const defaultRole = (person) => (!person.acting.length
   ? 'directing'
   : 'acting')
 
+export const ROLE_LABELS = { acting: 'Actor', directing: 'Director' }
+const ROLE_DEPARTMENTS = { acting: 'Acting', directing: 'Directing' }
+
+// TMDB's department, but between Acting and Directing the one the page leads with (TMDB files Zach
+// Cregger under Acting); Writing, Production etc. stay as TMDB has them
+export function knownForDepartment(person) {
+  const role = defaultRole(person)
+  const department = person.known_for_department
+  return person[role].length && Object.values(ROLE_DEPARTMENTS).includes(department) ? ROLE_DEPARTMENTS[role] : department
+}
+
 // A title the collection counts: a feature film with a credited part, or a series they're a regular in
 // or created. Shorts (`shortIds`, see usePersonShorts) and video compilations stay in the filmography
 // only. A director's documentaries are their own work, so they count.
