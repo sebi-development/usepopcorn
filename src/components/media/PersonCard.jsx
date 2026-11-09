@@ -4,7 +4,8 @@ import MoviePoster from "@/components/media/MoviePoster"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
 // A cast or crew member in a MediaRow (see CastTab). w185 only: ~11 KB a photo, h632 would be ~4x that.
-// `linked={false}` for someone PersonPage can't show: it lists acting and directing credits only.
+// `linked={false}` for someone PersonPage can't show (it lists acting and directing credits only):
+// same card and hover, no link, normal cursor.
 function PersonCard({ id, name, character, profilePath, episodes, linked = true }) {
   const body = (
     <>
@@ -19,8 +20,9 @@ function PersonCard({ id, name, character, profilePath, episodes, linked = true 
     </>
   )
 
-  // Without `group/card` the poster's hover zoom stays off, so an unlinked card doesn't look clickable
-  return linked ? <Link to={`/person/${id}`} className="group/card block">{body}</Link> : <div>{body}</div>
+  return linked
+    ? <Link to={`/person/${id}`} className="group/card block cursor-pointer">{body}</Link>
+    : <div className="group/card block cursor-default">{body}</div>
 }
 
 export default memo(PersonCard)

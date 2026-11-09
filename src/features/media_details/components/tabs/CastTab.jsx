@@ -14,14 +14,15 @@ const renderPerson = (person) => (
   />
 )
 
-// Only directors open PersonPage; heads come first, so a director's jobs start with "Director"
+// Only heads (directors, creators) open PersonPage; they come first, so their jobs start with the head job
+const LINKED_JOBS = ['Director', 'Creator']
 const renderCrew = (person) => (
   <PersonCard
     id={person.id}
     name={person.name}
     character={person.jobs.join(', ')}
     profilePath={person.profile_path}
-    linked={person.jobs[0] === 'Director'}
+    linked={LINKED_JOBS.includes(person.jobs[0])}
   />
 )
 
