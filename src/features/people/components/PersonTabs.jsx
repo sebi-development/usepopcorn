@@ -19,7 +19,7 @@ const PANEL_CLASS = "relative md:flex-1 md:min-h-60 bg-surface-500 border border
 // is laid out to fit: it stays in flow, and where it can't fit (narrow md widths) the card grows.
 const FIT_TAB = "collection"
 const SCROLL_CLASS = "p-4 md:p-6 md:pb-10 md:absolute md:inset-0 md:overflow-y-auto [scrollbar-width:thin]"
-const FIT_CLASS = "p-4 md:p-6"
+const FIT_CLASS = "p-4 md:px-6 md:py-5"
 const FADE_CLASS = "hidden md:block absolute inset-x-0 bottom-0 h-10 rounded-b-card bg-linear-to-t from-surface-500 pointer-events-none"
 const TAP_AREA = "relative before:absolute before:-inset-3"
 const BIO_CLAMP_CHARS = 320

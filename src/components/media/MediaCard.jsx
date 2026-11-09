@@ -8,6 +8,7 @@ import { getGenreNames } from "@/utils/genres"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
 import RatingBadge from "@/components/media/RatingBadge"
+import StatChip from "@/components/media/StatChip"
 import Chip from "@/components/ui/Chip"
 
 function MediaCard({
@@ -74,9 +75,7 @@ function MediaCard({
           the box matches the menu's dots (32px, 24px on md, plus its 1px border) so their centres meet */}
       {userRating && (
         <div className="absolute top-2 left-2 z-10 h-8.5 md:h-6.5 flex items-center">
-          <Chip variant="ghost" size="sm" className="shadow-lg font-semibold">
-            <RatingBadge text={userRating} size={14} />
-          </Chip>
+          <StatChip text={userRating} />
         </div>
       )}
 
