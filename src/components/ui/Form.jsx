@@ -46,6 +46,47 @@ const Input = React.forwardRef(function Input({ name, type = 'text', label, erro
   )
 })
 
+// Native checkbox (keeps keyboard, form state and react-hook-form's register as they are); the box
+// and the tick are styled off `peer-checked`. One animated property per change: the tick's scale.
+const Checkbox = React.forwardRef(function Checkbox({ label, ...props }, ref) {
+  return (
+    <label className="flex items-center gap-2 w-fit py-1.5 cursor-pointer select-none text-xs text-text-muted hover:text-text">
+      <span className="relative flex size-4 shrink-0">
+        <input
+          type="checkbox"
+          ref={ref}
+          {...props}
+          className="
+            peer size-4 appearance-none cursor-pointer rounded-[5px]
+            bg-surface-100 border border-white/5
+            transition-colors duration-150 motion-reduce:transition-none
+            checked:bg-primary-light checked:border-primary-light
+            active:scale-90 motion-reduce:active:scale-100
+            outline-none focus-visible:ring-2 focus-visible:ring-primary-lighter/60
+          "
+        />
+        <svg
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.25"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="
+            absolute inset-0 size-4 p-[3px] pointer-events-none text-white
+            scale-0 peer-checked:scale-100
+            transition-transform duration-200 ease-out-quint motion-reduce:transition-none
+          "
+        >
+          <path d="M3.5 8.5 6.5 11.5 12.5 4.5" />
+        </svg>
+      </span>
+      {label}
+    </label>
+  )
+})
+
 function FormButton({ children, ...props }) {
   return (
     <Button type='submit' className="w-full mt-2 h-[52px] md:h-auto py-2.5 text-sm font-semibold" {...props}>
@@ -55,6 +96,7 @@ function FormButton({ children, ...props }) {
 }
 
 Form.Input = Input
+Form.Checkbox = Checkbox
 Form.Button = FormButton
 
 export default Form

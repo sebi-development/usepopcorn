@@ -1,12 +1,13 @@
 import { useNavigate } from "react-router"
-import supabase from "@/lib/supabase"
+import supabase, { setRemember } from "@/lib/supabase"
 import toast from "react-hot-toast"
 import { getCountry } from "@/utils/getCountry"
 
 export function useAuth() {
   const navigate = useNavigate()
 
-  async function login({ email, password }) {
+  async function login({ email, password, remember }) {
+    setRemember(remember)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw new Error(error.message)
     navigate('/browse', { replace: true })
@@ -14,6 +15,7 @@ export function useAuth() {
 
   async function register({ email, password, username }) {
     const country = await getCountry()
+    setRemember(true) // no checkbox on register: a new account stays signed in
 
     const { error } = await supabase.auth.signUp({
       email, password,

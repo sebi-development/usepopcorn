@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router"
+import { createBrowserRouter, RouterProvider, redirect } from "react-router"
 import { Toaster } from 'react-hot-toast'
 import { LuLoaderCircle } from "react-icons/lu"
 
@@ -63,6 +63,14 @@ async function browseLoader({ request }) {
   return null
 }
 
+// A signed-in visitor skips the landing page and the auth forms (not /reset-password: the
+// recovery link signs the user in, and the reset form has to open for them)
+async function redirectIfSignedIn() {
+  const { data } = await supabase.auth.getSession()
+  if (data.session) throw redirect('/browse')
+  return null
+}
+
 // Shown in place of the layout while a cold load fetches its lazy page module
 const publicFallback = (
   <div className="flex items-center justify-center min-h-dvh">
@@ -76,9 +84,9 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage />,
     hydrateFallbackElement: publicFallback,
     children: [
-      { path: '/', element: <LandingPage /> },
-      { path: '/login', lazy: LoginPage },
-      { path: '/register', lazy: RegisterPage },
+      { path: '/', element: <LandingPage />, loader: redirectIfSignedIn },
+      { path: '/login', lazy: LoginPage, loader: redirectIfSignedIn },
+      { path: '/register', lazy: RegisterPage, loader: redirectIfSignedIn },
       { path: '/forgot-password', lazy: ForgotPasswordPage },
       { path: '/reset-password', lazy: ResetPasswordPage },
       { path: '*', element: <NotFoundPage /> }
