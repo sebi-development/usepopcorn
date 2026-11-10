@@ -7,15 +7,19 @@ import { CACHE } from "@/lib/queryClient"
 const SELF = /^(self|himself|herself)\b/i
 const ARCHIVE = /\(archiv(e|al) footage\)/i
 const UNCREDITED = /\(uncredited\)/i
-// Documentary, news, reality, talk
 const NOT_ACTING_GENRES = [99, 10763, 10764, 10767]
+const MUSIC = 10402
+const SHOW_GENRES = [99, MUSIC]
 export const REGULAR_EPISODES = 5
+
+// Their name or an alias as the whole character ("Kanye West" for Ye), not a name that merely starts it ("Yeoman")
+const playsSelf = (character, names) => names.some((n) => character.startsWith(n) && !/\p{L}/u.test(character[n.length] ?? ''))
 
 // Not acting work, so not in the filmography: playing themselves (as "Self" or by name), reused footage,
 // documentaries (TMDB often leaves their character blank) and TV appearances
-const isRole = (c, name) => !SELF.test(c.character)
+const isRole = (c, names) => !SELF.test(c.character)
   && !ARCHIVE.test(c.character)
-  && !c.character?.toLowerCase().startsWith(name)
+  && !playsSelf(c.character?.toLowerCase() ?? '', names)
   && !c.genre_ids?.some((g) => NOT_ACTING_GENRES.includes(g))
 
 const toCredit = (c) => ({
@@ -51,6 +55,15 @@ function toPerson(data) {
   const { cast = [], crew = [] } = data.combined_credits ?? {}
   // A series' creator is its head, as a director is a movie's (Creator credits are series only)
   const created = new Set(crew.filter((c) => c.job === 'Creator').map((c) => c.id))
+  const names = [data.name, ...(data.also_known_as ?? [])].map((n) => n.toLowerCase())
+  const roles = cast.filter((c) => isRole(c, names))
+  // A musician is Self in more music titles than they have roles; their documentaries and concert films
+  // (titled with their name, e.g. "jeen-yuhs: A Kanye Trilogy") are their screen work, so they count as roles
+  const musician = uniqueTitles(cast.filter((c) => SELF.test(c.character) && c.genre_ids?.includes(MUSIC))).length > uniqueTitles(roles).length
+  const nameWords = new Set(names.flatMap((n) => n.match(/\p{L}{4,}/gu) ?? []))
+  const selfTitled = musician ? cast.filter((c) => c.vote_count >= MAX_MIN_VOTES
+    && c.genre_ids?.some((g) => SHOW_GENRES.includes(g))
+    && (c.title || c.name).toLowerCase().match(/\p{L}+/gu)?.some((w) => nameWords.has(w))) : []
   return {
     id: data.id,
     name: data.name,
@@ -61,14 +74,14 @@ function toPerson(data) {
     place_of_birth: data.place_of_birth,
     known_for_department: data.known_for_department,
     imdb_id: data.imdb_id,
-    acting: withoutMinor(uniqueTitles(cast.filter((c) => isRole(c, data.name.toLowerCase())).map(toCredit))),
+    acting: withoutMinor(uniqueTitles([...roles.map(toCredit), ...selfTitled.map((c) => ({ ...toCredit(c), selfTitled: true }))])),
     directing: withoutMinor(uniqueTitles(crew
       .filter((c) => c.job === 'Director' || c.job === 'Creator')
       .map((c) => ({ ...toCredit(c), created: c.media_type === 'tv' && created.has(c.id) })))),
   }
 }
 
-export const isMajorRole = (c) => (c.media_type === 'movie' ? c.order < 15 : c.episode_count >= REGULAR_EPISODES)
+export const isMajorRole = (c) => c.selfTitled || (c.media_type === 'movie' ? c.order < 15 : c.episode_count >= REGULAR_EPISODES)
 
 const BEHIND_CAMERA = ['Directing', 'Writing']
 const votes = (credits) => credits.reduce((sum, c) => sum + (c.vote_count ?? 0), 0)
@@ -94,10 +107,11 @@ export function knownForDepartment(person) {
 }
 
 // A title the collection counts: a feature film with a credited part, or a series they're a regular in
-// or created. Shorts (`shortIds`, see usePersonShorts) and video compilations stay in the filmography
-// only. A director's documentaries are their own work, so they count.
+// or created, or a musician's self-titled film. Shorts (`shortIds`, see usePersonShorts) and video
+// compilations stay in the filmography only. A director's documentaries are their own work, so they count.
 export function isOwnTitle(c, role, shortIds) {
   const acting = role === 'acting'
+  if (c.selfTitled) return true
   if (c.media_type === 'tv') return (!acting && c.created) || c.episode_count >= REGULAR_EPISODES
   return !shortIds.has(c.id) && (acting ? !UNCREDITED.test(c.character) : !c.video)
 }
