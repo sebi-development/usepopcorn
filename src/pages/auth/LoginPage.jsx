@@ -8,7 +8,9 @@ import { getCountry } from '@/utils/getCountry'
 
 export default function LoginPage() {
   const { login } = useAuth()
-  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm()
+  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm({
+    defaultValues: { remember: true },
+  })
 
   async function onSubmit(data) {
     try {
@@ -38,6 +40,7 @@ export default function LoginPage() {
           label="Password"
           error={errors.password}
         />
+        <Form.Checkbox {...register('remember')} label="Remember me" />
         <Form.Button isLoading={isSubmitting}>Sign in</Form.Button>
       </Form>
 
