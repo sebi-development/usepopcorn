@@ -67,7 +67,9 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
   })
   const feedRows = Array.from({ length: 21 }, (_, i) => {
     const [id, title, poster, type] = titles[i % titles.length]
-    return { id: `f-${i}`, tmdb_id: id, title, poster_path: poster, type, score: 5 + (i % 6), created_at: iso(i), user_id: FRIEND, username: 'a_friend_with_a_long_username', avatar_url: null }
+    // Row 0 is an edit: activity today, first rated 30 days ago, score changed from 4
+    const edited = i === 0
+    return { id: `f-${i}`, tmdb_id: id, title, poster_path: poster, type, score: 5 + (i % 6), previous_score: edited ? 4 : null, created_at: iso(edited ? 30 : i), updated_at: iso(i), user_id: FRIEND, username: 'a_friend_with_a_long_username', avatar_url: null }
   })
   const weeks = Array.from({ length: 12 }, (_, i) => ({ weekStart: iso((11 - i) * 7).slice(0, 10), count: (i * 3) % 5 }))
 

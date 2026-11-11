@@ -5,6 +5,8 @@ import { timeAgo } from "@/utils/timeAgo"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
 const ActivityCard = memo(function ActivityCard({ item }) {
+  // updated_at moves only when the score changes, so a later one means they changed their mind
+  const edited = item.updated_at !== item.created_at
   return (
     <article className="p-5 bg-surface-500 border border-surface-100 rounded-card flex flex-col gap-4">
       
@@ -34,12 +36,12 @@ const ActivityCard = memo(function ActivityCard({ item }) {
             {item.username}
           </Link>
           <span className="text-text-muted text-xs block mt-0.5">
-            rated a <span className="capitalize">{item.type}</span>
+            {edited ? 'changed their rating' : <>rated a <span className="capitalize">{item.type}</span></>}
           </span>
         </div>
 
         <span className="text-xs text-text-muted font-medium whitespace-nowrap">
-          {timeAgo(item.created_at)}
+          {timeAgo(item.updated_at)}
         </span>
       </header>
 
@@ -75,6 +77,9 @@ const ActivityCard = memo(function ActivityCard({ item }) {
           <div className="flex items-center gap-1.5 bg-black/40 w-fit px-2.5 py-1 rounded-md border border-white/5">
             <HiStar className="text-amber-400 shrink-0" size={15} />
             <span className="font-bold text-text text-xs sm:text-sm tracking-wide">
+              {edited && item.previous_score != null && (
+                <span className="text-text-muted font-normal">{item.previous_score} → </span>
+              )}
               {item.score} <span className="text-text-muted text-xs font-normal">/ 10</span>
             </span>
           </div>

@@ -12,6 +12,8 @@ import { CACHE } from "@/lib/queryClient"
 // realtime invalidations refetch at most a few small pages.
 const FEED_PAGE_SIZE = 10
 const FEED_MAX_PAGES = 3
+// The feed is ordered by latest activity: updated_at moves when a score changes
+const activityCursor = (row) => ({ at: row.updated_at, id: row.id })
 
 // `filters` are the feed filters from useUrlFilters (FEED_FILTERS); each combination is its own
 // list under queryKeys.feed.all, which useFeedRealtime and useFollow refresh, and is dropped from
@@ -24,7 +26,8 @@ export default function useFeed(filters) {
     queryKey: queryKeys.feed.list(userId, filters),
     fetchPage: fromCursorRpc(
       ({ limit, cursor }) => getFeed(userId, { limit, cursor, filterParams: toFeedParams(filters) }),
-      FEED_PAGE_SIZE
+      FEED_PAGE_SIZE,
+      activityCursor
     ),
     initialPageParam: null,
     autoPages: 1,
