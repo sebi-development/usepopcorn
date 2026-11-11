@@ -42,7 +42,7 @@ export async function getFeed(currentUserId, { limit, cursor, filterParams }) {
   const { data, error } = await supabase.rpc('get_user_feed', {
     current_user_id: currentUserId,
     p_limit: limit,
-    p_cursor_created_at: cursor?.created_at ?? null,
+    p_cursor_at: cursor?.at ?? null,
     p_cursor_id: cursor?.id ?? null,
     ...filterParams,
   })

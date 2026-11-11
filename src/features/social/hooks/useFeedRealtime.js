@@ -17,19 +17,18 @@ const MAX_FILTER_GROUPS = 10
 // get_user_feed clamps p_limit to this
 const MAX_FEED_LIMIT = 50
 
-// Live ratings from everyone the user follows, without moving the feed under the reader:
-// - a new rating is only counted (`newCount`); `showNew()` loads it on request. The event has no
-//   author name or avatar (get_user_feed joins those), so cards are never drawn from it.
-// - a re-score patches that card's score in place (same height, same position), in every
-//   filtered variant of the feed.
+// Live activity from everyone the user follows, without moving the feed under the reader: a new
+// rating or a changed score (the feed orders by updated_at) is only counted (`newCount`);
+// `showNew()` loads it on request. The event has no author name or avatar (get_user_feed joins
+// those), so cards are never drawn from it.
 // Deletes are not subscribed: realtime can't filter them by user_id.
-// `feedItems` are useFeed's items, used to drop pending ratings the feed already shows.
+// `feedItems` are useFeed's items, used to drop pending activity the feed already shows.
 export default function useFeedRealtime(feedItems, filters) {
   const queryClient = useQueryClient()
   const currentUser = useCurrentUser()
   const userId = currentUser?.id
   const { followingIds } = useFollowingIds()
-  // Ids of ratings inserted since the feed loaded
+  // Activity since the feed loaded: { id, at } with the rating's updated_at in ms
   const [pending, setPending] = useState([])
 
   const followingKey = useMemo(() => {
@@ -44,41 +43,32 @@ export default function useFeedRealtime(feedItems, filters) {
     const groupCount = Math.ceil(ids.length / MAX_IDS_PER_FILTER)
     if (groupCount > MAX_FILTER_GROUPS) return
 
-    const feedKey = queryKeys.feed.all(userId)
-
-    const onInsert = ({ new: row }) => {
-      setPending((prev) => (prev.includes(row.id) ? prev : [...prev, row.id]))
-    }
-
-    // Only the page holding the rating gets a new object, so only that card re-renders
-    const onUpdate = ({ new: row }) => {
-      queryClient.setQueriesData({ queryKey: feedKey }, (data) => data && {
-        ...data,
-        pages: data.pages.map((page) => page.items.some((item) => item.id === row.id)
-          ? { ...page, items: page.items.map((item) => (item.id === row.id ? { ...item, score: row.score } : item)) }
-          : page),
-      })
+    // An insert has updated_at = created_at; an update moves it only when the score changed
+    const onChange = ({ new: row }) => {
+      setPending((prev) => [...prev.filter((p) => p.id !== row.id), { id: row.id, at: Date.parse(row.updated_at) }])
     }
 
     const channel = supabase.channel(`feed-realtime-${userId}`)
     for (let i = 0; i < groupCount; i++) {
       const filter = `user_id=in.(${ids.slice(i * MAX_IDS_PER_FILTER, (i + 1) * MAX_IDS_PER_FILTER).join(',')})`
       channel
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ratings', filter }, onInsert)
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ratings', filter }, onUpdate)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ratings', filter }, onChange)
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ratings', filter }, onChange)
     }
     channel.subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [followingKey, userId, queryClient])
+  }, [followingKey, userId])
 
-  // Derived, so any other refetch of the feed (a follow, a remount) clears what it now shows
+  // Derived, so any refetch of the feed (a follow, a remount, showNew) clears what it now shows.
+  // Activity no newer than the feed's newest is shown already, or a stale event (a same-score
+  // re-save leaves updated_at as it was).
   const unseen = useMemo(() => {
-    if (!pending.length) return pending
-    const shown = new Set(feedItems?.map((item) => item.id))
-    return pending.filter((id) => !shown.has(id))
+    if (!pending.length) return []
+    const newest = Math.max(...(feedItems ?? []).map((item) => Date.parse(item.updated_at)))
+    return pending.filter((p) => p.at > newest).map((p) => p.id)
   }, [pending, feedItems])
 
   // Unfiltered, every unseen rating belongs in the feed (the channel already listens to followed
