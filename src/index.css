@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-/* Inter (rsms/inter, SIL OFL 1.1), variable, cut down to 23 KB with fontTools: weights 400-900
-   (all the app uses), Latin-1 plus typographic punctuation, `kern` and `tnum` only. index.html
-   preloads it so it is ready before React renders; `optional` means a slow load keeps the system
-   font for the page instead of swapping later and shifting the text. Characters outside the
-   subset fall back to the system font. */
 @font-face {
   font-family: "Inter";
   font-style: normal;
@@ -18,7 +13,6 @@
 @theme {
   --color-primary: #6741d9;
   --color-primary-light: #7950f2;
-  /* Small violet text on the dark surfaces: 5.9:1 on surface-900, where primary-light is 4.0:1 */
   --color-primary-lighter: #9775fa;
   --color-text: #dee2e6;
   --color-text-muted: #adb5bd;
@@ -31,7 +25,6 @@
   --color-warning: #fab005;
   --color-success: #40c057;
   --radius-card: 0.9rem;
-  /* SlidingTabs' curve (leaves quickly, settles softly) as the `ease-out-quint` utility */
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -44,18 +37,23 @@ body {
   padding: 0;
 }
 
-/* The app's horizontal boundary. Both elements: WebKit ignores a clip body passes to the viewport.
-   `clip` (unlike `hidden`) doesn't create a scroll container, so sticky still works. */
+/* Horizontal boundary; on both elements because WebKit ignores a clip body passes to the viewport */
 html,
 body {
   overflow-x: clip;
 }
 
-/* Touch: no grey flash on tap, and no double-tap zoom on controls (it also delays the tap).
-   In the base layer so the touch-* utilities still win where a component sets one. */
+/* Base layer so the touch-* utilities still win where a component sets one */
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    color-scheme: dark;
+    scrollbar-color: var(--color-surface-300) transparent;
+  }
+
+  /* scrollbar-width isn't inherited; .scrollbar-hide (unlayered) still wins */
+  * {
+    scrollbar-width: thin;
   }
 
   a,
@@ -97,8 +95,7 @@ body {
     grid-template-columns: repeat(3, 1fr);
   }
 
-  /* Four critic scores: 2 x 2 instead of three and one alone on the last row. Defined before the
-     media queries below, so they still collapse it to one column on phones. */
+  /* Four critic scores in 2 x 2; before the media queries so phones still collapse it */
   .bento-grid--scores {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -135,8 +132,7 @@ body {
     border-color: rgba(121, 80, 242, 0.65);
   }
 
-  /* Score tiles: a faint wash over the page, hover only lightens and lifts. After .bento-card:hover
-     so these win at equal specificity. */
+  /* After .bento-card:hover so these win at equal specificity */
   .bento-grid--scores .bento-card {
     background-color: rgb(255 255 255 / 0.025);
     border-color: rgb(255 255 255 / 0.05);
@@ -195,8 +191,7 @@ body {
     }
   }
 
-  /* Stat tiles are a number and a label: on phones they sit two per row as compact tiles instead
-     of a full-width stack. `dense` lets the last single tile fill the gap beside the third. */
+  /* Stat tiles: two per row on phones; `dense` lets the last tile fill the gap */
   @media (max-width: 720px) {
     .bento-grid--stats {
       grid-template-columns: repeat(2, 1fr);
@@ -314,7 +309,7 @@ body {
 
   @media (min-width: 768px) {
     .media-detail-grid {
-      grid-template-columns: min(300px, 30%) minmax(0, 1fr) min(240px, 20%);
+      grid-template-columns: min(240px, 24%) minmax(0, 1fr) min(240px, 20%);
       grid-template-areas:
         "poster info rating"
         "about about about";
@@ -382,8 +377,7 @@ body {
   }
 }
 
-/* Loading skeletons stay hidden for 150ms so a fast response never flashes one, then appear
-   at once (0s duration: an instant reveal, not a fade). Pure CSS: no timer, no extra render */
+/* Skeletons stay hidden for 150ms so a fast response never flashes one (pure CSS, no timer) */
 @keyframes reveal {
   from {
     visibility: hidden;
@@ -400,11 +394,8 @@ body {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   }
 
-  /* A mesh blob's glow is a radial gradient, not filter: blur(). On desktop Safari four large
-     blurred layers were redrawn on every navigation (~1.3 s to the next frame, ~90 ms without);
-     the gradient's falloff matches the old blur. Padding grows the box by about 2x the old blur
-     radius each side (the negative margin keeps it in place) so the edge fades out as far.
-     Set per blob: --blob-rgb (color channels), --blob-alpha, --blob-spread. */
+  /* Radial gradient instead of filter: blur(), which desktop Safari redrew on every navigation (~1.3 s).
+     Per blob: --blob-rgb, --blob-alpha, --blob-spread (padding of about 2x the old blur radius). */
   .mesh-blob {
     box-sizing: content-box;
     padding: var(--blob-spread);

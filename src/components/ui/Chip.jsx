@@ -11,6 +11,7 @@ const VARIANT_STYLES = {
   ghost: 'bg-surface-900/80 backdrop-blur-sm border border-surface-100 shadow-sm text-text',
   outline: 'border border-surface-300 text-text-muted hover:text-text hover:border-text-muted/40',
   count: 'bg-surface-300 text-text-muted tabular-nums',
+  tint: 'border border-primary-light/40 bg-primary/10 text-primary-lighter',
 }
 const OUTLINE_ACTIVE = 'border border-primary-light/70 bg-primary/10 text-primary-light'
 
@@ -18,9 +19,10 @@ const Chip = memo(function Chip({
   label, 
   icon: Icon, 
   children,
-  variant = 'glow', // 'glow' | 'ghost' | 'outline' | 'count'
+  variant = 'tint', // 'tint' | 'glow' | 'ghost' | 'outline' | 'count'
   // outline only: selected look (primary outline + tint)
   active = false,
+  // glow only: the chip's colour, as "r, g, b"
   colorRgb = "121, 80, 242",
   size = 'md',
   className = "",

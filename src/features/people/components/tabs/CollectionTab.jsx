@@ -2,11 +2,11 @@ import { memo, useMemo } from "react"
 import { Link } from "react-router"
 import { HiCheck, HiOutlineLockClosed } from "react-icons/hi2"
 import { BsBookmarkFill } from "react-icons/bs"
-import { RiInformationLine } from "react-icons/ri"
 
 import useMediaState from "@/features/interactions/hooks/useMediaState"
 import ScoreRing from "@/components/ui/ScoreRing"
 import Chip from "@/components/ui/Chip"
+import InfoNote from "@/components/ui/InfoNote"
 import StatChip from "@/components/media/StatChip"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import usePersonShorts from "@/features/people/hooks/usePersonShorts"
@@ -15,8 +15,6 @@ import { defaultRole, isOwnTitle, REGULAR_EPISODES } from "@/features/people/hoo
 
 // Collector levels by the share of the person's released titles the user has rated
 const LEVELS = [['First look', 0], ['Fan', 0.25], ['Devotee', 0.5], ['Expert', 0.75], ['Completionist', 1]]
-// primary-lighter: the readable violet at chip size
-const REACHED_RGB = "151, 117, 250"
 const STAT_LABEL = "text-xs text-text-muted"
 const STAT = "flex flex-col items-start gap-1.5 md:gap-1 min-w-0"
 // The title link is only one chip tall: an invisible ::before pads its tap area vertically
@@ -75,7 +73,7 @@ function CollectionTab({ person }) {
   const { total, rated, average, top, watchlisted, milestones } = useCollection(person, role, shorts.data)
 
   if (shorts.isLoading) return <CollectionSkeleton />
-  if (!total) return <p className="text-sm text-text-muted">None of their titles is out yet, so there is nothing to collect.</p>
+  if (!total) return <InfoNote>None of their titles is out yet, so there is nothing to collect.</InfoNote>
 
   const level = milestones.findLast((m) => rated >= m.at)
   const next = milestones.find((m) => rated < m.at)
@@ -101,7 +99,7 @@ function CollectionTab({ person }) {
         </div>
         <div className="flex flex-wrap gap-2 col-span-2 md:col-span-1">
           {milestones.map((m) => (rated >= m.at
-            ? <Chip key={m.label} size="sm" colorRgb={REACHED_RGB} icon={HiCheck} label={m.label} />
+            ? <Chip key={m.label} size="sm" icon={HiCheck} label={m.label} />
             : <Chip key={m.label} variant="outline" size="sm" icon={HiOutlineLockClosed} label={`${m.label} · ${m.at}`} />
           ))}
         </div>
@@ -128,10 +126,7 @@ function CollectionTab({ person }) {
         </div>
       </div>
 
-      <div className="mt-2 flex items-start gap-2 rounded-lg border border-surface-100/60 px-2.5 py-1 text-[11px] leading-snug text-text-muted">
-        <RiInformationLine size={13} className="mt-px shrink-0" aria-hidden="true" />
-        <p>{RULES[role]}</p>
-      </div>
+      <InfoNote className="mt-2">{RULES[role]}</InfoNote>
     </div>
   )
 }

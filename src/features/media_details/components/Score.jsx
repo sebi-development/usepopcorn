@@ -1,20 +1,7 @@
 import { memo } from 'react'
 import { HiOutlineLockClosed } from 'react-icons/hi2'
 
-import tier1 from '@/assets/rating-icons/rating-icon-tier1.avif?no-inline'
-import tier2 from '@/assets/rating-icons/rating-icon-tier2.avif?no-inline'
-import tier3 from '@/assets/rating-icons/rating-icon-tier3.avif?no-inline'
-import tier4 from '@/assets/rating-icons/rating-icon-tier4.avif?no-inline'
-import tier5 from '@/assets/rating-icons/rating-icon-tier5.avif?no-inline'
-
-const SCORE_TIERS = [
-  { min: 85, classes: "border-primary-light/50 text-primary-light shadow-inner shadow-primary-light/15", icon: { src: tier1, w: 96, h: 124, label: "Must watch" } },
-  { min: 75, classes: "border-white/20 text-white/90", icon: { src: tier2, w: 96, h: 110, label: "Good" } },
-  { min: 55, classes: "border-white/20 text-white/90", icon: { src: tier3, w: 96, h: 111, label: "Mixed" } },
-  { min: 30, classes: "border-danger/40 text-danger", icon: { src: tier4, w: 96, h: 110, label: "Weak" } },
-  { min: 0, classes: "border-danger/40 text-danger", icon: { src: tier5, w: 96, h: 95, label: "Terrible" } },
-  { min: -Infinity, classes: "border-white/5 text-white/40", icon: null }
-];
+import getScoreTier from '@/utils/scoreTier'
 
 // `locked`: not released yet. Same size as the empty circle, so nothing shifts.
 function Score({ value, locked = false }) {
@@ -22,7 +9,7 @@ function Score({ value, locked = false }) {
     <div
       role="img"
       aria-label="Rating locked until release"
-      className="flex items-center justify-center w-28 h-28 rounded-full border-2 border-dashed border-white/10 bg-surface-900/30 text-white/30"
+      className="flex items-center justify-center w-36 h-36 rounded-full border-2 border-dashed border-white/10 bg-surface-900/30 text-white/30"
     >
       <HiOutlineLockClosed size={32} />
     </div>
@@ -31,24 +18,18 @@ function Score({ value, locked = false }) {
   const hasValue = value !== undefined && value !== null;
   const displayValue = hasValue ? value : "--";
 
-  const activeTier = SCORE_TIERS.find(tier =>
-    hasValue ? value >= tier.min : tier.min === -Infinity
-  );
-
+  const activeTier = getScoreTier(value)
   const { icon } = activeTier
 
-  // The circle grows when it carries an icon so the popcorn sits above the number
-  const sizeClasses = icon
-    ? "w-36 h-36 text-3xl border-2"
-    : "w-28 h-28 text-4xl border-2";
+  // One size with or without the icon, so the average arriving shifts nothing below it
+  const textSize = icon ? "text-3xl" : "text-4xl"
 
   return (
     <div
       className={`
-        flex flex-col items-center justify-center gap-0.5 font-black tracking-tighter
-        rounded-full bg-surface-900/50 shadow-inner
-        transition-all duration-300 backdrop-blur-md
-        ${sizeClasses}
+        flex flex-col items-center justify-center gap-0.5 w-36 h-36 border-2 font-black tracking-tighter
+        rounded-full bg-surface-900/50 shadow-inner backdrop-blur-md
+        ${textSize}
         ${activeTier.classes}
       `}
     >

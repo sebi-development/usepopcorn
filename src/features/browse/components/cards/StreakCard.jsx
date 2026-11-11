@@ -54,7 +54,7 @@ export default function StreakCard({ data, extendedStreak, isSaturated, isLoadin
         ) : null
       }
     >
-      <Chip size="sm" colorRgb="247, 103, 7" className="self-start max-w-full">
+      <Chip variant="glow" size="sm" colorRgb="247, 103, 7" className="self-start max-w-full">
         <span className="truncate">Weekly Streak</span>
       </Chip>
 

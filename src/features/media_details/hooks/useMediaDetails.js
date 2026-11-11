@@ -18,6 +18,7 @@ function toMediaDetails(data, type, userCountry) {
     overview: data.overview,
     genres: data.genres,
     poster_path: data.poster_path,
+    backdrop_path: data.backdrop_path,
     explicit: data.adult,
     release_status: data.status,
     origin_country: data.origin_country,

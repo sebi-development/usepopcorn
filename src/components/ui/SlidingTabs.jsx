@@ -19,12 +19,9 @@ function SlidingTabs({
   containerRadius = "rounded-full",
   pillRadius = "rounded-full",
   tabRadius = "rounded-full",
-  // fill: below sm the tabs share the full width (icon over a short label) instead of
-  // sizing to their content. Tabs may carry a `shortLabel` shown only below sm.
   fill = false,
 }) {
-  // The pill is styled on its DOM node, not via state, so a switch renders once. Only a tab change
-  // animates; first paint and resizes snap.
+
   const pillRef = useRef(null)
   const tabRefs = useRef([])
   const containerRef = useRef(null)

@@ -2,10 +2,6 @@ import { MOVIE_GENRES, TV_GENRES } from "@/utils/genres"
 import { getCountryOptions } from "@/utils/getCountries"
 import { HOME_ITEM, INSPIRE_ITEM } from "@/features/browse/constants/categories"
 
-// Filter defs for Browse (shape in src/utils/filters.js). Every filter maps to a TMDB /discover
-// param (see toDiscoverParams in useCategoryMedia.js). Genre, country and language are multi
-// (/discover ORs pipe-separated values); a year is single, /discover takes only one.
-
 const toGenreOptions = (map) => Object.entries(map)
   .map(([value, label]) => ({ value, label }))
   .sort((a, b) => a.label.localeCompare(b.label))

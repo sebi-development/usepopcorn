@@ -15,7 +15,6 @@ import { today } from "@/utils/tmdbItem"
 
 const HERO_CLASS = "grid grid-cols-[6.5rem_minmax(0,1fr)] md:grid-cols-[min(300px,30%)_minmax(0,1fr)] md:grid-rows-[auto_1fr] gap-4 md:gap-x-8 md:gap-y-5 md:px-6"
 const PHOTO_CLASS = "w-full aspect-2/3 rounded-card self-start md:row-span-2"
-const META_CHIP_COLOR = "161, 161, 170"
 const TAP_AREA = "relative before:absolute before:-inset-3"
 
 // No date-fns on this page: importing it split date-fns into chunks the entry and Browse then load
@@ -82,9 +81,9 @@ export default function PersonPage() {
           <h1 className="text-xl md:text-4xl font-bold text-text leading-tight tracking-tight break-words">{person.name}</h1>
 
           <div className="flex flex-wrap items-center gap-2">
-            {person.known_for_department && <Chip size="sm" colorRgb={META_CHIP_COLOR} label={departmentLabel(knownForDepartment(person))} />}
-            {life && <Chip size="sm" colorRgb={META_CHIP_COLOR} label={life} />}
-            {person.place_of_birth && <Chip size="sm" colorRgb={META_CHIP_COLOR} label={person.place_of_birth} />}
+            {person.known_for_department && <Chip size="sm" label={departmentLabel(knownForDepartment(person))} />}
+            {life && <Chip size="sm" label={life} />}
+            {person.place_of_birth && <Chip size="sm" label={person.place_of_birth} />}
             {person.imdb_id && (
               <a href={`https://www.imdb.com/name/${person.imdb_id}/`} target="_blank" rel="noopener noreferrer" className={`${TAP_AREA} rounded-full`}>
                 {/* A static Chip is cursor-default; inside a link it should point */}

@@ -11,23 +11,20 @@ export default function MediaDetailSkeleton() {
       </div>
 
       {/* Info */}
-      <div className="[grid-area:info] flex flex-col gap-6">
-        <SkeletonBox className="h-10 w-3/4 rounded-lg" />
-        <div className="flex items-center gap-4">
-          <SkeletonBox className="h-4 w-16 rounded-full" />
-          <SkeletonBox className="h-4 w-20 rounded-full" />
-        </div>
-        <div className="flex gap-2">
-          <SkeletonBox className="h-7 w-16 rounded-full" />
-          <SkeletonBox className="h-7 w-20 rounded-full" />
-          <SkeletonBox className="h-7 w-14 rounded-full" />
+      <div className="[grid-area:info] md:self-end flex flex-col gap-3 md:gap-4">
+        <SkeletonBox className="h-9 md:h-14 w-3/4 rounded-lg" />
+        <SkeletonBox className="h-4 w-48 max-w-full rounded-full" />
+        <div className="flex gap-1.5">
+          <SkeletonBox className="h-6 w-14 rounded-full" />
+          <SkeletonBox className="h-6 w-16 rounded-full" />
+          <SkeletonBox className="h-6 w-12 rounded-full" />
         </div>
       </div>
 
       {/* Action Section */}
-      <div className="[grid-area:rating] flex flex-col items-center justify-center py-6 gap-8 w-full">
+      <div className="[grid-area:rating] md:self-end flex flex-col items-center justify-center py-6 gap-8 w-full">
         {/* Score circle */}
-        <SkeletonBox className="w-28 h-28 rounded-full shrink-0" />
+        <SkeletonBox className="w-36 h-36 rounded-full shrink-0" />
 
         {/* Rating button */}
         <SkeletonBox className="h-10 w-36 rounded-xl" />

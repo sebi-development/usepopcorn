@@ -31,7 +31,7 @@ const SearchResultItem = memo(function SearchResultItem({ id, title, poster, sub
         <span className="text-text-muted text-sm">{subtitle}</span>
         {genres.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1">
-            {genres.map(name => <Chip key={name} label={name} size="sm" />)}
+            {genres.map(name => <Chip key={name} variant="tint" label={name} size="sm" />)}
           </div>
         )}
       </div>

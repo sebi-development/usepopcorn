@@ -13,7 +13,7 @@ import OverviewTab from "@/features/media_details/components/tabs/OverviewTab"
 import SeasonsTab from "@/features/media_details/components/tabs/SeasonsTab"
 
 const PANEL_CARD_CLASS = "bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
-const UNBOXED_TABS = new Set(["cast", "similar", "scores"])
+const UNBOXED_TABS = new Set(["cast", "similar", "scores", "social"])
 
 // Their chunks load on the first click of the tab
 const CastTab = lazy(() => import("@/features/media_details/components/tabs/CastTab"))
@@ -59,7 +59,7 @@ function DetailTabs({ media, tmdbId, type }) {
   )
 
   return (
-    <div className="[grid-area:about] flex flex-col gap-5 mb-8 md:mb-14">
+    <div className="[grid-area:about] flex flex-col gap-4 md:gap-5 mt-12 md:mt-20 mb-8 md:mb-14">
 
       <SlidingTabs
         tabs={tabs}
