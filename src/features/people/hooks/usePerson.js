@@ -12,11 +12,10 @@ const MUSIC = 10402
 const SHOW_GENRES = [99, MUSIC]
 export const REGULAR_EPISODES = 5
 
-// Their name or an alias as the whole character ("Kanye West" for Ye), not a name that merely starts it ("Yeoman")
+// The whole character is their name or an alias ("Kanye West" for Ye), not a word it starts ("Yeoman")
 const playsSelf = (character, names) => names.some((n) => character.startsWith(n) && !/\p{L}/u.test(character[n.length] ?? ''))
 
-// Not acting work, so not in the filmography: playing themselves (as "Self" or by name), reused footage,
-// documentaries (TMDB often leaves their character blank) and TV appearances
+// Not acting: playing themselves, reused footage, documentaries and TV appearances
 const isRole = (c, names) => !SELF.test(c.character)
   && !ARCHIVE.test(c.character)
   && !playsSelf(c.character?.toLowerCase() ?? '', names)
@@ -35,13 +34,12 @@ const uniqueTitles = (credits) => [
   ...new Map(credits.toSorted((a, b) => (a.episode_count ?? 0) - (b.episode_count ?? 0)).map((c) => [`${c.media_type}:${c.id}`, c])).values(),
 ]
 
-// Votes only tell a minor title apart once the person has a widely seen one (TMDB knows little of local cinema)
+// Votes only tell minor titles apart once the person has a widely seen one (TMDB has few for local cinema)
 const WELL_KNOWN_VOTES = 1000
 const MAX_MIN_VOTES = 50
 const RECENT_DAYS = 183
 
-// Drops titles TMDB's audience barely knows (amateur shorts, bit parts): under 1% of the votes of the
-// person's most-voted title, at most 50. Upcoming and recent titles and regular series roles stay.
+// Drops titles under 1% of the votes of their most-voted one (at most 50); upcoming, recent and regular series roles stay
 function withoutMinor(credits) {
   const top = Math.max(0, ...credits.map((c) => c.vote_count ?? 0))
   if (top < WELL_KNOWN_VOTES) return credits
@@ -50,15 +48,13 @@ function withoutMinor(credits) {
   return credits.filter((c) => c.vote_count >= min || c.episode_count >= REGULAR_EPISODES || !c.release_date || c.release_date > since)
 }
 
-// Only acting, directing and created series reach the cache; other writing, production and crew are dropped
+// Only acting, directing and created series reach the cache
 function toPerson(data) {
   const { cast = [], crew = [] } = data.combined_credits ?? {}
-  // A series' creator is its head, as a director is a movie's (Creator credits are series only)
   const created = new Set(crew.filter((c) => c.job === 'Creator').map((c) => c.id))
   const names = [data.name, ...(data.also_known_as ?? [])].map((n) => n.toLowerCase())
   const roles = cast.filter((c) => isRole(c, names))
-  // A musician is Self in more music titles than they have roles; their documentaries and concert films
-  // (titled with their name, e.g. "jeen-yuhs: A Kanye Trilogy") are their screen work, so they count as roles
+  // A musician (Self in more music titles than roles) keeps the films named after them, e.g. "jeen-yuhs: A Kanye Trilogy"
   const musician = uniqueTitles(cast.filter((c) => SELF.test(c.character) && c.genre_ids?.includes(MUSIC))).length > uniqueTitles(roles).length
   const nameWords = new Set(names.flatMap((n) => n.match(/\p{L}{4,}/gu) ?? []))
   const selfTitled = musician ? cast.filter((c) => c.vote_count >= MAX_MIN_VOTES
@@ -86,9 +82,8 @@ export const isMajorRole = (c) => c.selfTitled || (c.media_type === 'movie' ? c.
 const BEHIND_CAMERA = ['Directing', 'Writing']
 const votes = (credits) => credits.reduce((sum, c) => sum + (c.vote_count ?? 0), 0)
 
-// Directing (and created series) for a director or writer-creator, for someone whose directed titles drew
-// more votes than their main roles (TMDB lists Zach Cregger and Greta Gerwig under Acting), or for someone
-// with no acting credits; acting otherwise
+// Directing for someone known for it, whose directed titles outdraw their main roles (TMDB files Greta Gerwig
+// under Acting), or with no acting credits; acting otherwise
 export const defaultRole = (person) => (!person.acting.length
   || (BEHIND_CAMERA.includes(person.known_for_department) && person.directing.length)
   || votes(person.directing) > votes(person.acting.filter(isMajorRole))
@@ -98,17 +93,15 @@ export const defaultRole = (person) => (!person.acting.length
 export const ROLE_LABELS = { acting: 'Actor', directing: 'Director' }
 const ROLE_DEPARTMENTS = { acting: 'Acting', directing: 'Directing' }
 
-// TMDB's department, but between Acting and Directing the one the page leads with (TMDB files Zach
-// Cregger under Acting); Writing, Production etc. stay as TMDB has them
+// TMDB's department, except Acting/Directing follow the role the page leads with
 export function knownForDepartment(person) {
   const role = defaultRole(person)
   const department = person.known_for_department
   return person[role].length && Object.values(ROLE_DEPARTMENTS).includes(department) ? ROLE_DEPARTMENTS[role] : department
 }
 
-// A title the collection counts: a feature film with a credited part, or a series they're a regular in
-// or created, or a musician's self-titled film. Shorts (`shortIds`, see usePersonShorts) and video
-// compilations stay in the filmography only. A director's documentaries are their own work, so they count.
+// What Your collection counts: credited feature films, regular or created series, a musician's own films.
+// Shorts (`shortIds`) and video compilations stay in the filmography only.
 export function isOwnTitle(c, role, shortIds) {
   const acting = role === 'acting'
   if (c.selfTitled) return true

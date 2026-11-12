@@ -20,7 +20,7 @@ export default memo(function ActionSection({ media, userScore, averageScore, isW
   const ratingPanelRef = useOutsideClick(() => setIsRatingMode(false))
 
   return (
-    <div className="[grid-area:rating] flex flex-col items-center justify-center py-2 md:py-6 gap-4 md:gap-8 w-full">
+    <div className="[grid-area:rating] md:self-end flex flex-col items-center justify-center py-2 md:py-6 gap-4 md:gap-8 w-full">
 
       <Score value={averageScore != null ? Math.round(averageScore * 10) : null} locked={isLocked} />
 

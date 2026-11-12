@@ -51,7 +51,7 @@ export default memo(function BestRatedCard({ pick, kind, period = 'month', isLoa
       // The icon only decorates the gradient placeholder; a poster stands alone
       floatingIcon={pick?.poster_path ? undefined : icon}
     >
-      <Chip size="sm" colorRgb={colorRgb} className="self-start max-w-full">
+      <Chip variant="glow" size="sm" colorRgb={colorRgb} className="self-start max-w-full">
         <span className="truncate">{noun} of the {periodLabel}</span>
       </Chip>
       {pick ? (

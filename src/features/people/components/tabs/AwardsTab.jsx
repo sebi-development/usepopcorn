@@ -6,6 +6,7 @@ import { RiTrophyLine } from "react-icons/ri"
 import usePersonAwards from "@/features/people/hooks/usePersonAwards"
 import Chip from "@/components/ui/Chip"
 import AlertBanner from "@/components/ui/AlertBanner"
+import InfoNote from "@/components/ui/InfoNote"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 
 const SECTION_HEADER_CLASS = "text-xs font-semibold text-text-muted uppercase tracking-widest"
@@ -38,7 +39,7 @@ function AwardsTab({ personId }) {
   if (error) return <AlertBanner message="Couldn't load awards. Please try again." variant="danger" />
 
   const { tally, wins, honours } = data
-  if (!tally.length && !honours.length) return <p className="text-sm text-text-muted">No major awards on record.</p>
+  if (!tally.length && !honours.length) return <InfoNote>No major awards on record.</InfoNote>
 
   return (
     <div className="flex flex-col gap-5">
@@ -83,7 +84,7 @@ function AwardsTab({ personId }) {
         <div className="flex flex-wrap items-center gap-2">
           <h3 className={`${SECTION_HEADER_CLASS} mr-1`}>Honours</h3>
           {honours.map((h) => (
-            <Chip key={h.label} size="sm" colorRgb={HONOUR_RGB} label={h.year ? `${h.label} · ${h.year}` : h.label} />
+            <Chip key={h.label} variant="glow" size="sm" colorRgb={HONOUR_RGB} label={h.year ? `${h.label} · ${h.year}` : h.label} />
           ))}
         </div>
       )}

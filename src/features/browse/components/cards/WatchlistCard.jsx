@@ -22,7 +22,7 @@ export default memo(function WatchlistCard() {
 
   return (
     <FeatureCard heroBackground={GRADIENT} floatingIcon={ICON}>
-      <Chip size="sm" colorRgb={CHIP_RGB} className="self-start max-w-full">
+      <Chip variant="glow" size="sm" colorRgb={CHIP_RGB} className="self-start max-w-full">
         <span className="truncate">{pick ? "Today's pick" : 'Watchlist'}</span>
       </Chip>
       {pick ? (

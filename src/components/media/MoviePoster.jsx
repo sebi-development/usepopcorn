@@ -1,7 +1,8 @@
 import { memo, useState } from "react"
 import { FiImage } from "react-icons/fi"
 
-// `priority` is for a poster that is its page's LCP: fetched at once, ahead of other images.
+// `priority` is for a poster that is its page's LCP: fetched at once, ahead of other images, and shown
+// without the fade, which Chrome counts as painted only once it ends (LCP ~0.5 s later).
 // `fallbackLabel` (e.g. the title) replaces "No image".
 function MoviePoster({ src, srcSet, sizes, alt, className = '', priority = false, fallbackLabel }) {
   // An <img> without a src fires neither load nor error, so a missing image starts as the fallback
@@ -32,7 +33,7 @@ function MoviePoster({ src, srcSet, sizes, alt, className = '', priority = false
         fetchPriority={priority ? 'high' : undefined}
         onLoad={() => setStatus('loaded')}
         onError={() => setStatus('error')}
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${status === 'loaded' ? 'opacity-100' : 'opacity-0'
+        className={`absolute inset-0 w-full h-full object-cover ${priority ? '' : 'transition-opacity duration-500'} ${status === 'loaded' ? 'opacity-100' : 'opacity-0'
           } ${status === 'error' ? 'hidden' : ''}`}
       />
     </div>
