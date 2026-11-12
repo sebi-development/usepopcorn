@@ -54,12 +54,17 @@ function AppLayout() {
     // Favorite/watchlist/own-rating state every card reads, warm before the first cards render.
     queryClient.prefetchQuery(mediaStateQuery(session.user.id))
 
+    // Read once, not via useLocation (that would re-render the layout on every navigation)
+    const startedOnHome = window.location.pathname === '/browse'
+
     whenQueriesSettle(queryClient, () => {
       // T2: ProfilePage and DetailPage — commonly visited but not immediate.
       prefetch(() => import('@/pages/app/ProfilePage'))
       prefetch(() => import('@/pages/app/DetailPage'))
 
-      // T3: Community and Stats — lowest traffic, load last.
+      // T3: Community and Stats — lowest traffic, load last, and only for a session that starts on Home
+      // (one that opens on a title or a person rarely goes there).
+      if (!startedOnHome) return
       onIdle(() => {
         prefetch(() => import('@/pages/app/CommunityPage'))
         prefetch(() => import('@/pages/app/ProfileStatsPage'))

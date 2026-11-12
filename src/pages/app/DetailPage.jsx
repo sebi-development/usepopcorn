@@ -14,13 +14,10 @@ import DetailTabs from "@/features/media_details/components/DetailTabs"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 import { mdblistScoresQuery } from "@/features/media_details/hooks/useMdblistScores"
 
-// TMDB poster widths for the srcset; no w780, so a retina desktop keeps today's w500
 const POSTER_SIZES = [185, 342, 500]
 
-// Fades only at the bottom (several stops, so no visible band where it ends); the sides meet the screen edge
 const BACKDROP_FADE = "linear-gradient(to bottom, #000 0%, #000 40%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0.2) 85%, transparent 100%)"
 const BACKDROP_STYLE = { maskImage: BACKDROP_FADE, WebkitMaskImage: BACKDROP_FADE }
-// Dims toward the page colour instead of fading the image's opacity, which washes it out
 const BACKDROP_SCRIM = "linear-gradient(90deg, rgba(7,9,11,0.7), rgba(7,9,11,0.1) 60%, rgba(7,9,11,0.4)), linear-gradient(rgba(7,9,11,0.3), rgba(7,9,11,0.3))"
 
 export default function DetailPage() {
@@ -40,8 +37,7 @@ export default function DetailPage() {
 
   const { data, isLoading, error: errorDetailData } = useMediaDetails(tmdbId, type)
 
-  // Prefetch the scores so the Scores tab opens filled. A prefetch doesn't subscribe, so this page
-  // doesn't re-render when they land. ČSFD waits for the IMDb id from the details.
+  // Prefetch the scores so the Scores tab opens filled. A prefetch doesn't subscribe
   const queryClient = useQueryClient()
   const imdbId = data?.imdb_id
   useEffect(() => {
