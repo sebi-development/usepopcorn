@@ -25,9 +25,15 @@ export async function getMediaDetails(id, type = 'movie') {
   // latest season only, so the tab fetches getTvAggregateCredits on open instead.
   // recommendations feeds the Similar tab and tells the page whether to show it, without a second request.
   const append = type === 'movie'
-    ? '?append_to_response=release_dates,watch%2Fproviders,credits,recommendations' // movies endpoint
-    : '?append_to_response=content_ratings,watch%2Fproviders,external_ids,recommendations'; // series endpoint
+    ? '?append_to_response=release_dates,credits,recommendations' // movies endpoint
+    : '?append_to_response=content_ratings,external_ids,recommendations'; // series endpoint
   return tmdbFetch(`/${type}/${id}${append}`);
+}
+
+// Every country's streaming services (TMDB can't filter by region), so it is fetched only when the
+// Streaming section opens and cut to the user's country in its hook
+export async function getWatchProviders(id, type = 'movie') {
+  return tmdbFetch(`/${type}/${id}/watch/providers`)
 }
 
 export async function getSeasonDetails(tvId, seasonNumber) {

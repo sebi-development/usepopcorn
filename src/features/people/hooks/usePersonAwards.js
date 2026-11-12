@@ -3,8 +3,6 @@ import { getPersonAwards } from "@/services/wikidata"
 import queryKeys from "@/lib/queryKeys"
 import { CACHE } from "@/lib/queryClient"
 
-// The ceremonies the Awards tab counts, matched on Wikidata's English award label. Everything else
-// (critics' circles, genre and festival side prizes) is dropped.
 const CEREMONIES = [
   ['Oscars', /^Academy Award for /],
   ['Golden Globes', /^Golden Globe Award/],
@@ -39,8 +37,7 @@ function toAwards(rows) {
       continue
     }
 
-    // One award in one year counts once; Wikidata lists some wins without a nomination of their own,
-    // so every win is also a nomination
+    // One award in one year counts once; Wikidata lists some wins without a nomination of their own
     const key = `${label}|${year}`
     const count = counts.get(ceremony) ?? { wins: new Set(), nominations: new Set() }
     count.nominations.add(key)

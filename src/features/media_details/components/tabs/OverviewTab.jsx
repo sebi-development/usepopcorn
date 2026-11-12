@@ -5,6 +5,10 @@ import formatCurrency from '@/utils/formatCurrency'
 import countryToFlag from '@/utils/countryToFlag'
 import ProviderBadge from '@/features/media_details/components/ProviderBadge'
 import InfoNote from '@/components/ui/InfoNote'
+import SkeletonBox from '@/components/ui/SkeletonBox'
+import useUserProfile from '@/features/profile/hooks/useUserProfile'
+import { useStreamingIds, useWatchProviders } from '@/features/media_details/hooks/useWatchProviders'
+import { streamingLink } from '@/utils/streamingLinks'
 
 const SECTION_HEADER_CLASS = "text-sm font-semibold uppercase tracking-widest"
 
@@ -65,6 +69,41 @@ function Collapsible({ title, children }) {
       </button>
       {open && <div className="pb-5">{children}</div>}
     </div>
+  )
+}
+
+const PROVIDER_SKELETONS = [1, 2, 3]
+
+// Mounts when the Streaming section first opens, which starts both requests. The badges show as soon
+// as the services are in; the Wikidata ids then turn a search link into the title's own page.
+function StreamingProviders({ media }) {
+  const { profileData, isLoading: isLoadingProfile } = useUserProfile()
+  const country = isLoadingProfile ? null : (profileData?.country || 'US')
+  const { data, isLoading, error } = useWatchProviders(media.id, media.type, country)
+  const { data: ids } = useStreamingIds(media.id, media.type)
+
+  if (isLoading || !country) {
+    return (
+      <div className="flex gap-6 delayed-reveal">
+        {PROVIDER_SKELETONS.map((i) => <SkeletonBox key={i} className="size-12 rounded-xl" />)}
+      </div>
+    )
+  }
+  if (error) return <InfoNote>Couldn't load the streaming services. Please try again later.</InfoNote>
+
+  const region = regionNames.of(country)
+  if (!data.providers.length) return <InfoNote>No major streaming service in {region} has this title right now.</InfoNote>
+
+  return (
+    <>
+      <div className="flex flex-wrap gap-x-6 gap-y-3">
+        {data.providers.map((provider) => {
+          const { href, kind } = streamingLink(provider.id, { ids, title: media.title, type: media.type, fallback: data.link })
+          return <ProviderBadge key={provider.id} provider={provider} title={media.title} href={href} kind={kind} />
+        })}
+      </div>
+      <InfoNote className="mt-4">Availability in {region} by JustWatch</InfoNote>
+    </>
   )
 }
 
@@ -132,15 +171,7 @@ export default function OverviewTab({ data }) {
         </Collapsible>
 
         <Collapsible title="Streaming Availability">
-          {data?.providers?.length > 0 ? (
-            <div className="flex flex-wrap gap-x-6 gap-y-3">
-              {data.providers.map((provider) => (
-                <ProviderBadge key={provider.id} provider={provider} />
-              ))}
-            </div>
-          ) : (
-            <InfoNote>None of the major streaming platforms currently has this title.</InfoNote>
-          )}
+          <StreamingProviders media={data} />
         </Collapsible>
       </div>
     </div>

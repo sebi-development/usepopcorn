@@ -9,7 +9,7 @@ import { toCreators, toDirectors, toMovieCast, toMovieCrew } from "@/utils/tmdbP
 const SIMILAR_LIMIT = 12;
 
 function toMediaDetails(data, type, userCountry) {
-  const { certification, regionalReleaseDate, providers } = extractRegionalData(data, userCountry, type);
+  const { certification, regionalReleaseDate } = extractRegionalData(data, userCountry, type);
 
   const base = {
     id: data.id,
@@ -24,7 +24,6 @@ function toMediaDetails(data, type, userCountry) {
     origin_country: data.origin_country,
     type,
     certification,
-    providers,
     similar: data.recommendations?.results?.slice(0, SIMILAR_LIMIT).map(toMediaItem) ?? [],
   };
 
