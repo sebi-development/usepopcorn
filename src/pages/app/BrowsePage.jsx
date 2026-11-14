@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useState } from 'react'
 import { useSearchParams } from 'react-router'
 
-import CategoryRail from '@/features/browse/components/CategoryRail'
+import CategoryRail from '@/features/browse/components/CategoryRail/CategoryRail'
 import CategoryMediaRow from '@/features/browse/components/CategoryMediaRow'
 import { MOVIE_GENRES, TV_GENRES } from '@/utils/genres'
 import InspirationPanel from '@/features/browse/components/InspirationPanel'

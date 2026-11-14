@@ -3,15 +3,11 @@ import { getWatchlistPick } from "@/services/interactions"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import queryKeys from "@/lib/queryKeys"
 import { CACHE } from "@/lib/queryClient"
+import { toDay } from "@/utils/dates"
 
-// Local calendar date as YYYY-MM-DD, so the pick turns over at the user's midnight
-function localDay() {
-  const now = new Date()
-  return new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 10)
-}
-
-// Shared with browseLoader, which prefetches it next to the other Home cards
-export const watchlistPickQuery = (userId, day = localDay()) => ({
+// Shared with browseLoader, which prefetches it next to the other Home cards. The day is the local one,
+// so the pick turns over at the user's midnight.
+export const watchlistPickQuery = (userId, day = toDay(new Date())) => ({
   queryKey: queryKeys.watchlistPick.day(userId, day),
   queryFn: () => getWatchlistPick(day),
   ...CACHE.user,

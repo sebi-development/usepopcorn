@@ -35,8 +35,14 @@ function Dash({ start, end, ...props }) {
   )
 }
 
+// Cuts the shimmer down to the track's band (r 40, stroke 9 in the 100 box), so loading shows an empty ring
+const TRACK_BAND = 'radial-gradient(closest-side, transparent 71%, #000 71.5%, #000 88.5%, transparent 89%)'
+const TRACK_MASK = { maskImage: TRACK_BAND, WebkitMaskImage: TRACK_BAND }
+
 function ScoreRing({ pct, label, suffix, tone, size = 'lg', loading }) {
-  const hasValue = !loading && pct != null
+  if (loading) return <span aria-hidden="true" className={`skeleton-shimmer rounded-full shrink-0 ${SIZES[size]}`} style={TRACK_MASK} />
+
+  const hasValue = pct != null
   const p = hasValue ? Math.min(Math.max(pct, 0), 100) : 0
   const arc = hasValue && p > 0 && (p >= 100
     ? { start: 0, end: 100 }
@@ -47,7 +53,7 @@ function ScoreRing({ pct, label, suffix, tone, size = 'lg', loading }) {
   const showMark = hasValue && p > 0 && p < 100 - 2 * GAP
 
   return (
-    <span className={`relative grid place-items-center shrink-0 ${SIZES[size]} ${TONES[tone] ?? ''} ${loading ? 'animate-pulse motion-reduce:animate-none' : ''}`}>
+    <span className={`relative grid place-items-center shrink-0 ${SIZES[size]} ${TONES[tone] ?? ''}`}>
       <svg viewBox="0 0 100 100" className="absolute inset-0 size-full rotate-90" aria-hidden="true">
         {showTrack && <Dash start={trackStart} end={trackEnd} stroke="white" strokeOpacity={0.12} strokeWidth="9" />}
         {arc && (
@@ -58,12 +64,10 @@ function ScoreRing({ pct, label, suffix, tone, size = 'lg', loading }) {
         )}
         {showMark && <Dash start={p + GAP - MARK} end={p + GAP + MARK} stroke="white" strokeWidth="5" />}
       </svg>
-      {!loading && (
-        <span className={`relative font-black tabular-nums tracking-tight leading-none ${hasValue ? 'text-white' : 'text-text-muted'}`}>
-          {hasValue ? label : '–'}
-          {hasValue && suffix && <span className="text-[0.6em] font-bold">{suffix}</span>}
-        </span>
-      )}
+      <span className={`relative font-black tabular-nums tracking-tight leading-none ${hasValue ? 'text-white' : 'text-text-muted'}`}>
+        {hasValue ? label : '–'}
+        {hasValue && suffix && <span className="text-[0.6em] font-bold">{suffix}</span>}
+      </span>
     </span>
   )
 }

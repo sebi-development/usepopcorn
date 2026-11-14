@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import useCategoryMedia, { useCategoryMediaGrid, SECTION_TO_TYPE } from '@/features/browse/hooks/useCategoryMedia'
-import MediaRow from '@/components/media/MediaRow'
+import MediaRow from '@/components/media/MediaRow/MediaRow'
 import useExpandableGrid from '@/hooks/useExpandableGrid'
-import { isEmptyFilters } from '@/utils/filters'
+import { isEmptyFilters, NO_MATCHES } from '@/utils/filters'
 
 const NO_ITEMS = []
 
@@ -22,14 +22,6 @@ export default function CategoryMediaRow({ section, categoryId, title, filters }
   // means only one of them is ever actually hitting the network.
   const list = useCategoryMedia(section, categoryId, { enabled: !isExpanded, filters })
   const grid = useCategoryMediaGrid(section, categoryId, page, { enabled: isExpanded, filters })
-
-  const shown = isExpanded ? grid.items : list.items
-  if (shown?.length === 0 && !isEmptyFilters(filters)) return (
-    <div className="md:px-6">
-      <h2 className="text-text font-semibold text-xl mb-2">{title}</h2>
-      <p className="text-sm text-text-muted">No titles match these filters.</p>
-    </div>
-  )
 
   return (
     <MediaRow
@@ -58,6 +50,8 @@ export default function CategoryMediaRow({ section, categoryId, title, filters }
       page={page}
       totalPages={grid.totalPages}
       onPageChange={setPage}
+      // An unfiltered category is never empty; a filtered one can be
+      emptyNote={isEmptyFilters(filters) ? undefined : NO_MATCHES}
     />
   )
 }

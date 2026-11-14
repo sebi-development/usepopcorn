@@ -7,10 +7,10 @@ import useTabs from "@/hooks/useTabs"
 import SlidingTabs from "@/components/ui/SlidingTabs"
 import TabPanel from "@/components/ui/TabPanel"
 import SkeletonBox from "@/components/ui/SkeletonBox"
-import FriendActivityTab from "@/features/media_details/components/tabs/FriendActivityTab"
+import FriendActivityTab from "@/features/media_details/components/tabs/FriendActivityTab/FriendActivityTab"
 import ScoresTab from "@/features/media_details/components/tabs/ScoresTab"
-import OverviewTab from "@/features/media_details/components/tabs/OverviewTab"
-import SeasonsTab from "@/features/media_details/components/tabs/SeasonsTab"
+import OverviewTab from "@/features/media_details/components/tabs/OverviewTab/OverviewTab"
+import SeasonsTab from "@/features/media_details/components/tabs/SeasonsTab/SeasonsTab"
 
 const PANEL_CARD_CLASS = "bg-surface-500 border border-surface-100 rounded-card p-4 md:p-6 min-h-62.5"
 const UNBOXED_TABS = new Set(["cast", "similar", "scores", "social"])
@@ -35,7 +35,6 @@ function DetailTabs({ media, tmdbId, type }) {
 
   // Titles TMDB has no recommendations for get no Similar tab
   const hasSimilar = media.similar?.length > 0
-  // A movie's cast is known from its details; a series' only once the tab fetches it
   const hasCast = type === 'tv' || media.cast?.length > 0
 
   const tabs = useMemo(() => {

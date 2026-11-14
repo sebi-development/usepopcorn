@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from "react"
 import { HiArrowUp } from "react-icons/hi2"
-import CommunityCardSkeleton from "@/features/social/components/CommunityPageSkeleton"
-import ActivityCard from "@/features/social/components/CommunityCard"
+import CommunityCard, { CommunityCardSkeleton } from "@/features/social/components/CommunityCard"
 import TimelineRow from "@/features/social/components/TimelineRow"
 import useFeed from "@/features/social/hooks/useFeed"
 import useFeedRealtime from "@/features/social/hooks/useFeedRealtime"
@@ -121,7 +120,7 @@ export default function CommunityPage() {
 
           {feed?.map((feedItem) => (
             <TimelineRow key={feedItem.id} sticky>
-              <ActivityCard item={feedItem} />
+              <CommunityCard item={feedItem} />
             </TimelineRow>
           ))}
 

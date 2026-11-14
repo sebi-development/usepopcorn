@@ -1,9 +1,7 @@
 import { memo } from "react"
 import { Link } from "react-router"
-import UserMenu from "@/features/auth/components/UserMenu"
 import Button from "@/components/ui/Button"
 import Logo from "@/components/ui/Logo"
-import Search from "@/features/search/components/Search"
 
 function GuestActions() {
   return (
@@ -19,8 +17,9 @@ function GuestActions() {
 const POSITION_GUEST = 'sticky top-4'
 const POSITION_APP = 'relative md:sticky md:top-4'
 
-// only re-renders when isLoggedIn flips (login / logout)
-const Navbar = memo(function Navbar({ isLoggedIn }) {
+// Guests get the Sign in button; the app passes its own actions (search, user menu) as children, so
+// this file, shared with the guest pages' entry chunk, doesn't import them
+const Navbar = memo(function Navbar({ isLoggedIn, children }) {
   return (
     <nav className={`
       glass-panel
@@ -30,8 +29,7 @@ const Navbar = memo(function Navbar({ isLoggedIn }) {
       flex items-center justify-between gap-3 md:gap-4
     `}>
       <Logo className="shrink-0 py-2 -my-2" redirectTo={isLoggedIn ? '/browse' : '/'} />
-      {isLoggedIn && <Search />}
-      {isLoggedIn ? <UserMenu /> : <GuestActions />}
+      {children ?? <GuestActions />}
     </nav>
   )
 })

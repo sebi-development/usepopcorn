@@ -1,36 +1,55 @@
 import { memo } from "react"
 import { Link } from "react-router"
-import { HiStar, HiOutlineUser } from "react-icons/hi2"
+import { HiStar } from "react-icons/hi2"
+import Avatar from "@/components/ui/Avatar"
+import MoviePoster from "@/components/media/MoviePoster"
+import SkeletonBox from "@/components/ui/SkeletonBox"
+import SkeletonText from "@/components/ui/SkeletonText"
 import { timeAgo } from "@/utils/timeAgo"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 
-const ActivityCard = memo(function ActivityCard({ item }) {
+// Shared with the skeleton, so the card keeps its shape when the feed lands
+const CARD_CLASS = "p-5 bg-surface-500 border border-surface-100 rounded-card flex flex-col gap-4"
+const TITLE_BOX_CLASS = "flex gap-4 p-3 bg-surface-900/40 rounded-xl border border-white/5"
+const POSTER_CLASS = "w-16 sm:w-20 shrink-0 aspect-2/3 rounded-md"
+
+export function CommunityCardSkeleton() {
+  return (
+    <article className={CARD_CLASS}>
+      <div className="flex items-center gap-3">
+        <SkeletonBox className="w-10 h-10 rounded-full shrink-0" />
+        <div className="flex-1 flex flex-col gap-1.5">
+          <SkeletonBox className="h-4 w-32 rounded-full" />
+          <SkeletonBox className="h-4 w-20 rounded-full" />
+        </div>
+        <SkeletonBox className="w-12 h-4 rounded-full shrink-0" />
+      </div>
+
+      <div className={TITLE_BOX_CLASS}>
+        <SkeletonBox className={POSTER_CLASS} />
+        <div className="flex flex-col justify-center gap-3 flex-1 min-w-0">
+          <SkeletonText lines={2} />
+          <SkeletonBox className="w-20 h-7 rounded-md" />
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function CommunityCard({ item }) {
   // updated_at moves only when the score changes, so a later one means they changed their mind
   const edited = item.updated_at !== item.created_at
+
   return (
-    <article className="p-5 bg-surface-500 border border-surface-100 rounded-card flex flex-col gap-4">
-      
-      {/* 1. SOCIAL HEADER */}
+    <article className={CARD_CLASS}>
       <header className="flex items-center gap-3">
         <Link to={`/profile/${item.user_id}`} className="shrink-0">
-          {item.avatar_url ? (
-            <img 
-              src={item.avatar_url} 
-              alt={item.username} 
-              className="w-10 h-10 rounded-full object-cover border border-surface-100 bg-surface-900"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full border border-surface-100 bg-surface-900 flex items-center justify-center text-text-muted">
-              <HiOutlineUser size={20} />
-            </div>
-          )}
+          <Avatar avatarUrl={item.avatar_url} username={item.username} />
         </Link>
 
         <div className="flex-1 min-w-0 leading-tight">
-          <Link 
-            to={`/profile/${item.user_id}`} 
+          <Link
+            to={`/profile/${item.user_id}`}
             className="font-bold text-text hover:text-primary-light transition-colors block truncate py-2 -my-2"
           >
             {item.username}
@@ -45,30 +64,13 @@ const ActivityCard = memo(function ActivityCard({ item }) {
         </span>
       </header>
 
-      {/* 2. MEDIA TARGET*/}
       <Link
         to={`/browse/${item.tmdb_id}`}
         state={{ type: item.type }}
-        className="flex gap-4 p-3 bg-surface-900/40 rounded-xl border border-white/5 hover:bg-surface-900/70 transition-colors"
+        className={`${TITLE_BOX_CLASS} hover:bg-surface-900/70 transition-colors`}
       >
-        {/* Poster Wrapper */}
-        <div className="w-16 sm:w-20 shrink-0 shadow-md rounded-md overflow-hidden bg-surface-100 aspect-2/3">
-          {item.poster_path ? (
-            <img 
-              src={getTmdbImageUrl(item.poster_path, 'w185')} 
-              alt={item.title} 
-              className="w-full h-full object-cover"
-              loading="lazy"
-              decoding="async"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-xs text-text-muted text-center p-1 bg-surface-500">
-              No Poster
-            </div>
-          )}
-        </div>
+        <MoviePoster src={getTmdbImageUrl(item.poster_path, 'w185')} alt={item.title} className={`${POSTER_CLASS} shadow-md text-xs`} />
 
-        {/* Information Stack */}
         <div className="flex flex-col justify-center gap-2 min-w-0 flex-1">
           <h3 className="font-bold text-base sm:text-lg text-text leading-snug truncate">
             {item.title}
@@ -87,6 +89,6 @@ const ActivityCard = memo(function ActivityCard({ item }) {
       </Link>
     </article>
   )
-})
+}
 
-export default ActivityCard
+export default memo(CommunityCard)

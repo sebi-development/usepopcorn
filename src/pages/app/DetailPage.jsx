@@ -6,19 +6,16 @@ import useMediaDetails from "@/features/media_details/hooks/useMediaDetails"
 import { csfdScoreQuery } from "@/features/media_details/hooks/useCsfdScore"
 
 import DetailCard from "@/features/media_details/components/DetailCard"
+import DetailBackdrop from "@/features/media_details/components/DetailBackdrop"
 import MoviePoster from "@/components/media/MoviePoster"
 import MediaDetailSkeleton from "@/features/media_details/components/MediaDetailSkeleton"
 import AlertBanner from "@/components/ui/AlertBanner"
-import ActionSectionContainer from "@/features/media_details/components/ActionSectionContainer"
+import ActionSection from "@/features/media_details/components/ActionSection/ActionSection"
 import DetailTabs from "@/features/media_details/components/DetailTabs"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 import { mdblistScoresQuery } from "@/features/media_details/hooks/useMdblistScores"
 
 const POSTER_SIZES = [185, 342, 500]
-
-const BACKDROP_FADE = "linear-gradient(to bottom, #000 0%, #000 40%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0.2) 85%, transparent 100%)"
-const BACKDROP_STYLE = { maskImage: BACKDROP_FADE, WebkitMaskImage: BACKDROP_FADE }
-const BACKDROP_SCRIM = "linear-gradient(90deg, rgba(7,9,11,0.7), rgba(7,9,11,0.1) 60%, rgba(7,9,11,0.4)), linear-gradient(rgba(7,9,11,0.3), rgba(7,9,11,0.3))"
 
 export default function DetailPage() {
   const { id } = useParams()
@@ -55,21 +52,7 @@ export default function DetailPage() {
   return (
     <div className="media-detail-grid relative">
 
-      {/* Full width, from the top of the page. It reaches up past the navbar (the part above the page is
-          clipped), or an edge would show under it. */}
-      {data.backdrop_path && (
-        <div aria-hidden="true" className="pointer-events-none absolute -z-10 left-1/2 w-screen -translate-x-1/2 -top-28 h-80 md:-top-44 md:h-144" style={BACKDROP_STYLE}>
-          <img
-            src={getTmdbImageUrl(data.backdrop_path, 'w780')}
-            srcSet={`${getTmdbImageUrl(data.backdrop_path, 'w780')} 780w, ${getTmdbImageUrl(data.backdrop_path, 'w1280')} 1280w`}
-            sizes="100vw"
-            alt=""
-            decoding="async"
-            className="size-full object-cover object-[50%_25%]"
-          />
-          <div className="absolute inset-0" style={{ background: BACKDROP_SCRIM }} />
-        </div>
-      )}
+      <DetailBackdrop path={data.backdrop_path} />
 
       <div className="[grid-area:poster]">
         <MoviePoster
@@ -86,7 +69,7 @@ export default function DetailPage() {
         <DetailCard media={data} id={id} />
       </div>
 
-      <ActionSectionContainer media={data} tmdbId={tmdbId} type={type} />
+      <ActionSection media={data} tmdbId={tmdbId} type={type} />
 
       <DetailTabs media={data} tmdbId={tmdbId} type={type} />
     </div>

@@ -1,4 +1,5 @@
-@import "tailwindcss";
+/* Scans src only: class-like words in docs and scripts would otherwise ship as unused utilities */
+@import "tailwindcss" source("./");
 
 @font-face {
   font-family: "Inter";
@@ -21,7 +22,6 @@
   --color-surface-300: #272c31;
   --color-surface-100: #1e2226;
   --color-danger: #fa5252;
-  --color-danger-dark: #e03131;
   --color-warning: #fab005;
   --color-success: #40c057;
   --radius-card: 0.9rem;
@@ -34,7 +34,6 @@ body {
     Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   color: var(--color-text);
   background-color: var(--color-surface-900);
-  padding: 0;
 }
 
 /* Horizontal boundary; on both elements because WebKit ignores a clip body passes to the viewport */
@@ -69,7 +68,6 @@ body {
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
@@ -79,11 +77,6 @@ body {
 
 /* ==================== 04. REUSABLE UTILITIES & GLASSMORPHIC ACCENTS ==================== */
 @layer components {
-
-  /* ── Gradients ── */
-  .text-gradient-primary {
-    @apply bg-gradient-to-r from-primary-light to-primary bg-clip-text text-transparent;
-  }
 
   .glass-panel {
     @apply bg-surface-900/60 backdrop-blur-xl border border-surface-100 rounded-2xl;
@@ -174,10 +167,6 @@ body {
     .bento-grid {
       grid-template-columns: repeat(2, 1fr);
     }
-
-    .bento-card--wide {
-      @apply col-span-2;
-    }
   }
 
   @media (max-width: 480px) {
@@ -262,37 +251,6 @@ body {
     .lp-hero__headline {
       @apply text-4xl;
     }
-  }
-
-  /* ── AlertBanner ── */
-  .alert-banner {
-    @apply rounded-card p-6 flex flex-col items-center gap-3 mb-6 border border-transparent;
-  }
-
-  .alert-banner--danger {
-    background-color: rgba(250, 82, 82, 0.1);
-    border-color: rgba(250, 82, 82, 0.3);
-    @apply text-danger;
-  }
-
-  .alert-banner--warning {
-    background-color: rgba(255, 180, 0, 0.1);
-    border-color: rgba(255, 180, 0, 0.3);
-    color: #ffb400;
-  }
-
-  .alert-banner--info {
-    background-color: rgba(103, 65, 217, 0.1);
-    border-color: rgba(103, 65, 217, 0.3);
-    @apply text-primary-light;
-  }
-
-  .alert-banner__icon {
-    @apply text-[2.8rem];
-  }
-
-  .alert-banner__message {
-    @apply text-[1.4rem] font-medium text-center leading-relaxed;
   }
 
   /* ── Page Layouts ── */

@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import supabase from "@/lib/supabase"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import useFollowingIds from "@/features/social/hooks/useFollowingIds"
 import queryKeys from "@/lib/queryKeys"
 import { CACHE } from "@/lib/queryClient"
 import { getFeed } from "@/services/follows"
+import { openChannel } from "@/services/realtime"
 import { toFeedParams } from "@/features/social/constants/feedFilters"
 import { isEmptyFilters } from "@/utils/filters"
 
@@ -48,18 +48,14 @@ export default function useFeedRealtime(feedItems, filters) {
       setPending((prev) => [...prev.filter((p) => p.id !== row.id), { id: row.id, at: Date.parse(row.updated_at) }])
     }
 
-    const channel = supabase.channel(`feed-realtime-${userId}`)
-    for (let i = 0; i < groupCount; i++) {
-      const filter = `user_id=in.(${ids.slice(i * MAX_IDS_PER_FILTER, (i + 1) * MAX_IDS_PER_FILTER).join(',')})`
-      channel
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ratings', filter }, onChange)
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ratings', filter }, onChange)
-    }
-    channel.subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
+    return openChannel(`feed-realtime-${userId}`, (channel) => {
+      for (let i = 0; i < groupCount; i++) {
+        const filter = `user_id=in.(${ids.slice(i * MAX_IDS_PER_FILTER, (i + 1) * MAX_IDS_PER_FILTER).join(',')})`
+        channel
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ratings', filter }, onChange)
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'ratings', filter }, onChange)
+      }
+    })
   }, [followingKey, userId])
 
   // Derived, so any refetch of the feed (a follow, a remount, showNew) clears what it now shows.

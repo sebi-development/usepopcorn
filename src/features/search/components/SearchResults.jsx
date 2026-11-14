@@ -4,13 +4,13 @@ import SearchResultItem from "@/features/search/components/SearchResultItem"
 const STAGGER_STEP_MS = 30
 const MAX_STAGGERED_ITEMS = 6
 
-function SearchResults({ results, media_type, onClose }) {
+function SearchResults({ results, media_type, onClose, emptyMessage = 'No results found' }) {
   const isPerson = media_type === 'person'
   return (
     <div className="max-h-[min(28rem,65dvh)] overflow-y-auto overscroll-contain rounded-b-card divide-y divide-surface-100/60">
       {/* Only once loaded: while a tab switch fetches there are no results yet, not none */}
       {results?.length === 0 && (
-        <p className="text-text-muted text-sm px-4 py-6 text-center">No results found</p>
+        <p className="text-text-muted text-sm px-4 py-6 text-center">{emptyMessage}</p>
       )}
       {results?.map((item, index) => (
         <SearchResultItem

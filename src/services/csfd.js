@@ -1,4 +1,4 @@
-import supabase from '@/lib/supabase'
+import supabase, { getFunctions } from '@/lib/supabase'
 
 // The ČSFD rating of a title, from two sources, cheapest first:
 //   1. the csfd_cache table (a plain read, signed-in users may select)
@@ -15,7 +15,7 @@ export async function getCsfdScore(imdbId) {
     return { csfdId: row.csfd_id, rating: row.rating }
   }
 
-  const { data, error } = await supabase.functions.invoke('csfd-score', { body: { imdbId } })
+  const { data, error } = await (await getFunctions()).invoke('csfd-score', { body: { imdbId } })
   if (error) throw new Error(error.message)
   return data
 }

@@ -1,5 +1,5 @@
 import { memo } from "react"
-import MediaRow from "@/components/media/MediaRow"
+import MediaRow from "@/components/media/MediaRow/MediaRow"
 
 function SimilarTab({ items, type }) {
   return (

@@ -1,14 +1,12 @@
-import { subDays, subMonths, subYears } from "date-fns"
+import { addDays, addMonths } from "@/utils/dates"
 import { MOVIE_GENRES, TV_GENRES } from "@/utils/genres"
+import { toGenreOptions, TYPE_FILTER } from "@/utils/filters"
 
 // Filter defs for the Friends Activity feed (shape in src/utils/filters.js), served by the
 // optional get_user_feed params (see toFeedParams). Genre and Friend take several values (any of
 // them matches); Type, Score and Period are one choice each by nature.
 
-// Shared ids (Comedy, Drama...) carry the same name in both maps, so merging loses nothing
-const GENRE_OPTIONS = Object.entries({ ...MOVIE_GENRES, ...TV_GENRES })
-  .map(([value, label]) => ({ value, label }))
-  .sort((a, b) => a.label.localeCompare(b.label))
+const GENRE_OPTIONS = toGenreOptions()
 
 const GENRE_IDS_BY_TYPE = {
   movie: new Set(Object.keys(MOVIE_GENRES)),
@@ -25,15 +23,15 @@ export function getFeedGenreOptions(type, selected) {
 
 // Rolling windows; the query key holds the id and the start is computed at fetch time
 const PERIOD_START = {
-  week: () => subDays(new Date(), 7),
-  month: () => subMonths(new Date(), 1),
-  year: () => subYears(new Date(), 1),
+  week: () => addDays(new Date(), -7),
+  month: () => addMonths(new Date(), -1),
+  year: () => addMonths(new Date(), -12),
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export const FEED_FILTERS = [
-  { key: 'type', label: 'Type', kind: 'select', options: [{ value: 'movie', label: 'Movies' }, { value: 'tv', label: 'Series' }] },
+  TYPE_FILTER,
   { key: 'score', label: 'Score', kind: 'select', options: ['9', '8', '7', '6'].map((value) => ({ value, label: `${value}+` })) },
   { key: 'genre', label: 'Genre', kind: 'multi', options: GENRE_OPTIONS },
   // Followed users are only known at runtime: CommunityPage fills the options in

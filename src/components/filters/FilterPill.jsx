@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { HiChevronDown } from "react-icons/hi2"
-import { FiSearch } from "react-icons/fi"
 import Chip from "@/components/ui/Chip"
+import SearchField from "@/components/ui/SearchField"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 
 const GROW = { duration: 300, easing: "cubic-bezier(0.22, 1, 0.36, 1)" }
@@ -54,18 +54,15 @@ function OptionList({ def, value, onPick, panelRef, id }) {
       className={`absolute top-[calc(100%+0.375rem)] left-0 z-50 flex flex-col overflow-hidden rounded-2xl border border-surface-300 bg-surface-900/80 backdrop-blur-sm ${searchable ? "min-w-28" : ""}`}
     >
       {searchable && (
-        <div className="relative mx-1.5 mt-1.5">
-          <FiSearch size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            aria-label={`Search ${def.label.toLowerCase()} options`}
-            size={1}
-            className="w-full h-11 md:h-8 pl-8 pr-2 rounded-md bg-surface-900/60 border border-white/5 text-base md:text-sm text-text outline-none focus:border-primary-light/50 transition-colors"
-          />
-        </div>
+        <SearchField
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          aria-label={`Search ${def.label.toLowerCase()} options`}
+          // One character wide on its own, so the list is measured by its options, not the input
+          size={1}
+          className="mx-1.5 mt-1.5"
+        />
       )}
 
       <div className="flex flex-col gap-0.5 p-1.5 max-h-64 overflow-y-auto overscroll-contain scrollbar-hide">

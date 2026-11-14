@@ -1,21 +1,19 @@
-import MediaRow from "@/components/media/MediaRow"
+import MediaRow from "@/components/media/MediaRow/MediaRow"
 
 function Favorites({ favorites, isLoading, showInfo = false }) {
   if (!isLoading && (!favorites || favorites.length === 0)) return null
 
   return (
-    <div>
-      <MediaRow
-        limit={15}
-        isLoading={isLoading}
-        heading="Favorites"
-        count={favorites?.length}
-        data={favorites}
-        rank={false}
-        showFavorite={false}
-        showInfo={showInfo}
-      />
-    </div>
+    <MediaRow
+      limit={15}
+      isLoading={isLoading}
+      heading="Favorites"
+      count={favorites?.length}
+      data={favorites}
+      rank={false}
+      showFavorite={false}
+      showInfo={showInfo}
+    />
   )
 }
 

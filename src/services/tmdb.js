@@ -2,8 +2,6 @@ const BASE_URL = import.meta.env.VITE_TMDB_BASE_URL
 const API_KEY = import.meta.env.VITE_TMDB_V3_KEY
 
 // ── TMDB queries ──────────────────────────────────────────────
-// The v3 key goes in the query string: a GET without an Authorization header is a simple CORS
-// request, so it skips the preflight round trip (TMDB caches a preflight only 10 min, per URL).
 async function tmdbFetch(endpoint) {
   const url = new URL(`${BASE_URL}${endpoint}`)
   url.searchParams.set('api_key', API_KEY)
@@ -25,13 +23,11 @@ export async function getMediaDetails(id, type = 'movie') {
   // latest season only, so the tab fetches getTvAggregateCredits on open instead.
   // recommendations feeds the Similar tab and tells the page whether to show it, without a second request.
   const append = type === 'movie'
-    ? '?append_to_response=release_dates,credits,recommendations' // movies endpoint
-    : '?append_to_response=content_ratings,external_ids,recommendations'; // series endpoint
+    ? '?append_to_response=release_dates,credits,recommendations,videos' // movies endpoint
+    : '?append_to_response=content_ratings,external_ids,recommendations,videos'; // series endpoint
   return tmdbFetch(`/${type}/${id}${append}`);
 }
 
-// Every country's streaming services (TMDB can't filter by region), so it is fetched only when the
-// Streaming section opens and cut to the user's country in its hook
 export async function getWatchProviders(id, type = 'movie') {
   return tmdbFetch(`/${type}/${id}/watch/providers`)
 }
