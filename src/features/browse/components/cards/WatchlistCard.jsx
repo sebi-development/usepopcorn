@@ -1,43 +1,23 @@
 import { memo } from 'react'
-import { Link } from 'react-router'
 import { BsBookmarkFill } from 'react-icons/bs'
-import FeatureCard, { FeatureCardSkeleton } from '@/components/ui/FeatureCard'
-import Chip from '@/components/ui/Chip'
+import FeatureCard from '@/features/browse/components/cards/FeatureCard'
 import useWatchlistPick from '@/features/interactions/hooks/useWatchlistPick'
 import { useWatchlistCount } from '@/features/interactions/hooks/useMediaState'
 
-const GRADIENT = 'linear-gradient(135deg, #9775fa 0%, #6741d9 100%)'
-const ICON = <BsBookmarkFill className="text-xl sm:text-3xl text-violet-200" />
-const CHIP_RGB = '121, 80, 242'
+const THEME = { gradient: 'linear-gradient(135deg, #9775fa 0%, #6741d9 100%)', Icon: BsBookmarkFill, iconClass: 'text-violet-200', rgb: '121, 80, 242' }
 
-const TEXT = 'text-[10px] sm:text-sm text-text-muted leading-tight line-clamp-2'
-const STRETCHED = `${TEXT} hover:text-text transition-colors after:absolute after:inset-0 after:z-20`
+// Where the card leads: today's pick, else the watchlist (the pick failed to load), else somewhere to find titles
+function linkFor(pick, count) {
+  // DetailPage reads the media type from router state (defaults to 'movie')
+  if (pick) return { text: pick.title, to: `/browse/${pick.tmdb_id}`, state: { type: pick.media_type } }
+  if (count > 0) return { text: 'Open your watchlist', to: '/profile' }
+  return { text: 'Save a title to watch later', to: '/browse?type=movies&category=trending' }
+}
 
 export default memo(function WatchlistCard() {
   // The server picks one watchlist title per day (get_watchlist_pick)
   const { data: pick, isLoading } = useWatchlistPick()
   const count = useWatchlistCount()
 
-  if (isLoading) return <FeatureCardSkeleton />
-
-  return (
-    <FeatureCard heroBackground={GRADIENT} floatingIcon={ICON}>
-      <Chip variant="glow" size="sm" colorRgb={CHIP_RGB} className="self-start max-w-full">
-        <span className="truncate">{pick ? "Today's pick" : 'Watchlist'}</span>
-      </Chip>
-      {pick ? (
-        <>
-          {/* DetailPage reads the media type from router state (defaults to 'movie') */}
-          <Link to={`/browse/${pick.tmdb_id}`} state={{ type: pick.media_type }} className={STRETCHED}>
-            {pick.title}
-          </Link>
-        </>
-      ) : count > 0 ? (
-        // The pick failed to load but titles exist
-        <Link to="/profile" className={STRETCHED}>Open your watchlist</Link>
-      ) : (
-        <Link to="/browse?type=movies&category=trending" className={STRETCHED}>Save a title to watch later</Link>
-      )}
-    </FeatureCard>
-  )
+  return <FeatureCard theme={THEME} isLoading={isLoading} label={pick ? "Today's pick" : 'Watchlist'} {...linkFor(pick, count)} />
 })

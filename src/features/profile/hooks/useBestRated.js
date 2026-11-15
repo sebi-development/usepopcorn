@@ -5,7 +5,7 @@ import { PERIODS } from "@/utils/periods"
 import queryKeys from "@/lib/queryKeys"
 import { CACHE } from "@/lib/queryClient"
 
-// Shared with the /browse route loader, which starts Home's poster query before the page chunk is in
+// Shared with the /browse route loader, which starts Home's best-rated query before the page chunk is in
 export const bestRatedQuery = (userId, period = 'month') => ({
   // Under queryKeys.ratings.all so rating/deleting a title refreshes it
   queryKey: queryKeys.ratings.bestRated(userId, period),

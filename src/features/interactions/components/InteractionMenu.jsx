@@ -1,7 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { PiDotsThreeVerticalBold } from "react-icons/pi"
-import FavoriteButton from "@/features/interactions/components/FavoritesButton"
-import WatchlistButton from "@/features/interactions/components/WatchlistButton"
+import InteractionButton from "@/features/interactions/components/InteractionButton"
 
 // Below md an invisible ::before widens each 32px control to a 44px tap area, sideways only so stacked targets don't overlap
 const TAP_AREA = "before:absolute before:-inset-x-1.5 md:before:hidden"
@@ -76,9 +75,10 @@ function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchl
 
       {showFavorite && (
         <Fold rows={showFav ? OPEN : CLOSED} inert={!showFav} onClickCapture={close}>
-          <FavoriteButton
+          <InteractionButton
+            type="favorite"
             media={media}
-            isFavorited={isFavorited}
+            isActive={isFavorited}
             tooltipSide="left"
             tooltipLabel="Favorite"
             className={ITEM_CLASS}
@@ -87,9 +87,10 @@ function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchl
       )}
       {showWatchlist && (
         <Fold rows={showWatch ? OPEN : CLOSED} inert={!showWatch} onClickCapture={close}>
-          <WatchlistButton
+          <InteractionButton
+            type="watchlist"
             media={media}
-            isWatchlisted={isWatchlisted}
+            isActive={isWatchlisted}
             tooltipSide="left"
             tooltipLabel="Watchlist"
             className={ITEM_CLASS}

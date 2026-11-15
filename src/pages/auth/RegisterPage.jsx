@@ -4,7 +4,7 @@ import AlertBanner from '@/components/ui/AlertBanner'
 import InfoCard from '@/components/ui/InfoCard'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import ArrowLink from '@/components/ui/ArrowLink'
-import { getCountry } from '@/utils/getCountry'
+import { getCountry } from '@/services/location'
 
 export default function RegisterPage() {
   const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm()  

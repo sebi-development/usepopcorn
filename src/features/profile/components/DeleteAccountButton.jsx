@@ -1,16 +1,15 @@
-import { useState } from "react";
-import Button from "@/components/ui/Button";
+import { useState } from "react"
 import { LuLoaderCircle } from "react-icons/lu"
-import supabase from "@/lib/supabase";
-import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from 'react-router'
+import { useQueryClient } from "@tanstack/react-query"
+import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
+import Button from "@/components/ui/Button"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
-import { deleteAllAvatarImages } from "@/services/files"
+import { deleteAccount } from "@/services/account"
 
 export default function DeleteAccountButton() {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isConfirming, setIsConfirming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
 
   const queryClient = useQueryClient()
   const currentUser = useCurrentUser()
@@ -19,18 +18,13 @@ export default function DeleteAccountButton() {
   async function handleDelete() {
     setIsDeleting(true)
     try {
-      // Storage files aren't covered by the database cascade, and need the session: files first
-      if (currentUser?.id) await deleteAllAvatarImages(currentUser.id)
-      const { error } = await supabase.rpc('delete_user')
-      if (error) throw error
-      await supabase.auth.signOut()
+      await deleteAccount(currentUser.id)
       queryClient.clear()
-      await supabase.removeAllChannels()
       navigate('/', { replace: true })
       toast.success("Your account has been deleted.")
     } catch (error) {
       console.error("Failed to delete account:", error)
-      alert("An error occurred while deleting your account.")
+      toast.error("An error occurred while deleting your account.")
       setIsDeleting(false)
     }
   }
@@ -39,7 +33,7 @@ export default function DeleteAccountButton() {
     return (
       <div className="flex flex-col items-center justify-center p-12 space-y-4">
         <LuLoaderCircle className="w-8 h-8 text-red-500 animate-spin" />
-        <p className="text-sm font-medium text-text-muted animate-pulse">
+        <p className="text-sm font-medium text-text-muted">
           Securely erasing account data...
         </p>
       </div>
@@ -48,7 +42,7 @@ export default function DeleteAccountButton() {
 
   if (isConfirming) {
     return (
-      <div className="w-full mt-6 rounded-xl border border-red-500/10 bg-red-500/5 p-4 flex flex-col items-center gap-3 animate-in fade-in slide-in-from-top-2">
+      <div className="w-full mt-6 rounded-xl border border-red-500/10 bg-red-500/5 p-4 flex flex-col items-center gap-3">
         <div className="text-sm text-center">
           <h4 className="text-red-400 font-medium mb-1">Are you absolutely sure?</h4>
           <p className="text-text-muted text-xs">This action cannot be undone.</p>
@@ -58,7 +52,6 @@ export default function DeleteAccountButton() {
             variant="secondary"
             className="flex-1 py-2 text-xs font-semibold"
             onClick={() => setIsConfirming(false)}
-            disabled={isDeleting}
             type="button"
           >
             No, cancel
@@ -67,14 +60,13 @@ export default function DeleteAccountButton() {
             variant="danger"
             className="flex-1 py-2 text-xs font-semibold"
             onClick={handleDelete}
-            isLoading={isDeleting}
             type="button"
           >
             Yes, delete
           </Button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -88,5 +80,5 @@ export default function DeleteAccountButton() {
         Delete Account
       </Button>
     </div>
-  );
+  )
 }

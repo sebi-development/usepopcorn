@@ -1,4 +1,7 @@
-import supabase from "@/lib/supabase"
+import { getStorage } from "@/lib/supabase"
+
+// The storage client loads on first use (only avatar changes and account deletion need it)
+const avatars = async () => (await getStorage()).from('avatars')
 
 function extractFilePath(url) {
   if (!url) return null
@@ -32,33 +35,26 @@ export async function uploadAvatarImage(file, oldAvatarUrl, currentUserId) {
   const newFilePath = `${currentUserId}/avatar-${Date.now()}.${fileExt}`
 
   // Every upload gets a new path, so the file never changes: cache it for a year (default 1h)
-  const { error: uploadError } = await supabase.storage
-    .from('avatars')
-    .upload(newFilePath, image, { contentType: image.type, cacheControl: '31536000' })
+  const bucket = await avatars()
+  const { error: uploadError } = await bucket.upload(newFilePath, image, { contentType: image.type, cacheControl: '31536000' })
   if (uploadError) throw new Error(uploadError.message)
 
   if (oldAvatarUrl) {
     const oldPath = extractFilePath(oldAvatarUrl)
     if (oldPath) {
-      const { error: deleteError } = await supabase.storage
-        .from('avatars')
-        .remove([oldPath])
+      const { error: deleteError } = await bucket.remove([oldPath])
       if (deleteError) console.error("Failed to delete old avatar:", deleteError)
     }
   }
 
-  const { data: urlData } = supabase.storage
-    .from('avatars')
-    .getPublicUrl(newFilePath)
+  const { data: urlData } = bucket.getPublicUrl(newFilePath)
   return urlData.publicUrl
 }
 
 export async function deleteAvatarImage(url) {
   const path = extractFilePath(url)
   if (!path) return
-  const { error } = await supabase.storage
-    .from('avatars')
-    .remove([path])
+  const { error } = await (await avatars()).remove([path])
   if (error) throw new Error(error.message)
 }
 
@@ -69,7 +65,7 @@ export async function deleteAvatarImage(url) {
 const LIST_PAGE_SIZE = 100
 
 export async function deleteAllAvatarImages(userId) {
-  const bucket = supabase.storage.from('avatars')
+  const bucket = await avatars()
   for (;;) {
     const { data: files, error: listError } = await bucket.list(userId, { limit: LIST_PAGE_SIZE })
     if (listError) throw new Error(listError.message)

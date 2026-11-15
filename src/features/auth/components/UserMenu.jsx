@@ -3,13 +3,19 @@ import { Link, useNavigate } from "react-router"
 import { HiMiniUserGroup, HiOutlineUser } from "react-icons/hi2"
 import { FiUser, FiBarChart2, FiLogOut } from "react-icons/fi"
 import { LuLoaderCircle } from "react-icons/lu"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import toast from "react-hot-toast"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import useUserProfile from "@/features/profile/hooks/useUserProfile"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
-import supabase from "@/lib/supabase"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import toast from "react-hot-toast"
+import { signOut } from "@/services/session"
 
+const MENU_ITEMS = [
+  { to: "/profile", label: "Profile", icon: FiUser },
+  { to: "/profile/stats", label: "Statistics", icon: FiBarChart2 },
+  { to: "/community", label: "Friends", icon: HiMiniUserGroup },
+]
+const ITEM_CLASS = "flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm hover:bg-surface-100 transition-colors"
 
 function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
@@ -23,20 +29,17 @@ function UserMenu() {
   const currentUser = useCurrentUser()
   const { profileData } = useUserProfile(currentUser?.id)
 
-  const {mutate: logout, isPending: isLoggingOut} = useMutation({
-    mutationFn: () => supabase.auth.signOut(),
+  const { mutate: logout, isPending: isLoggingOut } = useMutation({
+    mutationFn: signOut,
     onSuccess: () => {
       queryClient.clear()
-      supabase.removeAllChannels()
       navigate('/login')
     },
     onError: () => toast.error('Sign out failed. Please try again.'),
   })
 
-
   return (
     <div ref={ref} className="md:relative">
-      {/* Trigger */}
       <button
         onClick={toggleMenu}
         aria-label="User menu"
@@ -61,44 +64,21 @@ function UserMenu() {
             <p className="text-xs text-text-muted">Signed in as {profileData?.username} </p>
           </div>
 
-          {/* Items */}
           <div className="flex flex-col gap-1 py-2">
-            <Link
-              to="/profile"
-              onClick={closeMenu}
-              className="flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm text-text hover:bg-surface-100 transition-colors"
-            >
-              <FiUser size={15} className="text-text-muted shrink-0" />
-              Profile
-            </Link>
-
-            <Link
-              to="/profile/stats"
-              onClick={closeMenu}
-              className="flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm text-text hover:bg-surface-100 transition-colors"
-            >
-              <FiBarChart2 size={15} className="text-text-muted shrink-0" />
-              Statistics
-            </Link>
-
-            <Link
-              to="/community"
-              onClick={closeMenu}
-              className="flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm text-text hover:bg-surface-100 transition-colors"
-            >
-              <HiMiniUserGroup size={15} className="text-text-muted shrink-0" />
-              Friends
-            </Link>
-
+            {MENU_ITEMS.map(({ to, label, icon: Icon }) => (
+              <Link key={to} to={to} onClick={closeMenu} className={`${ITEM_CLASS} text-text`}>
+                <Icon size={15} className="text-text-muted shrink-0" />
+                {label}
+              </Link>
+            ))}
           </div>
 
-          {/* Logout */}
           <div className="flex flex-col pb-2">
             <div className="mx-2 mb-2 h-px bg-surface-100 shrink-0" />
             <button
-              onClick={logout}
+              onClick={() => logout()}
               disabled={isLoggingOut}
-              className="flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm text-danger cursor-pointer hover:bg-surface-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className={`${ITEM_CLASS} text-danger cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               {isLoggingOut
                 ? <LuLoaderCircle size={15} className="animate-spin shrink-0" />
@@ -107,7 +87,6 @@ function UserMenu() {
               Sign out
             </button>
           </div>
-
         </div>
       )}
     </div>

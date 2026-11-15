@@ -1,42 +1,27 @@
 import { useNavigate } from "react-router"
-import supabase, { setRemember } from "@/lib/supabase"
 import toast from "react-hot-toast"
-import { getCountry } from "@/utils/getCountry"
+import { sendPasswordReset, signIn, signUp, updatePassword } from "@/services/auth"
 
+// The auth forms' actions: the service call, then where the app goes next. A failure throws to the form.
 export function useAuth() {
   const navigate = useNavigate()
 
-  async function login({ email, password, remember }) {
-    setRemember(remember)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw new Error(error.message)
+  async function login(values) {
+    await signIn(values)
     navigate('/browse', { replace: true })
   }
 
-  async function register({ email, password, username }) {
-    const country = await getCountry()
-    setRemember(true) // no checkbox on register: a new account stays signed in
-
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { username, country } }
-    })
-    if (error) throw new Error(error.message)
+  async function register(values) {
+    await signUp(values)
     navigate('/browse', { replace: true })
   }
 
-  async function forgotPassword({ email }) {
-    const redirectTo = window.location.origin + '/reset-password'
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
-    if (error) throw new Error(error.message)
-  }
+  const forgotPassword = ({ email }) => sendPasswordReset(email)
 
   async function resetPassword({ password }) {
-    const { error } = await supabase.auth.updateUser({password})
-    if (error) throw new Error(error.message)
+    await updatePassword(password)
     toast.success('Password updated successfully')
     navigate('/login', { replace: true })
-
   }
 
   return { login, register, forgotPassword, resetPassword }

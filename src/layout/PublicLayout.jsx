@@ -2,7 +2,7 @@ import { useEffect } from "react"
 import { Outlet } from "react-router"
 import Navbar from "@/layout/Navbar"
 import BackgroundMesh from "@/components/ui/BackgroundMesh"
-import { prefetch, afterFirstPaint } from "@/utils/prefetch"
+import { prefetch, afterFirstPaint } from "@/layout/prefetch"
 
 export default function PublicLayout() {
   // Login and Register are lazy routes; warm them so the landing page's buttons open them at once

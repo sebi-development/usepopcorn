@@ -1,10 +1,7 @@
 import { MOVIE_GENRES, TV_GENRES } from "@/utils/genres"
 import { getCountryOptions } from "@/utils/getCountries"
+import { toGenreOptions } from "@/utils/filters"
 import { HOME_ITEM, INSPIRE_ITEM } from "@/features/browse/constants/categories"
-
-const toGenreOptions = (map) => Object.entries(map)
-  .map(([value, label]) => ({ value, label }))
-  .sort((a, b) => a.label.localeCompare(b.label))
 
 // Newest first, next year included so Upcoming can be narrowed to it
 const YEAR_MAX = new Date().getFullYear() + 1
@@ -24,8 +21,8 @@ const COUNTRY_OPTIONS = getCountryOptions().map(({ code, name }) => ({ value: co
 
 export const YEAR = { key: 'year', label: 'Year', kind: 'select', options: YEAR_OPTIONS }
 const COUNTRY = { key: 'country', label: 'Country', kind: 'multi', options: COUNTRY_OPTIONS }
-const LANGUAGE = { key: 'language', label: 'Language', kind: 'multi', options: LANGUAGE_OPTIONS }
-const genre = (map) => ({ key: 'genre', label: 'Genre', kind: 'multi', options: toGenreOptions(map) })
+export const LANGUAGE = { key: 'language', label: 'Language', kind: 'multi', options: LANGUAGE_OPTIONS }
+const genre = (map) => ({ key: 'genre', label: 'Genre', kind: 'multi', options: toGenreOptions(Object.keys(map)) })
 
 const MOVIE_FILTERS = [genre(MOVIE_GENRES), YEAR, COUNTRY, LANGUAGE]
 const SERIES_FILTERS = [genre(TV_GENRES), YEAR, COUNTRY, LANGUAGE]

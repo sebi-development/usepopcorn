@@ -1,12 +1,16 @@
 import { Fragment, memo } from 'react'
 import { Link } from 'react-router'
-import formatRuntime from '@/utils/formatRuntime'
+import { HiArrowTopRightOnSquare } from 'react-icons/hi2'
 import Chip from '@/components/ui/Chip'
 
+// 142 → "2h 22m", 120 → "2h"
+const formatRuntime = (minutes) => `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}m` : ''}`
 // The name links are 10px tall: an invisible ::before pads each tap area vertically
 const NAME_LINK_CLASS = "relative text-text font-medium before:absolute before:-inset-y-2.5 before:inset-x-0 hover:underline underline-offset-2"
 // "Joe Russo & Anthony Russo", "A, B & C"
 const separatorAt = (index, count) => (index === 0 ? '' : index === count - 1 ? ' & ' : ', ')
+// Same pill as the IMDb link on PersonPage: the chip is 22px tall, ::before pads the tap area
+const TAP_AREA = "relative before:absolute before:-inset-3"
 
 function DetailCard({ media }) {
   const isTV = media.type === 'tv'
@@ -51,11 +55,25 @@ function DetailCard({ media }) {
         )}
       </p>
 
-      {genres?.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 md:mt-1">
-          {genres.map((genre) => (
+      {(genres?.length > 0 || media.trailerKey) && (
+        <div className="flex flex-wrap items-center gap-1.5 md:mt-1">
+          {genres?.map((genre) => (
             <Chip key={genre.id} variant="tint" size="sm" label={genre.name} />
           ))}
+          {media.trailerKey && (
+            <a
+              href={`https://www.youtube.com/watch?v=${media.trailerKey}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Watch the trailer for ${media.title} on YouTube`}
+              className={`${TAP_AREA} rounded-full`}
+            >
+              <Chip variant="outline" size="sm" className="cursor-pointer!">
+                Trailer
+                <HiArrowTopRightOnSquare className="w-2.5 h-2.5" aria-hidden="true" />
+              </Chip>
+            </a>
+          )}
         </div>
       )}
     </div>

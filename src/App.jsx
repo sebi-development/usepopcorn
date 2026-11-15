@@ -3,13 +3,8 @@ import { Toaster } from 'react-hot-toast'
 import { LuLoaderCircle } from "react-icons/lu"
 
 import PublicLayout from "@/layout/PublicLayout"
-import AppLayout, { AppSpinner } from "@/layout/AppLayout"
-import supabase from "@/lib/supabase"
-import queryClient from "@/lib/queryClient"
-import { mediaStateQuery } from "@/features/interactions/hooks/useMediaState"
-import { profileStatsQuery } from "@/features/profile/hooks/useProfileStats"
-import { bestRatedQuery } from "@/features/profile/hooks/useBestRated"
-import { watchlistPickQuery } from "@/features/interactions/hooks/useWatchlistPick"
+import AppSpinner from "@/layout/AppSpinner"
+import { hasAuthRedirect, hasStoredSession } from "@/lib/sessionStore"
 
 // ─── T0: Critical first-paint bundle ──────────────────────────────────────────
 // Only the landing page: it is the public entry. Login and Register (and react-hook-form) are lazy so
@@ -23,6 +18,10 @@ import NotFoundPage from "@/pages/public/NotFoundPage"
 // which held a cold load of /browse back by ~280ms. Navigations keep the current page until the
 // module is in; AppLayout's prefetch cascade has usually loaded it already.
 const page = (load) => async () => ({ Component: (await load()).default })
+
+// ─── Signed-in shell: AppLayout (navbar search, user menu) and Supabase, apart from the guest entry.
+// index.html asks for these chunks next to the entry when a session is stored (vite.config.js). ───
+const AppLayout = page(() => import("@/layout/AppLayout"))
 
 // ─── T1: prefetched the moment session resolves in AppLayout ─────────────────
 const BrowsePage = page(() => import("@/pages/app/BrowsePage"))
@@ -45,29 +44,21 @@ const CommunityPage = page(() => import("@/pages/app/CommunityPage"))
 // No loader: one would put its query factory (and the TMDB service) in the entry bundle
 const PersonPage = page(() => import("@/pages/app/PersonPage"))
 
-// A route loader runs in parallel with the route's `lazy` import, so Home's above-the-fold queries
-// (its cards wait on stats, best-rated and the watchlist pick; the best-rated poster is the page's
-// LCP) start next to the BrowsePage chunk download instead of after it. Fire-and-forget: the hooks
-// pick up the in-flight or cached results, and nothing here blocks the render.
-async function browseLoader({ request }) {
-  const category = new URL(request.url).searchParams.get('category')
-  if (category && category !== 'home') return null
-  const { data } = await supabase.auth.getSession()
-  const userId = data.session?.user.id
-  if (userId) {
-    queryClient.prefetchQuery(mediaStateQuery(userId))
-    queryClient.prefetchQuery(profileStatsQuery(userId))
-    queryClient.prefetchQuery(bestRatedQuery(userId))
-    queryClient.prefetchQuery(watchlistPickQuery(userId))
-  }
-  return null
-}
+// Home's data prefetch, a module of its own so its queries and Supabase stay out of the entry chunk
+const browseLoader = (args) => import("@/pages/app/browseLoader").then((module) => module.default(args))
 
 // A signed-in visitor skips the landing page and the auth forms (not /reset-password: the
-// recovery link signs the user in, and the reset form has to open for them)
+// recovery link signs the user in, and the reset form has to open for them). The stored session
+// decides without loading Supabase. A sign-in link's tokens (URL hash) need the client to become one,
+// and the client then clears the hash, which runs this loader again: every run waits for that one
+// exchange, then the stored session answers again.
+let linkSession = null
 async function redirectIfSignedIn() {
-  const { data } = await supabase.auth.getSession()
-  if (data.session) throw redirect('/browse')
+  if (hasAuthRedirect()) {
+    linkSession ??= import("@/services/session").then((module) => module.getSession()).finally(() => { linkSession = null })
+  }
+  const signedIn = linkSession ? await linkSession : hasStoredSession()
+  if (signedIn) throw redirect('/browse')
   return null
 }
 
@@ -93,7 +84,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    element: <AppLayout />,
+    lazy: AppLayout,
     errorElement: <NotFoundPage />,
     hydrateFallbackElement: <AppSpinner />,
     children: [

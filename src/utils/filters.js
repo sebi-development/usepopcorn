@@ -1,4 +1,5 @@
 import { CACHE } from "@/lib/queryClient"
+import { MOVIE_GENRES, TV_GENRES } from "@/utils/genres"
 
 // Shared filter model for every filterable list (Browse rows/grids, the Community feed).
 //
@@ -11,6 +12,20 @@ import { CACHE } from "@/lib/queryClient"
 //
 // Parsed filters hold only active keys, in def order, so the same selection always produces the
 // same object: they go straight into query keys.
+
+// What a filtered list says (MediaRow `emptyNote`) when nothing matches
+export const NO_MATCHES = 'No titles match these filters.'
+
+// Movies or series: the same pill on the feed and a person's filmography
+export const TYPE_FILTER = { key: 'type', label: 'Type', kind: 'select', options: [{ value: 'movie', label: 'Movies' }, { value: 'tv', label: 'Series' }] }
+
+// Ids both maps share (Comedy, Drama…) carry the same name in each, so merging loses nothing
+const ALL_GENRES = { ...MOVIE_GENRES, ...TV_GENRES }
+
+// Genre options for these ids (every genre by default), sorted by name
+export const toGenreOptions = (ids = Object.keys(ALL_GENRES)) => ids
+  .map((id) => ({ value: String(id), label: ALL_GENRES[id] }))
+  .sort((a, b) => a.label.localeCompare(b.label))
 
 const isValid = (def, value) => (def.validate
   ? def.validate(value)

@@ -7,6 +7,7 @@ import toast from "react-hot-toast"
 
 // interaction type -> field of the media-state payload
 const STATE_FIELD = { favorite: 'favorites', watchlist: 'watchlist' }
+const LIST_NAMES = { favorite: 'Favorites', watchlist: 'Watchlist' }
 
 export default function useToggleInteractions(type) {
   const queryClient = useQueryClient()
@@ -55,5 +56,16 @@ export default function useToggleInteractions(type) {
     },
   })
 
-  return { mutate, isPending }
+  // `media` in any of the app's title shapes (list item, rating row, details); `isActive`: on the list now
+  const toggle = (media, isActive) => {
+    mutate({
+      tmdb_id: media.id || media.tmdb_id,
+      title: media.title || media.name,
+      poster_path: media.poster_path,
+      media_type: media.media_type || media.type || 'movie',
+    })
+    toast.success(`${isActive ? 'Removed from' : 'Added to'} ${LIST_NAMES[type]}`)
+  }
+
+  return { toggle, isPending }
 }

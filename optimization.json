@@ -1,7 +1,7 @@
 {
   "project": "usepopcorn",
   "audit_date": "2026-07-29",
-  "total_findings": 49,
+  "total_findings": 50,
   "findings": [
     {
       "id": "OPT-001",
@@ -747,6 +747,26 @@
       "problem": "min-h-screen / vh sizes are measured against the largest viewport, so they overshoot while the mobile address bar is showing. Avatar rendered its own <a> inside rows that are already links (invalid nesting, React hydration warnings on Community and Friend Activity).",
       "fix": "dvh units; the search results list is capped to the viewport; Avatar is presentational.",
       "verify": "grep -rnE \"h-screen|[0-9]vh\" src  # no matches; pnpm audit:mobile reports no consoleErrors"
+    },
+    {
+      "id": "OPT-051",
+      "title": "Startup chunk is 569 KB raw / 165 KB gzip; about 22 KB gzip of it is Supabase code the first screen never runs",
+      "category": "bundle",
+      "priority": 51,
+      "severity": "medium",
+      "status": "done",
+      "files": [
+        "src/lib/supabase.js",
+        "src/services/session.js",
+        "src/features/ratings/hooks/useAverageRatingRealtime.js",
+        "src/features/social/hooks/useFeedRealtime.js",
+        "src/services/files.js",
+        "src/App.jsx",
+        "src/pages/public/NotFoundPage.jsx"
+      ],
+      "problem": "Vite warns that the entry chunk (index-*.js) is over 500 KB. Measured from its source map (2026-11-13), by gzip size: react-dom 53.8 KB, react-router 29.4 KB, Supabase 49.4 KB (auth + postgrest + core 27.1, realtime + phoenix 14.6, storage + iceberg 6.5, functions 1.2), our own code 12.9 KB, TanStack Query 5.7 KB, react-icons 4.2 KB. createClient() pulls in every Supabase sub-client, so realtime (used only by the detail page's live average and the Community feed), storage (avatar upload) and functions (score cache misses) ship to every visitor, signed-out ones included. NotFoundPage, the router's errorElement and so always in the entry, is 5.9 KB raw because its ASCII art is dozens of inline-styled spans.",
+      "fix": "Done 2026-11-13: (a) the 404 page is an InfoCard (entry −5.2 KB raw; the InfoCard chunk folded into the entry, one request fewer for Home and the auth pages). (b) src/lib/supabase.js builds AuthClient + PostgrestClient like createClient() and loads realtime, storage and functions on first use (getRealtime / getStorage / getFunctions); @supabase/supabase-js replaced by the five pinned @supabase/* packages. Entry 563.4 → 476.7 KB raw, 163.2 → 140.1 KB gzip (below the 500 KB warning). Lazy chunks: supabase-realtime 53 KB (first detail or Community visit), supabase-storage 26 KB (avatar change, account deletion), supabase-functions 3 KB (score cache miss). (c) done the same day: the guest entry holds no Supabase and no signed-in code (AppLayout is a lazy route, Navbar takes the search and user menu as children, redirects read the stored session key from src/lib/sessionStore.js; a sign-in link loads the client and every loader run waits for that exchange). A build plugin (preload-app-shell, vite.config.js) modulepreloads the shell next to the entry when a session is stored; Rolldown codeSplitting groups shared signed-in code into one app chunk (GUEST_MODULES + a build guard). Measured on the build, gzip: guest \"/\" 146.6 → 109.3 KB (3 → 4 files); signed-in cold \"/browse\" 170.5 → 174.1 KB (17 → 20 files, all requested next to the entry); 42 → 39 chunks.",
+      "verify": "pnpm exec vite build --sourcemap --outDir /tmp/map, then attribute bytes per package from /tmp/map/assets/index-*.js.map; compare index-*.js gzip in pnpm build before and after"
     }
   ]
 }

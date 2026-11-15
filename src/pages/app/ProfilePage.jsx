@@ -12,7 +12,7 @@ import useFollow from "@/features/social/hooks/useFollow"
 import { useParams } from "react-router"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
-const EditProfileModal = lazy(() => import("../../features/profile/components/EditProfileModal"))
+const EditProfileModal = lazy(() => import("@/features/profile/components/EditProfileModal"))
 
 // The hero's one action: a 44px tap target on phones, the compact button from md up
 const HERO_ACTION_CLASS = "min-h-11 min-w-36 md:min-h-0 md:min-w-0"

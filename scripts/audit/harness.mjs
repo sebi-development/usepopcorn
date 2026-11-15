@@ -41,6 +41,10 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
     localStorage.setItem(`sb-${REF}-auth-token`, JSON.stringify({
       access_token: jwt, refresh_token: 'stub', token_type: 'bearer', expires_in: 86400, expires_at: exp, user,
     }))
+  } else {
+    // Tabs share the browser's storage: a signed-in page opened earlier must not sign this one in
+    localStorage.removeItem(`sb-${REF}-auth-token`)
+    sessionStorage.removeItem(`sb-${REF}-auth-token`)
   }
 
   const now = Date.now()
@@ -80,7 +84,7 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
     const p = url.pathname
     const q = url.searchParams
     if (p.startsWith('/auth/v1/user')) return json(user)
-    if (p.startsWith('/auth/v1/logout')) return json({}, 204)
+    if (p.startsWith('/auth/v1/logout')) return json(undefined, 204)
     if (p.startsWith('/auth/v1/')) return json({ error: 'stubbed' }, 400)
     // Score Edge Functions: the cache rows below are always fresh, so these are a safety net
     if (p === '/functions/v1/csfd-score') return json({ csfdId: 9499, rating: 90 })
@@ -93,7 +97,7 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
         case 'get_profile_stats': return json({ totalRated: 34, averageScore: 7.4, moviesRated: 25, seriesRated: 9, totalWatchHours: 61.5, topGenres: [{ type: 'movie', genreId: 18, count: 12 }, { type: 'movie', genreId: 28, count: 9 }, { type: 'tv', genreId: 18, count: 5 }] })
         case 'get_recent_weekly_activity': return json(weeks)
         case 'get_extended_streak': return json(14)
-        case 'get_best_rated_since': return json({ movie: { type: 'movie', tmdb_id: 550, title: 'Fight Club', poster_path: titles[0][2], rating: 9 }, tv: { type: 'tv', tmdb_id: 1396, title: 'Breaking Bad', poster_path: titles[3][2], rating: 10 } })
+        case 'get_best_rated_since': return json({ movie: { type: 'movie', tmdb_id: 550, title: 'Fight Club', rating: 9 }, tv: { type: 'tv', tmdb_id: 1396, title: 'Breaking Bad', rating: 10 } })
         case 'get_average_rating': return json(7.8)
         case 'get_user_feed': return json(args.p_cursor_id ? [] : feedRows)
         case 'get_friends_ratings': return json([{ rating_id: 'fr-1', score: 8, created_at: iso(2), user_id: FRIEND, username: 'a_friend_with_a_long_username', avatar_url: null, total_count: 1 }])

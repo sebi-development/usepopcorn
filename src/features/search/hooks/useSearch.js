@@ -5,6 +5,9 @@ import { toPersonItem } from "@/utils/tmdbPerson";
 import queryKeys from "@/lib/queryKeys";
 import { CACHE } from "@/lib/queryClient";
 
+// Search keeps original_language (lists drop it in toMediaItem): the language pill filters on it
+const toSearchItem = (item) => ({ ...toMediaItem(item), original_language: item.original_language })
+
 // `filter` is 'movie', 'tv' or 'person' (no year for people); `query` arrives debounced.
 // Returned as-is: TanStack Query re-renders each caller only for the fields it reads.
 export default function useSearch(query, filter, year) {
@@ -14,7 +17,7 @@ export default function useSearch(query, filter, year) {
     queryKey: isPeople ? queryKeys.search.people(query) : queryKeys.search.media(filter, query, year),
     queryFn: async () => {
       const response = isPeople ? await searchPeople(query) : await searchContent(query, filter, year)
-      return { results: (response.results ?? []).map(isPeople ? toPersonItem : toMediaItem) }
+      return { results: (response.results ?? []).map(isPeople ? toPersonItem : toSearchItem) }
     },
     enabled: query.length > 0,
     // One entry per typed term: nothing to reuse once the text changes

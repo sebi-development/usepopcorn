@@ -1,4 +1,4 @@
-import supabase from '@/lib/supabase'
+import supabase, { getFunctions } from '@/lib/supabase'
 
 // IMDb / Rotten Tomatoes / Metacritic scores of a title, from two sources, cheapest first:
 //   1. the mdblist_cache table (a plain read, signed-in users may select)
@@ -22,7 +22,7 @@ export async function getMdblistScores(type, tmdbId) {
     }
   }
 
-  const { data, error } = await supabase.functions.invoke('mdblist-scores', { body: { type, tmdbId } })
+  const { data, error } = await (await getFunctions()).invoke('mdblist-scores', { body: { type, tmdbId } })
   if (error) throw new Error(error.message)
   return data
 }

@@ -76,6 +76,9 @@ const queryKeys = {
     csfdScore: (imdbId) => ['csfdScore', imdbId],
     // TMDB movie and TV ids overlap, so the type is part of the key
     mdblistScores: (type, tmdbId) => ['mdblistScores', type, tmdbId],
+    // Fetched when the Streaming section opens: services in one country, ids on them (Wikidata)
+    watchProviders: (type, tmdbId, country) => ['watchProviders', type, tmdbId, country],
+    streamingIds: (type, tmdbId) => ['streamingIds', type, tmdbId],
     recommendations: (tmdbId, type) => ['recommendations', tmdbId, type],
     category: (type, categoryId) => ['browse', categoryId, type],
     genre: (type, genreId) => ['browse', 'genre', type, genreId],

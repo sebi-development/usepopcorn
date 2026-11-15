@@ -3,7 +3,7 @@ import { useParams } from "react-router"
 import { HiArrowTopRightOnSquare } from "react-icons/hi2"
 
 import usePerson, { knownForDepartment } from "@/features/people/hooks/usePerson"
-import Filmography from "@/features/people/components/Filmography"
+import Filmography from "@/features/people/components/Filmography/Filmography"
 import PersonTabs from "@/features/people/components/PersonTabs"
 import MoviePoster from "@/components/media/MoviePoster"
 import AlertBanner from "@/components/ui/AlertBanner"
@@ -11,14 +11,11 @@ import Chip from "@/components/ui/Chip"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 import { departmentLabel } from "@/utils/tmdbPerson"
-import { today } from "@/utils/tmdbItem"
+import { formatDay, today } from "@/utils/tmdbItem"
 
 const HERO_CLASS = "grid grid-cols-[6.5rem_minmax(0,1fr)] md:grid-cols-[min(300px,30%)_minmax(0,1fr)] md:grid-rows-[auto_1fr] gap-4 md:gap-x-8 md:gap-y-5 md:px-6"
 const PHOTO_CLASS = "w-full aspect-2/3 rounded-card self-start md:row-span-2"
 const TAP_AREA = "relative before:absolute before:-inset-3"
-
-// No date-fns on this page: importing it split date-fns into chunks the entry and Browse then load
-const formatDay = (day) => new Date(day).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' })
 
 function lifeLabel({ birthday, deathday }) {
   if (!birthday) return null

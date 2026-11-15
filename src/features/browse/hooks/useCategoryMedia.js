@@ -1,4 +1,4 @@
-import { addDays, addMonths, subWeeks, format } from 'date-fns'
+import { addDays, addMonths, toDay } from '@/utils/dates'
 import usePagedList from "@/hooks/usePagedList"
 import usePagedGrid from "@/hooks/usePagedGrid"
 import { MAX_PAGES, fromTmdb } from "@/utils/pagination"
@@ -10,7 +10,6 @@ import {
   getNowPlaying, getOnTheAir, discoverMedia,
 } from "@/services/tmdb"
 
-const day = (date) => format(date, 'yyyy-MM-dd')
 
 // Both "Upcoming" rows call this — one function, called twice, so the two
 // windows are always tiled correctly and can never drift out of sync.
@@ -21,8 +20,8 @@ function getUpcomingWindows() {
   const nextMonthMax = addMonths(nextMonthMin, 1)
 
   return {
-    thisMonth: { minDate: day(thisMonthMin), maxDate: day(thisMonthMax) },
-    nextMonth: { minDate: day(nextMonthMin), maxDate: day(nextMonthMax) },
+    thisMonth: { minDate: toDay(thisMonthMin), maxDate: toDay(thisMonthMax) },
+    nextMonth: { minDate: toDay(nextMonthMin), maxDate: toDay(nextMonthMax) },
   }
 }
 
@@ -47,8 +46,8 @@ const CATEGORY_DISCOVER = {
     now_playing: () => ({
       sort_by: 'popularity.desc',
       with_release_type: '2|3',
-      'release_date.gte': day(subWeeks(new Date(), 6)),
-      'release_date.lte': day(new Date()),
+      'release_date.gte': toDay(addDays(new Date(), -42)),
+      'release_date.lte': toDay(new Date()),
     }),
   },
   series: {
@@ -56,8 +55,8 @@ const CATEGORY_DISCOVER = {
     top_rated: () => ({ sort_by: 'vote_average.desc', 'vote_count.gte': 200 }),
     on_the_air: () => ({
       sort_by: 'popularity.desc',
-      'air_date.gte': day(new Date()),
-      'air_date.lte': day(addDays(new Date(), 7)),
+      'air_date.gte': toDay(new Date()),
+      'air_date.lte': toDay(addDays(new Date(), 7)),
     }),
   },
 }

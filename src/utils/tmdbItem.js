@@ -18,5 +18,8 @@ export function toMediaItem(item) {
 // Today as YYYY-MM-DD (UTC), compared as a string with TMDB's release dates
 export const today = () => new Date().toISOString().slice(0, 10)
 
+// A YYYY-MM-DD date as "Jan 5, 2024", read as UTC so no time zone shows the day before
+export const formatDay = (day) => (day ? new Date(day).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric' }) : null)
+
 // Out by today; a title with no date yet isn't
 export const isReleased = (item) => !!item.release_date && item.release_date <= today()

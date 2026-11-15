@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react"
-import MediaRow from "@/components/media/MediaRow"
+import MediaRow from "@/components/media/MediaRow/MediaRow"
 import PersonCard from "@/components/media/PersonCard"
 import useTvCredits from "@/features/media_details/hooks/useTvCredits"
 import { toCrewCards } from "@/utils/tmdbPerson"

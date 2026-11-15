@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import supabase, { openedFromRecoveryLink } from "@/lib/supabase"
+import { openedFromRecoveryLink } from "@/lib/supabase"
+import { getSession } from "@/services/session"
 
 export default function usePasswordRecovery() {
   const [isRecoveryReady, setIsRecoveryReady] = useState(false)
@@ -12,7 +13,7 @@ export default function usePasswordRecovery() {
     // works whether init finished before or after this mounts (the one-shot
     // PASSWORD_RECOVERY event can be missed).
     let cancelled = false
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    getSession().then((session) => {
       if (cancelled) return
       if (session) setIsRecoveryReady(true)
       else setIsInvalid(true)

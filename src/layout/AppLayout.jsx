@@ -1,45 +1,38 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet, Navigate } from 'react-router'
-import supabase from '@/lib/supabase'
+import { getSession, onSessionChange } from '@/services/session'
 import Navbar from '@/layout/Navbar'
+import AppSpinner from '@/layout/AppSpinner'
 import { useQueryClient } from '@tanstack/react-query'
 import BackgroundMesh from '@/components/ui/BackgroundMesh'
+import Search from '@/features/search/components/Search'
+import UserMenu from '@/features/auth/components/UserMenu'
 import { mediaStateQuery } from '@/features/interactions/hooks/useMediaState'
 import queryKeys from '@/lib/queryKeys'
-import { prefetch, onIdle, whenQueriesSettle } from '@/utils/prefetch'
+import { prefetch, onIdle, whenQueriesSettle } from '@/layout/prefetch'
 
-// Full-screen spinner while the session resolves; also the router's fallback on a cold load
-// while the page module downloads, so the two waits look like one
-export function AppSpinner() {
-  return (
-    <div className="min-h-dvh flex items-center justify-center relative">
-      <BackgroundMesh />
-      <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin z-10" />
-    </div>
-  )
-}
+// The signed-in navbar's right side. Here, not in Navbar, so the guest pages' bundle never holds them.
+const APP_ACTIONS = <><Search /><UserMenu /></>
 
+// A lazy route: the whole signed-in shell (this, search, the user menu, Supabase) loads apart from
+// the entry, and index.html asks for it early when a session is stored (vite.config.js)
 function AppLayout() {
   const [session, setSession] = useState(undefined)
   const queryClient = useQueryClient()
   const prefetchedRef = useRef(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
+    getSession().then((session) => {
+      setSession(session)
       // Seed the cache immediately — no extra network call
-      if (data.session?.user) {
-        queryClient.setQueryData(queryKeys.currentUser, data.session.user)
-      }
+      if (session?.user) queryClient.setQueryData(queryKeys.currentUser, session.user)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Keep the cache in sync on auth changes; returns the unsubscribe
+    return onSessionChange((session) => {
       setSession(session)
-      // Keep cache in sync on auth changes
       queryClient.setQueryData(queryKeys.currentUser, session?.user ?? null)
     })
-
-    return () => subscription.unsubscribe()
   }, [queryClient])
 
   // Prefetch cascade — fires once per session, never on re-renders.
@@ -73,7 +66,6 @@ function AppLayout() {
   }, [session, queryClient])
 
   const outletContext = useMemo(() => ({ session }), [session])
-  const isLoggedIn = Boolean(session)
 
   // still loading
   if (session === undefined) return <AppSpinner />;
@@ -81,11 +73,9 @@ function AppLayout() {
   if (session === null) return <Navigate to='/login' replace />
 
   return (
-    // flow-root keeps the navbar's mobile top margin inside this box: collapsed through it, the
-    // margin moved <body> down 12px when the layout replaced the spinner (a CLS of 12/viewport)
     <div className="min-h-dvh relative flow-root">
       <BackgroundMesh />
-      <Navbar isLoggedIn={isLoggedIn} />
+      <Navbar isLoggedIn>{APP_ACTIONS}</Navbar>
       <main className="pt-4 px-4 md:pt-24 md:px-6 max-w-7xl mx-auto w-full relative z-10">
         <Outlet context={outletContext} />
       </main>

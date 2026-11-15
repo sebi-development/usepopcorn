@@ -1,5 +1,5 @@
 import { memo, useState } from "react"
-import MediaRow from "@/components/media/MediaRow"
+import MediaRow from "@/components/media/MediaRow/MediaRow"
 import useInteractions from "@/features/interactions/hooks/useInteractions"
 import { useWatchlistCount } from "@/features/interactions/hooks/useMediaState"
 import useIntersectionObserver from "@/hooks/useIntersectionObserver"

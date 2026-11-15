@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react'
 import useRecommendations, { useRecommendationsGrid } from '@/features/browse/hooks/useRecommendations'
-import MediaRow from '@/components/media/MediaRow'
+import MediaRow from '@/components/media/MediaRow/MediaRow'
 import useExpandableGrid from '@/hooks/useExpandableGrid'
 
 const PLACEHOLDER_HEADINGS = { movie: 'Recommended movies', tv: 'Recommended series' }
@@ -28,10 +28,6 @@ function RecommendationRow({ seed, type, isLoadingSeed, expandable = true, headi
 
   if (!seed && !isLoadingSeed) return null
 
-  if (emptyNote && data?.length === 0) {
-    return <p className="text-sm text-text-muted md:px-6">{emptyNote}</p>
-  }
-
   return (
     <MediaRow
       heading={heading}
@@ -54,6 +50,7 @@ function RecommendationRow({ seed, type, isLoadingSeed, expandable = true, headi
       page={page}
       totalPages={grid.totalPages}
       onPageChange={setPage}
+      emptyNote={emptyNote}
     />
   )
 }

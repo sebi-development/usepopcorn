@@ -83,7 +83,7 @@ Data moves through three layers, and each layer has one job.
 
 | Layer | Location | Responsibility |
 |---|---|---|
-| **Services** | `src/services/*` | Plain async functions with no React. `tmdb.js` wraps `fetch`. `wikidata.js` asks Wikidata's public SPARQL endpoint (a plain GET, no key). `mdblist.js` / `csfd.js` read a score cache table and call their Edge Function only when the row is missing or expired. The rest (`ratings`, `follows`, `profiles`, `interactions`, `files`) call Supabase through one shared client (`src/lib/supabase.js`). Every function throws `Error` so React Query can surface it. |
+| **Services** | `src/services/*` | Plain async functions with no React. `tmdb.js` wraps `fetch`. `wikidata.js` asks Wikidata's public SPARQL endpoint (a plain GET, no key). `mdblist.js` / `csfd.js` read a score cache table and call their Edge Function only when the row is missing or expired. `location.js` looks up the visitor's country from their IP at sign-up. The rest (`ratings`, `follows`, `profiles`, `interactions`, `files`, `session`, `auth`, `account`) call Supabase through one shared client (`src/lib/supabase.js`); `session.js` is what the app shell loads at startup, `auth.js` only the sign-in pages. Every function throws `Error` so React Query can surface it. |
 | **Hooks** | `src/features/<feature>/hooks/*` | `useQuery` / `useInfiniteQuery` / `useMutation` wrappers. Third-party payloads (TMDB, MDBList, ČSFD) are normalised in the `queryFn`, not in `select`, so the cache holds only the fields the UI reads (a raw TMDB title is ~200 KB, a season ~100 KB). Mutations use optimistic updates: `onMutate` snapshot, `onError` rollback, `onSettled` invalidate. |
 | **Components** | `src/features/<feature>/components`, `src/components/{ui,media}`, `src/pages/*` | Presentation. Shared primitives are `React.memo`-ed. |
 
@@ -142,22 +142,26 @@ One case sits outside the tiers on purpose: the current user (`∞` / `∞`, see
 
 Supabase RPCs page by keyset cursor `(created_at, id)`, so deep pages cost the same as the first. The cursor timestamp is passed back as the string PostgREST returned, and `p_limit` is clamped to 50 server-side.
 
-**Realtime invalidation, not polling.** `useFeedRealtime` and `useAverageRatingRealtime` subscribe to Supabase `postgres_changes` on `ratings`, with server-side filters (`user_id=in.(…)` for followed users, `tmdb_id=eq.<id>`). Each event calls `invalidateQueries` (or patches a score in place) with the exact key the reader uses, and both sides take it from `queryKeys` (`queryKeys.feed(userId)`, `queryKeys.ratings.average(tmdbId)`), so they cannot drift apart. Channels are torn down on unmount, and the following-id list is sorted and joined into a stable string so the channel is not resubscribed on every render.
+**Realtime invalidation, not polling.** `useFeedRealtime` and `useAverageRatingRealtime` subscribe to Supabase `postgres_changes` on `ratings`, with server-side filters (`user_id=in.(…)` for followed users, `tmdb_id=eq.<id>`). Each event calls `invalidateQueries` (or patches a score in place) with the exact key the reader uses, and both sides take it from `queryKeys` (`queryKeys.feed(userId)`, `queryKeys.ratings.average(tmdbId)`), so they cannot drift apart. Channels are torn down on unmount, and the following-id list is sorted and joined into a stable string so the channel is not resubscribed on every render. Both hooks open their channel through one helper (`openChannel` in `src/services/realtime.js`), and the realtime client itself loads on the first channel, so it isn't part of the startup bundle.
 
 **Route-level speculative loading.** `src/App.jsx` splits routes into tiers, and `AppLayout` runs a prefetch cascade once per session:
 
 | Tier | Chunks | Loaded |
 |---|---|---|
-| T0 (eager) | Landing, Login, Register, NotFound | First paint |
+| T0 (eager) | Landing, NotFound: the guest entry, without Supabase or the app shell | First paint |
+| Auth forms | Login, Register (react-hook-form, the Supabase client) | Prefetched after the landing page's first paint |
+| Shell | `AppLayout` (navbar search, user menu), the shared `app` chunk, the Supabase client | Requested next to the entry when a session is stored (see below) |
 | T1 | `BrowsePage` | Prefetched as soon as the session resolves, during the auth spinner |
 | T2 | `ProfilePage`, `DetailPage` (plus `ForgotPassword` / `ResetPassword` on demand) | `requestIdleCallback` slot |
 | T3 | `CommunityPage`, `ProfileStatsPage` | Later `requestIdleCallback` slot |
+
+**A guest entry, a signed-in shell.** Guests never download the signed-in app: `AppLayout` is a lazy route, the navbar receives the search and user menu as children instead of importing them, and the signed-in redirects on `/`, `/login` and `/register` read the stored session key (`src/lib/sessionStore.js`) instead of loading Supabase. A sign-in link (tokens in the URL hash) is the one case that loads the client first, and every loader run waits for that one token exchange. Signed-in visitors don't pay for the split: a build plugin in `vite.config.js` writes a tiny inline script into `index.html` that, when a session is stored, asks for the shell's chunks next to the entry instead of after it. Rolldown groups our code shared by signed-in chunks into one `app` chunk; the plugin fails the build if the guest entry ever imports it.
 
 `requestIdleCallback` has a `timeout: 3000` and a `setTimeout` fallback. Prefetch failures are swallowed, because the route's `lazy` loader imports the module again on navigation.
 
 Pages are data-router `lazy` routes, not `React.lazy` + `<Suspense>`. The router loads the module before it renders the route, so nothing suspends. A `React.lazy` page always suspends on its first render, and React 19 reveals a suspended boundary no sooner than 300 ms after its fallback appeared (`FALLBACK_THROTTLE_MS`), which on a cold load of `/browse` held the page back ~280 ms after its code had arrived.
 
-**Render-as-you-fetch on `/browse`.** A route `loader` runs in parallel with the route's `lazy` import, so `browseLoader` starts Home's above-the-fold queries (media state, profile stats, best-rated picks) next to the BrowsePage chunk download instead of after it. It does not await them: the hooks pick up the in-flight requests through the shared query option factories (`bestRatedQuery`, `profileStatsQuery`, `mediaStateQuery`), so each is requested once. Under a throttled mobile profile (4× CPU, 150 ms RTT, 1.6 Mbps) the best-rated request starts ~520 ms earlier and LCP drops from ~3.3 s to ~2.9 s.
+**Render-as-you-fetch on `/browse`.** A route `loader` runs in parallel with the route's `lazy` import, so `browseLoader` starts Home's above-the-fold queries (media state, profile stats, best-rated picks) next to the BrowsePage chunk download instead of after it. It does not await them: the hooks pick up the in-flight requests through the shared query option factories (`bestRatedQuery`, `profileStatsQuery`, `mediaStateQuery`), so each is requested once.
 
 **Optimistic mutations.** Rating upsert follows `cancelQueries` → snapshot → `setQueryData` → rollback on error → invalidate on settle (`invalidateRatingQueries`). Ratings, average rating, profile stats, best-rated picks and every heatmap year refresh from `onSettled`. Favourite / watchlist toggles and follows patch their caches the same way.
 
@@ -189,7 +193,7 @@ Browse, the Community feed and a person's filmography share one filter layer. Th
 
 ### 2.4 Component geometry and design system
 
-- **Slot-based `FeatureCard`** (`src/components/ui/FeatureCard.jsx`). It exposes `heroBackground`, `heroContent`, `floatingIcon` and `children` slots and is wrapped in `React.memo`. The streak card and the home-page feature cards are compositions of this one primitive, and it ships a matching `FeatureCardSkeleton` with identical geometry, so loading and loaded states occupy the same box (no layout shift).
+- **One `FeatureCard` for Home's four cards** (`src/features/browse/components/cards/FeatureCard.jsx`). It draws the shared design (gradient hero with the theme's icon, chip, one line of text, the whole card as one link) from a `theme` object and a few props; each card (streak, Movie and Series of the month, watchlist pick) keeps only its own data hook and an optional `hero` or extra body content. The hero is sized by the card's width, so a longer text below can't squeeze it and every hero in a row lines up. Its skeleton (`isLoading`) shares the same geometry, so loading and loaded states occupy the same box (no layout shift).
 - **Concentric corner radii (`inner = outer − padding`).** The hero panel is nested in the card with padding `p-2` (0.5 rem). On `sm+` the outer radius is `rounded-4xl` (2 rem) and the inner is `rounded-3xl` (1.5 rem), which is exactly `2rem − 0.5rem`, so the inner curve is concentric with the outer one. Below `sm` the card uses `1.75rem` outer with `p-1.5` and a `1.25rem` inner radius.
 - **Grid.** Cards use `aspect-2/3 h-full w-full`, so every card in a grid row matches the tallest sibling. The hero occupies a fixed 72% of the card height, and card grids reflow with responsive CSS Grid columns, not JS measurement.
 - **Design tokens.** Colours and radii are defined once in `@theme` in `src/index.css` (`--color-primary`, `--color-surface-*`, `--radius-card`). Tailwind v4 generates utilities from these tokens.
@@ -225,7 +229,7 @@ Twelve functions live in `public` (the trigger function also depends on the `aut
 | 4 | `get_profile_stats(p_user_id uuid)` | `jsonb` | `unnest(genre_ids)` per type → `GROUP BY type, genre_id` → `row_number() OVER (PARTITION BY type ORDER BY genre_count DESC)`; keeps `rank <= 3`. Scalars via `count(*) FILTER (WHERE type = …)`, `round(avg(score), 1)` and `sum(runtime) FILTER (WHERE type = 'movie') / 60.0` for watch-hours. Assembled with `jsonb_build_object` / `jsonb_agg`. | `SECURITY INVOKER`, `STABLE`, so RLS applies |
 | 5 | `get_profile_heatmap(p_user_id uuid, p_year integer)` | `jsonb` | `generate_series` of weeks from `max(joined_at, Jan 1)` to `min(Dec 31, today)`, `LEFT JOIN` to ratings on `date_trunc('week', created_at)`, `GROUP BY week`, `jsonb_agg(... ORDER BY week_start)`. Zero-activity weeks are preserved. Also returns `joinedAt`. | `SECURITY INVOKER`, `STABLE`, so RLS applies |
 | 6 | `get_recent_weekly_activity(p_user_id uuid, p_weeks integer DEFAULT 12)` | `jsonb` | Same dense-calendar pattern over a rolling window of `p_weeks` weeks ending at the current week. Fixed-size output (12 by default). | `SECURITY INVOKER`, `STABLE`, so RLS applies |
-| 7 | `get_best_rated_since(p_user_id uuid, p_since timestamptz)` | `jsonb` | `DISTINCT ON (type)` over the user's `movie` / `tv` ratings with `updated_at >= p_since`, `ORDER BY type, score DESC, updated_at DESC`, so each type keeps its best-scored rating (ties go to the most recently updated). `jsonb_object_agg(type, to_jsonb(t))` folds the two rows into one `{ movie, tv }` object (`{}` when the window is empty), each pick carrying `type`, `tmdb_id`, `title`, `poster_path`, `rating`. The client passes calendar-snapped windows from `src/utils/periods.js`: the month for the "of the Month" cards, then 3, 6 and 12 months as fallbacks that seed the recommendation rows, which then call TMDB `/recommendations`. | `SECURITY INVOKER` (default), marked `STABLE`, so RLS applies |
+| 7 | `get_best_rated_since(p_user_id uuid, p_since timestamptz)` | `jsonb` | `DISTINCT ON (type)` over the user's `movie` / `tv` ratings with `created_at >= p_since` (titles first rated in the window, so re-scoring an old title doesn't count), `ORDER BY type, score DESC, created_at DESC`, so each type keeps its best-scored rating (ties go to the most recently rated). `jsonb_object_agg(type, to_jsonb(t))` folds the two rows into one `{ movie, tv }` object (`{}` when the window is empty), each pick carrying `type`, `tmdb_id`, `title`, `rating`. The client passes calendar-snapped windows from `src/utils/periods.js`: the month for the "of the Month" cards, then 3, 6 and 12 months as fallbacks that seed the recommendation rows, which then call TMDB `/recommendations`. | `SECURITY INVOKER` (default), marked `STABLE`, so RLS applies |
 | 8 | `get_average_rating(p_tmdb_id integer)` | `numeric` | `ROUND(AVG(score)::numeric, 1)` over all ratings for a title. | `SECURITY INVOKER` (default), marked `STABLE` |
 | 9 | `get_user_feed(current_user_id uuid, p_limit integer DEFAULT 20, p_cursor_created_at timestamptz, p_cursor_id uuid, p_type text, p_min_score integer, p_genre_ids integer[], p_user_ids uuid[], p_since timestamptz)` | `TABLE(id, tmdb_id, title, poster_path, type, score, created_at, user_id, username, avatar_url)` | `ratings ⨝ follows ON r.user_id = f.following_id ⨝ profiles`, filtered by `f.follower_id = current_user_id`, ordered by `(created_at, id) DESC` and paged by keyset cursor. `p_limit` is clamped to 50, so the client receives one small page of fully-hydrated rows at a time. The optional `p_*` filters (type, minimum score, any-of genres, any-of followed users, since) are applied in the same query, and are `null` when unused. | `SECURITY INVOKER`, `STABLE`, so RLS applies |
 | 10 | `get_friends_ratings(current_user_id uuid, p_tmdb_id integer, p_limit integer DEFAULT 12, p_cursor_created_at timestamptz, p_cursor_id uuid)` | `TABLE(rating_id, score, created_at, user_id, username, avatar_url, total_count)` | Same three-way join, restricted to a single `tmdb_id`, with the same keyset paging and `total_count` for the grid. Drives the friend activity tab on a title's page. | `SECURITY INVOKER`, `STABLE`, so RLS applies |
@@ -348,7 +352,7 @@ The project is linked to the production database through the Supabase CLI (a dev
 | Frontend | **Vite 8** | Native-ESM dev server and Rollup production build with automatic chunking for every dynamic `import()`. |
 | Frontend | **React Router v7** (`createBrowserRouter`) | Data-router API with nested layouts (`PublicLayout` / `AppLayout`), and the auth gate lives in a layout route rather than being repeated per page. |
 | Frontend | **Tailwind CSS v4** (`@tailwindcss/vite`) | Zero-runtime styling with tokens declared in `@theme`. Removes CSS-in-JS runtime cost and keeps geometry (radii, aspect ratios) declarative. |
-| Frontend | react-hook-form, react-hot-toast, date-fns, react-icons | Uncontrolled form inputs (fewer re-renders than controlled forms), small toast surface, and tree-shakeable date and icon imports. |
+| Frontend | react-hook-form, react-hot-toast, react-icons | Uncontrolled form inputs (fewer re-renders than controlled forms), small toast surface, and tree-shakeable icon imports. No date library: a few native `Date` helpers (`src/utils/dates.js`) cover the calendar math, which keeps a formatting engine and locale out of the bundle. |
 | State / cache | **TanStack Query v5** | Handles server state, request deduplication, `staleTime` / `gcTime` control, `keepPreviousData`, `prefetchQuery` and optimistic mutations. A global store (Redux/Zustand) would mean reimplementing cache invalidation by hand. There is no client-side state library beyond it and local `useState`. |
 | Backend / DB | **Supabase / PostgreSQL** | Relational data (ratings ⨝ follows ⨝ profiles) with real SQL: CTEs, window functions and `generate_series` power the analytics. A document store would push joins and aggregates into the client. Supabase also provides Auth, Realtime and Storage without a custom server. |
 | Backend / DB | **PL/pgSQL / SQL RPCs** | Aggregation runs next to the data, and the wire carries small pre-shaped results. The tradeoff is that logic lives in the database and needs migration discipline, and the DB CPU is shared across users. |
@@ -420,22 +424,29 @@ The `@/` import alias maps to `src/` (`vite.config.js`, `jsconfig.json`).
 src/
 ├── App.jsx                # Route table, tiered lazy loading
 ├── main.jsx               # app entry, QueryClientProvider
-├── layout/                # AppLayout (auth gate + prefetch cascade), PublicLayout, Navbar
+├── layout/                # AppLayout (auth gate + prefetch cascade), PublicLayout, Navbar, prefetch helpers
 ├── pages/{public,auth,app}
 ├── features/
-│   ├── auth/              # session, current user, password recovery
-│   ├── browse/            # category rail, rows, useCategoryMedia (row + grid hooks)
-│   ├── media_details/     # detail tabs (cast and crew, scores, seasons), TMDB and score hooks
+│   ├── auth/              # auth forms' hook, current user, password recovery, user menu
+│   ├── browse/            # category rail, rows, Home cards, useCategoryMedia (row + grid hooks)
+│   ├── media_details/     # detail page: action dock, tabs (overview, cast and crew, scores, seasons, friends)
+│   │   ├── components/
+│   │   │   ├── DetailCard.jsx       # one file while it has no private parts…
+│   │   │   ├── ActionSection/       # …a folder once it has some: ActionSection.jsx, Score, ShareButton, useTitleActions
+│   │   │   └── tabs/SeasonsTab/     # SeasonsTab.jsx, SeasonAccordion, EpisodeRow (+ its skeleton), episodeTones.js
+│   │   ├── hooks/                   # React Query wrappers the feature's components share
+│   │   └── utils/                   # pure helpers two of its parts share (scoreTier)
 │   ├── people/            # person page: filmography, collection, awards (Wikidata)
 │   ├── ratings/           # rating UI, optimistic mutations, realtime average
-│   ├── interactions/      # favourites / watchlist
+│   ├── interactions/      # favourite / watchlist button and card menu
 │   ├── search/            # title and user search
 │   ├── social/            # feed, follows, suggestions, realtime feed
 │   └── profile/           # heatmap, streak, stats, avatar, account deletion
-├── components/{ui,media,filters}  # shared primitives (FeatureCard, Chip, Modal, MediaRow, FilterBar, FilterPill, …)
-├── services/              # tmdb, wikidata, mdblist, csfd, ratings, follows, profiles, interactions, files
+├── components/{ui,media,filters}  # shared primitives (Chip, Modal, SearchField, MediaRow/, FilterBar, FilterPill, …)
+├── services/              # tmdb, wikidata, mdblist, csfd, ratings, follows, profiles, interactions, files,
+│                          # session (loaded at startup), auth (sign-in pages only), account, location
 ├── hooks/                 # generic hooks (usePagedList, usePagedGrid, useTabs, debounce, focus trap, …)
-├── utils/                 # pure helpers (pagination adapters, tmdbItem, tmdbPerson, periods, filters)
+├── utils/                 # pure helpers two or more features share (pagination adapters, tmdbItem, tmdbPerson, filters, dates, periods)
 └── lib/                   # supabase client, queryClient (CACHE tiers), queryKeys factory
 supabase/
 ├── migrations/            # every DB change since 2026-10-01
@@ -444,6 +455,10 @@ supabase/
 └── templates/             # auth email templates
 scripts/audit/             # headless-browser audits (mobile, cache, checks)
 ```
+
+**Conventions.** Code lives next to the only thing that uses it: a helper or hook used by one component sits in that component's folder, one used across a feature in the feature's `hooks/` or `utils/`, and only what two or more features share goes up to `src/`. A component gets its own folder (`Name/Name.jsx`, no `index.js` barrels) once it has private parts, and a small skeleton lives in the file of the component it imitates, so the two share layout classes and can't drift apart.
+
+**Enforced boundaries.** `no-restricted-imports` in `eslint.config.js` fails the lint (and CI) when a file crosses a layer: only `src/services` imports the Supabase client (realtime hooks go through `services/realtime.js`), the shared folders (`components`, `hooks`, `utils`, `lib`, `services`) never import a feature (`components/media` may use `interactions`, for the card menu), nothing below a page imports a page or layout, and services stay free of React.
 
 ---
 

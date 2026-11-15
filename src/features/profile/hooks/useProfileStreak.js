@@ -13,6 +13,9 @@ export function getCountedWeeks(weeks) {
   return currentWeek.count > 0 ? weeks : weeks.slice(0, -1)
 }
 
+// Weeks in a row with a rating, back from the latest counted week
+export const countStreak = (countedWeeks) => countedWeeks.length - 1 - countedWeeks.findLastIndex((week) => week.count === 0)
+
 export default function useProfileStreak(userId) {
   const currentUser = useCurrentUser()
   const id = userId ?? currentUser?.id
@@ -25,8 +28,8 @@ export default function useProfileStreak(userId) {
   })
 
   const countedWeeks = getCountedWeeks(streakQuery.data)
-  const isSaturated = countedWeeks.length > 0 &&
-    countedWeeks.every(week => week.count > 0)
+  // Every week in the window counts, so the streak may run back further (the extended query)
+  const isSaturated = countedWeeks.length > 0 && countStreak(countedWeeks) === countedWeeks.length
 
   const extendedQuery = useQuery({
     queryKey: queryKeys.extendedStreak(id),

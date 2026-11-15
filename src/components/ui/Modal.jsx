@@ -5,7 +5,6 @@ import { useFocusTrap } from "@/hooks/useFocusTrap"
 import useKey from "@/hooks/useKey"
 import { useOutsideClick } from "@/hooks/useOutsideClick"
 import { useScrollLock } from "@/hooks/useScrollLock"
-import mergeRefs from "@/utils/mergeRefs"
 
 function Modal({ title, subtitle, onClose, children }) {
   const handleClose = useCallback(() => onClose(), [onClose])
@@ -19,7 +18,8 @@ function Modal({ title, subtitle, onClose, children }) {
   return createPortal(
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
       <div
-        ref={mergeRefs(outsideClickRef, focusTrapRef)}
+        // Both hooks watch the panel, each through its own ref object
+        ref={(node) => { outsideClickRef.current = node; focusTrapRef.current = node }}
         // Taller than the screen (small phones, long forms): the panel scrolls instead of being cut off
         className="w-full max-w-md max-h-full overflow-y-auto overscroll-contain bg-surface-900/60 backdrop-blur-xl border border-primary-light/20 rounded-3xl shadow-2xl"
       >
