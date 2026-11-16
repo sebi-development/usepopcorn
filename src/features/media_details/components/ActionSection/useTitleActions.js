@@ -3,12 +3,14 @@ import useGetAverageRating from "@/features/ratings/hooks/useGetAverageRating"
 import useAverageRatingRealtime from "@/features/ratings/hooks/useAverageRatingRealtime"
 import useUploadRating from "@/features/ratings/hooks/useUploadRating"
 import useDeleteRating from "@/features/ratings/hooks/useDeleteRating"
+import { titleKey } from "@/utils/tmdbItem"
 
 // The signed-in user's state for one title (own rating, favorite, watchlist), its live average and the rating writes
 export default function useTitleActions(media, tmdbId, type) {
   const { favorites, watchlist, ratings } = useMediaState()
-  const { data: averageScore = null } = useGetAverageRating(tmdbId)
-  useAverageRatingRealtime(tmdbId)
+  const key = titleKey(type, tmdbId)
+  const { data: averageScore = null } = useGetAverageRating(tmdbId, type)
+  useAverageRatingRealtime(tmdbId, type)
 
   const { mutate: uploadRating } = useUploadRating()
   const { mutate: deleteRating } = useDeleteRating()
@@ -24,11 +26,11 @@ export default function useTitleActions(media, tmdbId, type) {
   })
 
   return {
-    userScore: ratings.get(tmdbId),
+    userScore: ratings.get(key),
     averageScore,
-    isFavorited: favorites.has(tmdbId),
-    isWatchlisted: watchlist.has(tmdbId),
+    isFavorited: favorites.has(key),
+    isWatchlisted: watchlist.has(key),
     rate,
-    removeRating: () => deleteRating(tmdbId),
+    removeRating: () => deleteRating({ tmdbId, type }),
   }
 }

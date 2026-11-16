@@ -56,10 +56,11 @@ export async function getSuggestedUsers(currentUserId) {
   return data ?? []
 }
 
-export async function getFriendsRatings(currentUserId, tmdbId, { limit, cursor }) {
+export async function getFriendsRatings(currentUserId, tmdbId, type, { limit, cursor }) {
   const { data, error } = await supabase.rpc('get_friends_ratings', {
     current_user_id: currentUserId,
     p_tmdb_id: tmdbId,
+    p_type: type,
     p_limit: limit,
     p_cursor_created_at: cursor?.created_at ?? null,
     p_cursor_id: cursor?.id ?? null,

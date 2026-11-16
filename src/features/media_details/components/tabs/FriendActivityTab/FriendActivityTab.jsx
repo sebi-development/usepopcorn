@@ -19,10 +19,10 @@ function FriendActivitySkeleton() {
   )
 }
 
-export default function FriendActivityTab({ tmdbId }) {
+export default function FriendActivityTab({ tmdbId, type }) {
   const {
     items: friends, total, isLoading, isError, phase, pageCount, fetchMore, isFetchingNextPage,
-  } = useFriendsRatings(tmdbId)
+  } = useFriendsRatings(tmdbId, type)
 
   if (isLoading) return <FriendActivitySkeleton />
   if (isError) return <AlertBanner variant="danger" message="Failed to load activity. Please try again." />

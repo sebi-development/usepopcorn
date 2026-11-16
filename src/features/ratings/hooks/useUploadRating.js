@@ -4,6 +4,7 @@ import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import { patchMediaState } from "@/features/interactions/hooks/useMediaState"
 import invalidateRatingQueries from "@/features/ratings/hooks/invalidateRatingQueries"
 import queryKeys from "@/lib/queryKeys"
+import { titleKey } from "@/utils/tmdbItem"
 import toast from "react-hot-toast"
 
 export default function useUploadRating() {
@@ -18,7 +19,7 @@ export default function useUploadRating() {
       const previousState = queryClient.getQueryData(queryKey)
       patchMediaState(queryClient, currentUser?.id, (old) => ({
         ...old,
-        ratings: { ...old.ratings, [data.tmdb_id]: data.score },
+        ratings: { ...old.ratings, [titleKey(data.type, data.tmdb_id)]: data.score },
       }))
       return { previousState, queryKey }
     },

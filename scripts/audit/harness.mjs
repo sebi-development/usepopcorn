@@ -65,6 +65,8 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
     const [id, title, poster, type] = titles[i % titles.length]
     return { id: `r-${i}`, tmdb_id: id + (i >= titles.length ? i * 1000 : 0), title: i >= titles.length ? `${title} ${i}` : title, poster_path: poster, type, score: 6 + (i % 5), genre_ids: [18, 28] }
   })
+  // State holds ids; the RPC keys titles as '<type>:<id>' (titleKey in src/utils/tmdbItem.js)
+  const titleKeyOf = (id) => `${titles.find((t) => t[0] === id)?.[3] ?? 'movie'}:${id}`
   // Watchlist metadata per title: [genre_ids, release_date, runtime (movie) or seasons (tv)]
   const meta = {
     550: [[18, 53], '1999-10-15', 139], 27205: [[28, 878], '2010-07-15', 148], 157336: [[12, 18, 878], '2014-11-05', 169],
@@ -103,7 +105,7 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
       const fn = p.split('/').pop()
       const args = body ? JSON.parse(body) : {}
       switch (fn) {
-        case 'get_my_media_state': return json({ favorites: state.favorites, watchlist: state.watchlist, ratings: state.ratings })
+        case 'get_my_title_state': return json({ favorites: state.favorites.map(titleKeyOf), watchlist: state.watchlist.map(titleKeyOf), ratings: Object.fromEntries(Object.entries(state.ratings).map(([id, score]) => [titleKeyOf(Number(id)), score])) })
         case 'get_profile_stats': return json({ totalRated: 34, averageScore: 7.4, moviesRated: 25, seriesRated: 9, totalWatchHours: 61.5, topGenres: [{ type: 'movie', genreId: 18, count: 12 }, { type: 'movie', genreId: 28, count: 9 }, { type: 'tv', genreId: 18, count: 5 }] })
         case 'get_recent_weekly_activity': return json(weeks)
         case 'get_extended_streak': return json(14)
@@ -145,7 +147,8 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
         state[field] = state[field].filter((x) => x !== id)
         return json(had ? [{ id: 'x' }] : [])
       }
-      if (method === 'POST') { const r = JSON.parse(body); const f = r.interaction_type === 'favorite' ? 'favorites' : 'watchlist'; state[f] = [...state[f], r.tmdb_id]; return json(undefined, 201) }
+      // An add is an upsert that returns the stored row (select=…)
+      if (method === 'POST') { const r = JSON.parse(body); const f = r.interaction_type === 'favorite' ? 'favorites' : 'watchlist'; state[f] = [...state[f], r.tmdb_id]; return json([{ ...r, created_at: new Date().toISOString() }], 201) }
     }
     // Score caches: one fresh row per title (maybeSingle reads an array)
     if (table === 'csfd_cache') return json([{ csfd_id: 9499, rating: 90, expires_at: new Date(now + 90 * 864e5).toISOString() }])

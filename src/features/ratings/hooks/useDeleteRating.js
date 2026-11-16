@@ -4,6 +4,7 @@ import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import { patchMediaState } from "@/features/interactions/hooks/useMediaState"
 import invalidateRatingQueries from "@/features/ratings/hooks/invalidateRatingQueries"
 import queryKeys from "@/lib/queryKeys"
+import { titleKey } from "@/utils/tmdbItem"
 import toast from "react-hot-toast"
 
 export default function useDeleteRating() {
@@ -11,14 +12,14 @@ export default function useDeleteRating() {
   const currentUser = useCurrentUser()
 
   const { mutate, isPending, error } = useMutation({
-    mutationFn: (tmdb_id) => deleteRating(tmdb_id, currentUser?.id),
-    onMutate: async (tmdb_id) => {
+    mutationFn: ({ tmdbId, type }) => deleteRating(tmdbId, type, currentUser?.id),
+    onMutate: async ({ tmdbId, type }) => {
       const queryKey = queryKeys.mediaState(currentUser?.id)
       await queryClient.cancelQueries({ queryKey })
       const previousState = queryClient.getQueryData(queryKey)
       patchMediaState(queryClient, currentUser?.id, (old) => {
         const ratings = { ...old.ratings }
-        delete ratings[tmdb_id]
+        delete ratings[titleKey(type, tmdbId)]
         return { ...old, ratings }
       })
       return { previousState, queryKey }

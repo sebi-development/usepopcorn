@@ -15,6 +15,9 @@ export function toMediaItem(item) {
   }
 }
 
+// A title's identity across the app: TMDB movie and TV ids overlap, so the type is part of it (e.g. 'movie:550')
+export const titleKey = (type, id) => `${type}:${id}`
+
 // Today as YYYY-MM-DD (UTC), compared as a string with TMDB's release dates
 export const today = () => new Date().toISOString().slice(0, 10)
 

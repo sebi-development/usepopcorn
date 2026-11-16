@@ -11,19 +11,19 @@ const cursorOf = (row) => ({ created_at: row.created_at, id: row.rating_id })
 
 // No auto-loading: the list lives inside a tab, so more friends are fetched
 // only when the user presses "Load more".
-export default function useFriendsRatings(tmdb_id) {
+export default function useFriendsRatings(tmdb_id, type) {
   const currentUser = useCurrentUser()
   const userId = currentUser?.id
 
   return usePagedList({
-    queryKey: queryKeys.friendsRatings.byTitle(userId, tmdb_id),
+    queryKey: queryKeys.friendsRatings.byTitle(userId, type, tmdb_id),
     fetchPage: fromCursorRpc(
-      ({ limit, cursor }) => getFriendsRatings(userId, tmdb_id, { limit, cursor }),
+      ({ limit, cursor }) => getFriendsRatings(userId, tmdb_id, type, { limit, cursor }),
       PAGE_SIZE,
       cursorOf
     ),
     initialPageParam: null,
     autoPages: 0,
-    enabled: !!userId && !!tmdb_id,
+    enabled: !!userId && !!tmdb_id && !!type,
   })
 }

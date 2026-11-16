@@ -10,13 +10,14 @@ export async function uploadRating(ratingData, currentUserId) {
   }
   const { error } = await supabase
     .from('ratings')
-    .upsert({ user_id: currentUserId, score, tmdb_id, title, poster_path, type, runtime, genre_ids }, { onConflict: 'user_id,tmdb_id' })
+    // One rating per title: movie and TV ids overlap, so the type is part of the key
+    .upsert({ user_id: currentUserId, score, tmdb_id, title, poster_path, type, runtime, genre_ids }, { onConflict: 'user_id,type,tmdb_id' })
   if (error) throw new Error(error.message)
 }
 
-export async function getAverageRating(tmdbId) {
+export async function getAverageRating(tmdbId, type) {
   const { data, error } = await supabase
-    .rpc('get_average_rating', { p_tmdb_id: tmdbId })
+    .rpc('get_average_rating', { p_tmdb_id: tmdbId, p_type: type })
   if (error) throw new Error(error.message)
   return data ?? null
 }
@@ -33,12 +34,13 @@ export async function getUserRatingsPage(userId, from, to) {
   return { items: data, count: count ?? 0 }
 }
 
-export async function deleteRating(tmdb_id, currentUserId) {
-  if (!tmdb_id) throw new Error('Missing id')
+export async function deleteRating(tmdb_id, type, currentUserId) {
+  if (!tmdb_id || !type) throw new Error('Missing id')
   const { error } = await supabase
     .from('ratings')
     .delete()
     .eq('tmdb_id', tmdb_id)
+    .eq('type', type)
     .eq('user_id', currentUserId)
   if (error) throw new Error(error.message)
 }
