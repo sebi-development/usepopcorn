@@ -1,10 +1,11 @@
 # Watchlist command centre: structure and build plan
 
-> Saved 2026-11-15, updated 2026-11-16. **For the agent: Phases 1 and 2 are DONE and tested (sections 9
-> and 10). Next: the open items in section 10, then Phase 3 (social).**
+> Saved 2026-11-15, updated 2026-11-16. **For the agent: Phases 1–3 are built and tested (sections 9–11).
+> Next: the open items in section 11, then Phase 4 (streaming).**
 
 Status (2026-11-16): **Phase 1** on `feat/watchlist-page`, **Phase 2** on `feat/watchlist-tonight`
-(stacked on Phase 1). Both migrations are applied to production; neither branch is pushed yet.
+(stacked on Phase 1), **Phase 3** on `feat/watchlist-social` (stacked on Phase 2, not committed yet). All three
+phases' migrations are applied to production. No branch is pushed yet.
 
 Design canvas (private): https://claude.ai/artifact/RnwrMSzPdHDBYWguc1gvCU
 - Artboard **D** (`Combined.dc.html`) + **D · Phone** (`Phone.dc.html`) = the chosen base.
@@ -166,8 +167,14 @@ Decided for Phase 2 (2026-11-16, built, see section 10):
   (`?draw=`), so Back shows the same three and narrowing the filters keeps the drawn titles that still
   fit. No seed = today's pick first, then two titles ranked by today's date (same all day).
 
-Still open (Phase 3):
-- Friends-rated RPC: signature, keyset vs capped list, cache tier (`aggregate`).
+Decided for Phase 3 (2026-11-16, built, see section 11):
+- **Friends-rated RPC**: `get_watchlist_friends_ratings()` (no params, `auth.uid()`), one row per own watchlist
+  title rated by followed users, best average first; capped by the watchlist's size, so no keyset. Key
+  `friendsRatings.watchlist(id)` (under `friendsRatings.all`, so `useFollow` refreshes it), `CACHE.aggregate`.
+  The shelf is the **last** shelf and its RPC waits until it is within 600px; no "View all" (capped at 15).
+- **Watch together**: a row on another user's profile, their watchlist ∩ the viewer's (`mediaState`), no request.
+- **Other profiles**: Favourites at load (as on one's own); their watchlist is **last**, fetched within 600px,
+  "View all" pages the fetched list in place (`?grid=watchlist`).
 
 ## 8. Verification (per phase)
 
@@ -253,3 +260,40 @@ Not done / next:
    (desktop Safari / WebKit: no Playwright runner here, check by hand).
 3. A real pin round trip in the deployed app (the stub can't show PostgREST's error shape for the
    trigger; the message is matched by text in `useWatchlistPin`).
+
+## 11. Phase 3 status (2026-11-16): DONE, tested
+
+Branch `feat/watchlist-social`, stacked on `feat/watchlist-tonight`, **uncommitted**. Migration
+`20261116204227_watchlist_social.sql` is **applied to production**; `functions-reference/get_watchlist_friends_ratings.sql`
+is its snapshot.
+
+Built:
+- DB: policy `Signed-in users can read all interactions` (replaces `Users can read own interactions`);
+  `get_watchlist_friends_ratings()` (security invoker, `search_path = ''`, default grants).
+- /watchlist: `FriendsRatedShelf` (last shelf; friends' average as the card's star, "N friends" badge, no Pin
+  since the star takes the pin's corner), `useWatchlistFriendsRatings`, `toFriendsRated` / `friendsLabel`.
+- Profiles: favourites load for every profile; `UserWatchlist` (last on someone else's profile) = Watch
+  together row + their Watchlist row with an in-place paged grid. Own profile unchanged.
+- Audit stub: the friend's lists are readable (22-title watchlist, 2 favourites) and the new RPC is stubbed.
+
+Changed from the plan above: Favourites stays above Recently rated on other profiles (today's order); only the
+watchlist moved to the bottom.
+
+Verified: `pnpm lint`, `pnpm build` (entry guard passes; ProfilePage 3.12 → 3.47 kB gzip, WatchlistPage
+5.30 → 5.65 kB, entry +0.01 kB), `audit:checks` all PASS, `audit:mobile` no overflow anywhere (incl.
+`profile-friend`, `watchlist`). Headless Brave at 375 / 1440 against the stub: the shelf joins the RPC to the list
+(a title no longer saved drops out), shows 8.3 / "4 friends"; its RPC waits until the shelf is near (0 calls
+at load on a tall page, 1 on approach); a friend's profile loads favourites at load and their watchlist on
+approach; Watch together = the overlap and drops a title as soon as it is removed from one's own list (one
+DELETE); "View all" pages 20 + 2 with `?grid=watchlist&page=2`; one's own profile shows no Watch together. In
+production, rolled back: the RPC's query as the watchlist owner returned 8.3 (4 friends) and 7.7 (3) for two
+temporary rows, 0 rows kept. After the push (live, rolled back): another user reads the owner's 67 watchlist rows and all
+11 favourites but updates / deletes 0; anon reads 0 rows and 0 RPC rows; the RPC itself returns the same two rows;
+`EXPLAIN` 0.49 ms (index-only scan on the interactions key, then `ratings_tmdb_id_idx` per title).
+
+Not done / next:
+1. Commit, then push the three branches / PRs in order (Phase 1 → 2 → 3). The policy is already live, so other
+   users' lists are readable through the API before this client ships.
+2. Real data is thin: the people the user follows rated 0 of their watchlist titles, and only one user has a
+   watchlist, so both new rows stay hidden in production until that changes.
+3. Still open from earlier: the typed-keys contract migration, the perf report, desktop Safari / WebKit.

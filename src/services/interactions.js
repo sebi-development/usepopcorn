@@ -22,6 +22,14 @@ export async function getWatchlistPick(day) {
   return data
 }
 
+// /watchlist's friends shelf: [{ media_type, tmdb_id, avg_score, ratings_count }] for the signed-in user's
+// saved titles that people they follow rated, best average first
+export async function getWatchlistFriendsRatings() {
+  const { data, error } = await supabase.rpc('get_watchlist_friends_ratings')
+  if (error) throw new Error(error.message)
+  return data
+}
+
 // Saves a title to a list. A title already there is left as it is (no UPDATE policy on this table), and
 // then nothing comes back: null. Movie and TV ids overlap, so the conflict key holds the type.
 export async function addInteraction(type, mediaData, currentUserId) {

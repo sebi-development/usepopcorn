@@ -86,6 +86,13 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
       pinned_at: type === 'watchlist' ? state.pins[id] ?? null : null,
     }
   })
+  // The friend's lists (readable by every signed-in user). Watchlist: the 8 titles, then made-up copies up to
+  // 22, so "View all" has two pages of 20. It holds all of the audit user's default watchlist (Watch together = 3).
+  const friendRows = (type) => Array.from({ length: type === 'favorite' ? 2 : 22 }, (_, i) => {
+    const [id, title, poster_path, media_type] = titles[type === 'favorite' ? i + 4 : i % titles.length]
+    const copy = Math.floor(i / titles.length)
+    return { tmdb_id: id + copy * 9e6, media_type, title: copy ? `${title} ${i}` : title, poster_path, genre_ids: [], release_date: null, runtime: null, seasons: null, created_at: iso(i), pinned_at: null }
+  })
   const feedRows = Array.from({ length: 21 }, (_, i) => {
     const [id, title, poster, type] = titles[i % titles.length]
     // Row 0 is an edit: activity today, first rated 30 days ago, score changed from 4
@@ -119,6 +126,8 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
         // maybeSingle reads an array: the first saved title
         case 'get_watchlist_pick': { const t = titles.find((x) => x[0] === state.watchlist[0]); return json(t ? [{ tmdb_id: t[0], media_type: t[3], title: t[1] }] : []) }
         case 'get_user_feed': return json(args.p_cursor_id ? [] : feedRows)
+        // Friends' scores for saved titles, best first; the last row is for a title no longer saved
+        case 'get_watchlist_friends_ratings': return json([...state.watchlist.slice(0, 2).map((id, i) => ({ media_type: titleKeyOf(id).split(':')[0], tmdb_id: id, avg_score: [8.3, 7][i], ratings_count: [4, 1][i] })), { media_type: 'movie', tmdb_id: 999999, avg_score: 6.5, ratings_count: 2 }])
         case 'get_friends_ratings': return json([{ rating_id: 'fr-1', score: 8, created_at: iso(2), user_id: FRIEND, username: 'a_friend_with_a_long_username', avatar_url: null, total_count: 1 }])
         case 'get_suggested_users': return json([{ id: '33333333-3333-4333-8333-333333333333', username: 'suggested_user', avatar_url: null, recent_activity_count: 4, mutual_friend_count: 1, suggestion_score: 14 }])
         case 'get_profile_heatmap': return json({ year: args.p_year, joinedAt: '2026-01-10', weeks: Array.from({ length: 39 }, (_, i) => ({ weekStart: new Date(Date.UTC(args.p_year, 0, 5 + i * 7)).toISOString().slice(0, 10), count: (i * 7) % 6 })) })
@@ -146,8 +155,8 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
     if (table === 'user_media_interactions') {
       const type = (q.get('interaction_type') || '').replace('eq.', '')
       const field = type === 'favorite' ? 'favorites' : 'watchlist'
-      // RLS: interactions are only readable by their owner
-      if (method === 'GET') return json((q.get('user_id') || '').replace('eq.', '') === ME ? interactionRows(type) : [])
+      // RLS: every signed-in user can read anyone's lists
+      if (method === 'GET') { const uid = (q.get('user_id') || '').replace('eq.', ''); return json(uid === ME ? interactionRows(type) : uid === FRIEND ? friendRows(type) : []) }
       if (method === 'DELETE') {
         const id = Number(q.get('tmdb_id').replace('eq.', ''))
         const had = state[field].includes(id)

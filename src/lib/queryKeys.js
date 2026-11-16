@@ -52,6 +52,8 @@ const queryKeys = {
     // User first, so following / unfollowing someone can refresh every title at once
     all: (userId) => ['friendsRatings', userId],
     byTitle: (userId, type, tmdbId) => ['friendsRatings', userId, type, tmdbId],
+    // /watchlist's "Your friends rated these" shelf (one entry for the whole list)
+    watchlist: (userId) => ['friendsRatings', userId, 'watchlist'],
   },
 
   // ── Search ───────────────────────────────────────────────────

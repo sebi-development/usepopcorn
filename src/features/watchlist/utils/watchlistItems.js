@@ -4,7 +4,6 @@ import { MOODS } from "@/features/watchlist/constants/filters"
 
 const SHELF_LIMIT = 15
 
-// 'short' | 'medium' | 'long' from a movie's minutes or a series' seasons; null while TMDB has no length
 export function lengthBucket({ media_type, runtime, seasons }) {
   if (media_type === 'tv') return seasons ? (seasons === 1 ? 'short' : seasons <= 3 ? 'medium' : 'long') : null
   return runtime ? (runtime < 90 ? 'short' : runtime <= 120 ? 'medium' : 'long') : null
@@ -63,6 +62,18 @@ export function toShelves(items) {
     { id: 'upcoming', heading: 'Not out yet', items: upcoming, preset: { release: 'upcoming' } },
   ].filter((shelf) => shelf.items.length > 0)
 }
+
+// "Your friends rated these": the saved titles in the RPC's order (best average first), each carrying the
+// friends' average as its `score` and their count. Joined from the list, so a title removed since drops out.
+export function toFriendsRated(items, rows = []) {
+  const byKey = new Map(items.map((item) => [titleKey(item.media_type, item.tmdb_id), item]))
+  return rows.flatMap((row) => {
+    const item = byKey.get(titleKey(row.media_type, row.tmdb_id))
+    return item ? [{ ...item, score: row.avg_score, friends: row.ratings_count }] : []
+  })
+}
+
+export const friendsLabel = ({ friends }) => `${friends} friend${friends === 1 ? '' : 's'}`
 
 // Up next: the pinned titles, first pinned first
 export const toUpNext = (items) => items.filter((item) => item.pinned_at).sort((a, b) => a.pinned_at.localeCompare(b.pinned_at))

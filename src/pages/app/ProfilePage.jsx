@@ -2,6 +2,7 @@ import { useState, Suspense, lazy } from "react"
 import ProfileHero from "@/features/profile/components/ProfileHero"
 import RecentlyRated from "@/features/profile/components/RecentlyRated"
 import Watchlist from "@/features/profile/components/Watchlist"
+import UserWatchlist from "@/features/profile/components/UserWatchlist"
 import Favorites from "@/features/profile/components/Favorites"
 import Button from "@/components/ui/Button"
 import ProfileHeroSkeleton from "@/features/profile/components/ProfileHeroSkeleton"
@@ -24,9 +25,9 @@ function ProfilePage() {
   const targetUserId = userId ?? currentUser?.id
 
   const { profileData, recentRatings, ratingsCount, isLoadingProfile, isLoadingRatings } = useProfileData(targetUserId)
-  // Watchlist and favorites are private (RLS returns them to their owner only), so on someone
-  // else's profile neither is requested. Watchlist fetches its own list.
-  const { data: favorites, isLoading: isFavoritesLoading } = useInteractions("favorite", targetUserId, { enabled: isOwnProfile })
+  // Watchlists and favorites are readable by every signed-in user, like ratings. Both watchlist rows
+  // fetch their own list: the own one under the hero, someone else's last, on approach.
+  const { data: favorites, isLoading: isFavoritesLoading } = useInteractions("favorite", targetUserId)
   const { followingSet, isLoading: isLoadingFollowing } = useFollowingIds({ enabled: !isOwnProfile })
   const isFollowing = followingSet.has(targetUserId)
   const { mutate: toggleFollow, isPending: isFollowPending } = useFollow(targetUserId)
@@ -70,6 +71,7 @@ function ProfilePage() {
         isLoading={isLoadingRatings}
         showInfo={false}
       />
+      {!isOwnProfile && <UserWatchlist userId={targetUserId} />}
 
       {isOwnProfile && isModalOpen && (
         <Suspense fallback={null}>
