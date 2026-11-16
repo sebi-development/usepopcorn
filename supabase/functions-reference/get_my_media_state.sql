@@ -1,5 +1,6 @@
 -- REFERENCE SNAPSHOT of the live DB (pulled 2026-10-02). NOT a migration - never applied from here.
 -- Change it via: pnpm db:new <name> -> edit the new file in supabase/migrations -> pnpm db:dry -> pnpm db:push
+-- Superseded by get_my_title_state (keys by type + id); dropped by the typed-keys "contract" migration.
 
 CREATE OR REPLACE FUNCTION public.get_my_media_state()
  RETURNS jsonb

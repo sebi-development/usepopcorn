@@ -1,10 +1,10 @@
 # Watchlist command centre: structure and build plan
 
-> Saved 2026-11-15 for a fresh session. Nothing is built yet. Start with section 7 (engineering
-> pass), then build Phase 1. Suggested repo copy: `docs/watchlist-command-centre.md`.
+> Saved 2026-11-15, updated 2026-11-16. **For the agent: Phase 1 is DONE and tested (section 9).
+> Start the next session at Phase 2 (Tonight + Up next), after the open items in section 9.**
 
-Status (2026-11-15): product and design agreed; **engineering pass not done yet**. Next session
-starts with the engineering pass for Phase 1 (section 7), then builds Phase 1.
+Status (2026-11-16): product and design agreed; engineering pass done; **Phase 1 built, verified and
+applied to production** on branch `feat/watchlist-page` (not pushed, no PR yet). Phase 2 is next.
 
 Design canvas (private): https://claude.ai/artifact/RnwrMSzPdHDBYWguc1gvCU
 - Artboard **D** (`Combined.dc.html`) + **D · Phone** (`Phone.dc.html`) = the chosen base.
@@ -136,23 +136,32 @@ No preset FeatureCards on this page (dropped for weight).
   `functions-reference` after pushing.
 - Short one-line comments; no Claude attribution in commits or PRs; perf report after Phase 1.
 
-## 7. Open for the engineering pass (do first next session)
+## 7. Engineering pass (resolved 2026-11-16)
 
-- Backfill: how to fill runtime/seasons for existing rows (a one-off script against TMDB vs a
-  client-side lazy enrich, which would need an UPDATE policy).
-- Pin storage: `pinned_at timestamptz` column (needs an UPDATE policy, pins ordered) vs
-  `interaction_type = 'up_next'` (fits the insert/delete model). What a 4th pin does (refuse with
-  a toast vs replace the oldest).
-- Seasons staleness for running shows: refresh when the Detail page loads that title, or accept.
-- Do the shelves follow the active filters, or stay fixed? What does a shelf's "View all" do (set
-  the matching filter and scroll to All saved vs MediaRow's own in-place grid)?
-- Shape and cache tier of the watchlist query (full list, `CACHE.user`), and how
-  `getInteractions` grows (columns) without bloating the Home row.
-- Friends-rated RPC: signature, keyset vs a plain capped list, cache tier (`aggregate`).
-- Where the page's code lives (`src/features/watchlist/`) and the import boundaries it touches
-  (`components/media` → `features/interactions` is the existing exception).
+Decided and built (Phase 1):
+- **Backfill**: one-off against TMDB (plain `/movie/{id}`, `/tv/{id}`), no lazy client enrich (it
+  would need an UPDATE policy). Done in production: 0 of 61 watchlist rows lack metadata.
+- **Enrich on add**: watchlist adds only. Detail page passes `genres`, so no request; a card add
+  makes one plain TMDB details request inside the mutation; a TMDB failure fails the add.
+- **Seasons staleness**: accepted (3 series). Revisit if the Length filter visibly misses titles.
+- **Shelves**: fixed, built from the whole list; filters narrow only All saved. A shelf's
+  "View all" replaces the filters with its preset and scrolls to All saved (one grid, shareable URL).
+- **Query**: one list for Home's row and the page, `queryKeys.interactions('watchlist', id)`,
+  `CACHE.user`; `getInteractions` selects the new columns + `created_at`, newest first.
+- **Length with Type = All**: one `length` filter (`short|medium|long`) read per title (minutes
+  for movies, seasons for series); labels follow Type. The filter list never depends on another
+  filter's value.
+- **Code**: `src/features/watchlist/` + `src/pages/app/WatchlistPage.jsx`, route in tier 2
+  (prefetched with Profile/Detail), no loader.
+- **Pagination**: the page lives in the URL (`useUrlPage`), see CLAUDE.md "Pagination".
+
+Still open for Phase 2:
+- Pin storage: `pinned_at timestamptz` + column-level UPDATE grant on own rows (preferred: a pin
+  is part of the row, removing the title removes the pin) vs `interaction_type = 'up_next'`.
+  What a 4th pin does (refuse with a toast vs replace the oldest).
 - Draw randomness: client-side `Math.random` over the filtered list; the lead card stays today's
   pick until the first draw.
+- Friends-rated RPC (moved to Phase 3): signature, keyset vs capped list, cache tier (`aggregate`).
 
 ## 8. Verification (per phase)
 
@@ -161,3 +170,43 @@ No preset FeatureCards on this page (dropped for weight).
   watchlist updates the page, the Home row and the counts; movie/TV id overlap is handled.
 - `pnpm audit:mobile` / `audit:checks` for overflow and tap targets; check desktop Safari.
 - `pnpm db:dry` before any push; RLS `EXPLAIN` recipe for the new RPC.
+
+## 9. Phase 1 status (2026-11-16): DONE, tested
+
+Branch `feat/watchlist-page` (4 commits on top of `main`, **not pushed, no PR**: `git push` / `gh pr create`
+were permission-denied in the session). Migrations `20261116083629_watchlist_metadata.sql` and
+`20261116102041_title_state_typed_keys.sql` are **already applied to production**.
+
+Built:
+- DB: `genre_ids`, `release_date`, `runtime`, `seasons` on `user_media_interactions`; unique key now
+  `(user_id, interaction_type, media_type, tmdb_id)` (the old key made a series sharing a saved movie's id
+  unsavable). Typed state: `get_my_title_state()` keys `'<type>:<id>'`, ratings get `(user_id, type, tmdb_id)`.
+- Client: `addInteraction` (upsert with metadata) / `removeInteraction` (with `media_type`) replace
+  `toggleInteraction`; `useToggleInteractions` is explicit add/remove with no refetch after an exact
+  optimistic write; `titleKey` in `utils/tmdbItem.js`; `getMediaSummary` in `services/tmdb.js`.
+- Page: `/watchlist` (lazy chunk 2.44 kB gzip, tier 2), shelves Under 90 minutes · Waiting longest ·
+  Not out yet, All saved with FilterBar (Type, Length, Mood, Genre, Release, Sort) and numbered pages in the URL.
+- Links: user menu item, Home/profile row `viewAllTo`, `WatchlistCard` fallback link.
+- Shared: MediaCard `badge`/`addedAt`, MediaRow `badgeOf`/`showAdded`/`viewAllTo`, `timeSince`,
+  `useUrlFilters.setFilters`, `useUrlGrid`/`useUrlPage` + `ScrollRestoration` (grid fix, `e57c34f`).
+
+Changed from the plan above:
+- "On your list for over a year" became **Waiting longest** (15 oldest saves; shown only with > 15 saves;
+  the oldest save is from Aug 2026). **Your friends rated these moved to Phase 3.**
+- Tonight panel, Up next, pins: not started (Phase 2).
+
+Verified: `pnpm lint`, `pnpm build` (entry guard passes), headless Brave runs against the stubbed
+Supabase (filters, labels, sorts, badges, Added line, shelves + View all, user-menu/Home links, remove sends
+`media_type`, no refetch after a toggle, a card add makes one plain TMDB details request), `audit:checks`
+all PASS, `audit:mobile` no overflow on `/watchlist` (new undersized targets: none).
+
+Not done / for the next session:
+1. Push the branch, open the PR, merge (needs the user's go-ahead for git push / gh).
+2. The "contract" half of the typed-keys migration: drop the old `ratings (user_id, tmdb_id)` key and
+   `get_my_media_state`, make `p_type` required, **after** the new client is deployed. Both still exist.
+3. ~~Update the snapshots in `supabase/functions-reference/` and the CLAUDE.md tables~~ (done 2026-11-16).
+4. Perf report for Phase 1 (`perf-report` skill): new lazy route, a bigger list payload, tier-2 prefetch.
+5. Check `/watchlist` in desktop Safari / WebKit (overflow, filter pill animation); only Chromium was run.
+6. Phase 2: see section 4 and the open items in section 7. The only untested path is a real id collision
+   (a movie and a series with one id saved together), which the stub (ids only) can't model: try it once
+   against production with a throwaway title.
