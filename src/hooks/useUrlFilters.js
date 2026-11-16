@@ -2,6 +2,10 @@ import { useCallback, useMemo } from "react"
 import { useSearchParams } from "react-router"
 import { parseFilters, writeFilters } from "@/utils/filters"
 
+// Options for a URL write that only changes what the page shows (filters, a grid's page): it replaces the
+// history entry, so Back leaves the page in one step, and keeps the scroll where it is (ScrollRestoration)
+export const IN_PLACE = { replace: true, preventScrollReset: true }
+
 /**
  * Filters for `defs` (see src/utils/filters.js), kept in the URL so a filtered view survives a
  * reload, the back button and a shared link. `filters` keeps its identity until a value actually
@@ -18,12 +22,12 @@ export default function useUrlFilters(defs) {
   const setFilter = useCallback((key, value) => {
     setSearchParams(
       (prev) => writeFilters(prev, defs, { ...parseFilters(prev, defs), [key]: value ?? undefined }),
-      { replace: true }
+      IN_PLACE
     )
   }, [defs, setSearchParams])
 
   const clearFilters = useCallback(() => {
-    setSearchParams((prev) => writeFilters(prev, defs, {}), { replace: true })
+    setSearchParams((prev) => writeFilters(prev, defs, {}), IN_PLACE)
   }, [defs, setSearchParams])
 
   return { filters, activeCount: Object.keys(filters).length, setFilter, clearFilters }

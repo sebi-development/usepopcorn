@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Outlet, Navigate } from 'react-router'
+import { Outlet, Navigate, ScrollRestoration } from 'react-router'
 import { getSession, onSessionChange } from '@/services/session'
 import Navbar from '@/layout/Navbar'
 import AppSpinner from '@/layout/AppSpinner'
@@ -74,6 +74,9 @@ function AppLayout() {
 
   return (
     <div className="min-h-dvh relative flow-root">
+      {/* Back returns to where the page was scrolled, a new page opens at the top. URL writes that only change
+          what a page shows (filters, a grid's page) keep the scroll: IN_PLACE in useUrlFilters */}
+      <ScrollRestoration />
       <BackgroundMesh />
       <Navbar isLoggedIn>{APP_ACTIONS}</Navbar>
       <main className="pt-4 px-4 md:pt-24 md:px-6 max-w-7xl mx-auto w-full relative z-10">

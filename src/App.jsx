@@ -46,6 +46,8 @@ const PersonPage = page(() => import("@/pages/app/PersonPage"))
 
 // Home's data prefetch, a module of its own so its queries and Supabase stay out of the entry chunk
 const browseLoader = (args) => import("@/pages/app/browseLoader").then((module) => module.default(args))
+// It depends on the category only: a filter or grid-page change in the URL doesn't run it again
+const browseRevalidate = ({ currentUrl, nextUrl }) => currentUrl.searchParams.get('category') !== nextUrl.searchParams.get('category')
 
 // A signed-in visitor skips the landing page and the auth forms (not /reset-password: the
 // recovery link signs the user in, and the reset form has to open for them). The stored session
@@ -88,7 +90,7 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage />,
     hydrateFallbackElement: <AppSpinner />,
     children: [
-      { path: '/browse', lazy: BrowsePage, loader: browseLoader },
+      { path: '/browse', lazy: BrowsePage, loader: browseLoader, shouldRevalidate: browseRevalidate },
       { path: '/browse/:id', lazy: DetailPage },
       { path: '/person/:id', lazy: PersonPage },
       { path: '/profile', lazy: ProfilePage },

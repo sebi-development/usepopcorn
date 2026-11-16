@@ -1,4 +1,3 @@
-import { useLayoutEffect } from "react"
 import { useParams } from "react-router"
 import { HiArrowTopRightOnSquare } from "react-icons/hi2"
 
@@ -46,13 +45,6 @@ function PersonSkeleton() {
 export default function PersonPage() {
   const { id } = useParams()
   const personId = Number(id)
-
-  // Open each person at the top, as DetailPage does
-  useLayoutEffect(() => {
-    history.scrollRestoration = "manual"
-    window.scrollTo(0, 0)
-    return () => { history.scrollRestoration = "auto" }
-  }, [personId])
 
   const { data: person, isLoading, error } = usePerson(personId)
 

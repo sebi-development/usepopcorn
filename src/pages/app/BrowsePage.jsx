@@ -10,7 +10,7 @@ import { SECTION_TO_TYPE } from '@/features/browse/hooks/useCategoryMedia'
 import HomePage from '@/pages/app/HomePage'
 import FilterBar from '@/components/filters/FilterBar'
 import { getBrowseFilters } from '@/features/browse/constants/filters'
-import useUrlFilters from '@/hooks/useUrlFilters'
+import useUrlFilters, { IN_PLACE } from '@/hooks/useUrlFilters'
 import { parseFilters, writeFilters } from '@/utils/filters'
 
 const CATEGORY_TITLES = {
@@ -67,7 +67,8 @@ export default function BrowsePage() {
   const mediaType = SECTION_TO_TYPE[section] ?? 'movie'
 
   // Filters carry over to another category of the same section, minus any the target doesn't
-  // offer (e.g. genre on a genre category). A section switch drops them: genre ids differ.
+  // offer (e.g. genre on a genre category). A section switch drops them: genre ids differ. An open
+  // grid and its page don't carry over.
   const handleSelect = useCallback(
     (nextSection, nextCategoryId) => {
       setSearchParams((prev) => {
@@ -75,7 +76,7 @@ export default function BrowsePage() {
         if (nextSection !== (prev.get('type') || 'movies')) return next
         const nextDefs = getBrowseFilters(nextSection, nextCategoryId)
         return writeFilters(next, nextDefs, parseFilters(prev, nextDefs))
-      }, { replace: true })
+      }, IN_PLACE)
     },
     [setSearchParams]
   )

@@ -13,6 +13,9 @@ import { toMediaItem } from "@/utils/tmdbItem"
 // works for every list and grid in the app.
 export const PAGE_SIZE = 20
 
+// URL param of a numbered grid's page (useUrlPage); a filter change drops it (writeFilters)
+export const PAGE_PARAM = 'page'
+
 // Hard ceiling on how many pages an infinite list may accumulate: bounds
 // cache size, DOM nodes and (for realtime lists) refetch cost.
 export const MAX_PAGES = 5

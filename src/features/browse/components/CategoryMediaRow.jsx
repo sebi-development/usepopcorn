@@ -1,21 +1,15 @@
-import { useState } from 'react'
 import useCategoryMedia, { useCategoryMediaGrid, SECTION_TO_TYPE } from '@/features/browse/hooks/useCategoryMedia'
 import MediaRow from '@/components/media/MediaRow/MediaRow'
-import useExpandableGrid from '@/hooks/useExpandableGrid'
+import useUrlGrid from '@/hooks/useUrlGrid'
 import { isEmptyFilters, NO_MATCHES } from '@/utils/filters'
 
 const NO_ITEMS = []
 
-// `filters` are the Browse filters from useUrlFilters (stable until a value changes)
+// `filters` are the Browse filters from useUrlFilters (stable until a value changes). A filter change
+// drops the grid's page from the URL, so the new result set opens on page 1, still in grid mode.
 export default function CategoryMediaRow({ section, categoryId, title, filters }) {
-  const { isExpanded, page, setPage, toggle } = useExpandableGrid()
-
-  // New filters mean a new result set: back to its first page, staying in grid mode
-  const [prevFilters, setPrevFilters] = useState(filters)
-  if (filters !== prevFilters) {
-    setPrevFilters(filters)
-    setPage(1)
-  }
+  // Upcoming shows two of these rows, so each is named by its category
+  const { isExpanded, page, setPage, toggle } = useUrlGrid(categoryId)
 
   // Row query only fetches while collapsed; grid query only fetches while
   // expanded. Both hooks are always called (rules of hooks), but `enabled`

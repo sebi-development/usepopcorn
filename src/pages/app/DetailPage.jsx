@@ -1,5 +1,5 @@
 import { useLocation, useParams } from "react-router"
-import { useEffect, useLayoutEffect } from "react"
+import { useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
 import useMediaDetails from "@/features/media_details/hooks/useMediaDetails"
@@ -23,14 +23,6 @@ export default function DetailPage() {
 
   const { state } = useLocation()
   const type = state?.type || 'movie'
-
-  // Open each title at the top. `manual` is stored per history entry, so only detail entries skip
-  // the browser's scroll restore; layout effect, so the old position never paints.
-  useLayoutEffect(() => {
-    history.scrollRestoration = "manual"
-    window.scrollTo(0, 0)
-    return () => { history.scrollRestoration = "auto" }
-  }, [tmdbId])
 
   const { data, isLoading, error: errorDetailData } = useMediaDetails(tmdbId, type)
 

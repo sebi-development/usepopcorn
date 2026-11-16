@@ -1,7 +1,8 @@
-import { memo, useMemo, useState } from "react"
+import { memo, useMemo } from "react"
 import MediaRow from "@/components/media/MediaRow/MediaRow"
 import FilterBar from "@/components/filters/FilterBar"
 import Chip from "@/components/ui/Chip"
+import { useUrlPage } from "@/hooks/useUrlGrid"
 import { NO_MATCHES } from "@/utils/filters"
 import { PAGE_SIZE } from "@/utils/pagination"
 import useFilmographyFilters from "@/features/people/components/Filmography/useFilmographyFilters"
@@ -11,13 +12,8 @@ function Filmography({ person }) {
   const { primary, defs, filters, onFilter, clearFilters, shown } = useFilmographyFilters(person)
   const knownFor = useMemo(() => pickKnownFor(person, primary), [person, primary])
 
-  // New filters mean a new list: back to its first page
-  const [page, setPage] = useState(1)
-  const [prevFilters, setPrevFilters] = useState(filters)
-  if (filters !== prevFilters) {
-    setPrevFilters(filters)
-    setPage(1)
-  }
+  // In the URL, which a filter change drops: new filters open on page 1
+  const { page, setPage } = useUrlPage()
   const pageItems = useMemo(() => shown.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [shown, page])
 
   return (

@@ -1,5 +1,6 @@
 import { CACHE } from "@/lib/queryClient"
 import { MOVIE_GENRES, TV_GENRES } from "@/utils/genres"
+import { PAGE_PARAM } from "@/utils/pagination"
 
 // Shared filter model for every filterable list (Browse rows/grids, the Community feed).
 //
@@ -55,9 +56,11 @@ export function parseFilters(searchParams, defs) {
   return filters
 }
 
-// Copy of `searchParams` with every def's param replaced by `filters` (non-filter params kept).
+// Copy of `searchParams` with every def's param replaced by `filters` (non-filter params kept). New
+// filters mean a new list, so a grid's page goes: it starts again on page 1.
 export function writeFilters(searchParams, defs, filters) {
   const next = new URLSearchParams(searchParams)
+  next.delete(PAGE_PARAM)
   for (const def of defs) {
     next.delete(def.key)
     const value = filters[def.key]

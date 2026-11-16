@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react'
 import useRecommendations, { useRecommendationsGrid } from '@/features/browse/hooks/useRecommendations'
 import MediaRow from '@/components/media/MediaRow/MediaRow'
-import useExpandableGrid from '@/hooks/useExpandableGrid'
+import useUrlGrid from '@/hooks/useUrlGrid'
 
 const PLACEHOLDER_HEADINGS = { movie: 'Recommended movies', tv: 'Recommended series' }
 
@@ -10,7 +10,8 @@ const PLACEHOLDER_HEADINGS = { movie: 'Recommended movies', tv: 'Recommended ser
 function RecommendationRow({ seed, type, isLoadingSeed, expandable = true, heading: customHeading, emptyNote }) {
   const { data, isLoading, isError } = useRecommendations(seed?.pick, type)
 
-  const { isExpanded, page, setPage, toggle } = useExpandableGrid()
+  // Home shows one row per type
+  const { isExpanded, page, setPage, toggle } = useUrlGrid(`recommended-${type}`)
   const grid = useRecommendationsGrid(seed?.pick, type, page, { enabled: expandable && isExpanded })
 
   const heading = useMemo(() => {
