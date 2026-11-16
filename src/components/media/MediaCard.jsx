@@ -2,6 +2,7 @@ import { useMemo, useState, memo } from "react"
 import { useNavigate } from "react-router"
 import { HiChevronDown } from "react-icons/hi2"
 import { TbRating18Plus } from "react-icons/tb"
+import { BsPinAngleFill } from "react-icons/bs"
 import InteractionMenu from "@/features/interactions/components/InteractionMenu"
 import MoviePoster from "@/components/media/MoviePoster"
 import { getGenreNames } from "@/utils/genres"
@@ -29,9 +30,14 @@ function MediaCard({
   addedAt,
   showFavorite = false,
   showWatchlist = false,
+  // Watchlist page: a Pin item in the card menu, and a marker on a title pinned to Up next
+  showPin = false,
+  isPinned = false,
   showInfo = true,
   isFavorited = false,
   isWatchlisted = false,
+  // Extra classes on the card itself (e.g. a ring that scales with it on hover)
+  className = '',
 }) {
   const navigate = useNavigate()
   const [infoOpen, setInfoOpen] = useState(false)
@@ -56,7 +62,7 @@ function MediaCard({
       // content-visibility lets the browser skip layout/paint for cards scrolled
       // out of view in long rows. Fixed width + aspect-2/3 give it a known size
       // to reserve, so scrolling doesn't shift.
-      className="group/card relative overflow-hidden rounded-card cursor-pointer aspect-2/3 hover:scale-105 transition-transform duration-300 hover:z-10 [content-visibility:auto]"
+      className={`group/card relative overflow-hidden rounded-card cursor-pointer aspect-2/3 hover:scale-105 transition-transform duration-300 hover:z-10 [content-visibility:auto] ${className}`}
     >
       <MoviePoster
         src={getTmdbImageUrl(posterPath, 'w342')}
@@ -65,7 +71,7 @@ function MediaCard({
         fallbackLabel={title}
       />
 
-      {(showFavorite || showWatchlist) && (
+      {(showFavorite || showWatchlist || showPin) && (
         <InteractionMenu
           id={id}
           type={type}
@@ -73,9 +79,20 @@ function MediaCard({
           posterPath={posterPath}
           showFavorite={showFavorite}
           showWatchlist={showWatchlist}
+          showPin={showPin}
           isFavorited={isFavorited}
           isWatchlisted={isWatchlisted}
+          isPinned={isPinned}
         />
+      )}
+
+      {/* Pinned to Up next: top-left, on the card menu's line (same box as the rating chip below) */}
+      {isPinned && (
+        <div className="absolute top-2 left-2 z-10 h-8.5 md:h-6.5 flex items-center">
+          <span role="img" aria-label="Pinned to Up next" className="w-6.5 h-6.5 rounded-full bg-primary/85 text-white shadow-sm flex items-center justify-center">
+            <BsPinAngleFill size={12} />
+          </span>
+        </div>
       )}
 
       {/* The user's rating (in "Recently rated", that row's score), top-left on the card menu's line:

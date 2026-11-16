@@ -1,7 +1,7 @@
 import supabase from "@/lib/supabase"
 
-// What a list item holds. The metadata columns are filled for the watchlist only (null on favorites).
-const LIST_COLUMNS = 'tmdb_id, media_type, title, poster_path, genre_ids, release_date, runtime, seasons, created_at'
+// What a list item holds. The metadata columns and pinned_at are filled for the watchlist only (null on favorites).
+const LIST_COLUMNS = 'tmdb_id, media_type, title, poster_path, genre_ids, release_date, runtime, seasons, created_at, pinned_at'
 
 // Newest saved first
 export async function getInteractions(type, userId) {
@@ -55,4 +55,19 @@ export async function removeInteraction(type, { tmdb_id, media_type }, currentUs
     .eq('media_type', media_type)
     .eq('tmdb_id', tmdb_id)
   if (error) throw new Error(error.message)
+}
+
+// Pins a watchlist title to Up next (`pinnedAt`, an ISO time) or unpins it (null). The only column the
+// client may update. null = no such row (the title left the list on another device).
+export async function setWatchlistPin({ tmdb_id, media_type }, pinnedAt, currentUserId) {
+  const { data, error } = await supabase
+    .from('user_media_interactions')
+    .update({ pinned_at: pinnedAt })
+    .eq('user_id', currentUserId)
+    .eq('interaction_type', 'watchlist')
+    .eq('media_type', media_type)
+    .eq('tmdb_id', tmdb_id)
+    .select('pinned_at')
+  if (error) throw new Error(error.message)
+  return data[0] ?? null
 }

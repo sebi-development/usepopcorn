@@ -1,10 +1,10 @@
 # Watchlist command centre: structure and build plan
 
-> Saved 2026-11-15, updated 2026-11-16. **For the agent: Phase 1 is DONE and tested (section 9).
-> Start the next session at Phase 2 (Tonight + Up next), after the open items in section 9.**
+> Saved 2026-11-15, updated 2026-11-16. **For the agent: Phases 1 and 2 are DONE and tested (sections 9
+> and 10). Next: the open items in section 10, then Phase 3 (social).**
 
-Status (2026-11-16): product and design agreed; engineering pass done; **Phase 1 built, verified and
-applied to production** on branch `feat/watchlist-page` (not pushed, no PR yet). Phase 2 is next.
+Status (2026-11-16): **Phase 1** on `feat/watchlist-page`, **Phase 2** on `feat/watchlist-tonight`
+(stacked on Phase 1). Both migrations are applied to production; neither branch is pushed yet.
 
 Design canvas (private): https://claude.ai/artifact/RnwrMSzPdHDBYWguc1gvCU
 - Artboard **D** (`Combined.dc.html`) + **D · Phone** (`Phone.dc.html`) = the chosen base.
@@ -155,13 +155,19 @@ Decided and built (Phase 1):
   (prefetched with Profile/Detail), no loader.
 - **Pagination**: the page lives in the URL (`useUrlPage`), see CLAUDE.md "Pagination".
 
-Still open for Phase 2:
-- Pin storage: `pinned_at timestamptz` + column-level UPDATE grant on own rows (preferred: a pin
-  is part of the row, removing the title removes the pin) vs `interaction_type = 'up_next'`.
-  What a 4th pin does (refuse with a toast vs replace the oldest).
-- Draw randomness: client-side `Math.random` over the filtered list; the lead card stays today's
-  pick until the first draw.
-- Friends-rated RPC (moved to Phase 3): signature, keyset vs capped list, cache tier (`aggregate`).
+Decided for Phase 2 (2026-11-16, built, see section 10):
+- **Pin storage**: `pinned_at timestamptz` on the watchlist row, a column-level `UPDATE (pinned_at)` grant
+  and an own-watchlist-rows UPDATE policy. Removing the title removes the pin.
+- **4th pin**: refused with a toast, checked against the cached list (no request); the
+  `limit_watchlist_pins` trigger refuses it too (stale tab or second device).
+- **Pin / unpin on cards**: a Pin item in the card menu (shown only while the menu is open) on
+  `/watchlist` cards, plus the top-left marker on pinned titles.
+- **Draw**: titles ranked by a hash of title + seed (`drawTitles`); Draw writes a random seed to the URL
+  (`?draw=`), so Back shows the same three and narrowing the filters keeps the drawn titles that still
+  fit. No seed = today's pick first, then two titles ranked by today's date (same all day).
+
+Still open (Phase 3):
+- Friends-rated RPC: signature, keyset vs capped list, cache tier (`aggregate`).
 
 ## 8. Verification (per phase)
 
@@ -201,7 +207,8 @@ Supabase (filters, labels, sorts, badges, Added line, shelves + View all, user-m
 all PASS, `audit:mobile` no overflow on `/watchlist` (new undersized targets: none).
 
 Not done / for the next session:
-1. Push the branch, open the PR, merge (needs the user's go-ahead for git push / gh).
+1. Push the branch, open the PR, merge (the user approved; `git push` was blocked by the permission
+   system, so the user runs it). See section 10 for Phase 2's branch.
 2. The "contract" half of the typed-keys migration: drop the old `ratings (user_id, tmdb_id)` key and
    `get_my_media_state`, make `p_type` required, **after** the new client is deployed. Both still exist.
 3. ~~Update the snapshots in `supabase/functions-reference/` and the CLAUDE.md tables~~ (done 2026-11-16).
@@ -210,3 +217,39 @@ Not done / for the next session:
 6. Phase 2: see section 4 and the open items in section 7. The only untested path is a real id collision
    (a movie and a series with one id saved together), which the stub (ids only) can't model: try it once
    against production with a throwaway title.
+
+## 10. Phase 2 status (2026-11-16): DONE, tested
+
+Branch `feat/watchlist-tonight`, stacked on `feat/watchlist-page`. Migration
+`20261116162523_watchlist_pins.sql` is **applied to production** (the client selects `pinned_at`, so it
+had to go first).
+
+Built:
+- DB: `pinned_at` + column-level `UPDATE (pinned_at)` grant (Supabase's table-wide UPDATE revoked from
+  `anon` / `authenticated`), policy `Users can pin own watchlist titles`, trigger `limit_watchlist_pins`.
+- Client: `setWatchlistPin` (service), `useWatchlistPin` + `PIN_LIMIT` (features/interactions: optimistic
+  patch of the list, no refetch, a 4th pin refused locally), `drawTitles` / `toUpNext` (watchlistItems).
+- Tonight panel (`features/watchlist/components/TonightPanel/`): Type tabs, Length tabs (desktop) or chips
+  (phone), mood cards with hints, Draw with the match count and a one-tap widen (Any length, then Surprise
+  me), three cards (lead ringed, in the middle on desktop) with captions, Watch + Pin buttons (desktop).
+  Phone: the lead as one wide card until the first draw, then three small cards. Dashed notes for loading
+  errors, an empty list and no matches. Draw fades the new cards in (opacity, 70 ms stagger, click only).
+- Up next shelf (`N / 3`), Pin item + marker on all `/watchlist` cards (`MediaRow showPin`,
+  `MediaCard showPin / isPinned / className`). The drawn cards' menu only pins.
+- The old page header and `summarize` are gone (the panel is the header); All saved renders once the
+  list has titles. A single-type list labels Length for its type (`onlyType`).
+
+Verified: `pnpm lint`, `pnpm build`, `audit:checks` all PASS, `audit:mobile` no overflow on `/watchlist`
+(no new undersized targets), headless Brave runs against the stub at 375 / 768 / 1024 / 1440 (filters
+write the URL with no request, draw seed survives a reload, one PATCH per pin and no refetch, the 4th pin
+is refused without a request, unpin, removing a pinned title drops its pin). Against production, in a
+transaction that rolled back: own pins OK, the 4th refused, other columns `42501`, favourites and
+other users' rows 0 rows, adds still work.
+
+Not done / next:
+1. Push both branches and open the PRs (Phase 1 first; Phase 2's PR targets `feat/watchlist-page` until
+   that merges).
+2. Section 9 items 2 (contract migration after deploy), 4 (perf report: see the session's report) and 5
+   (desktop Safari / WebKit: no Playwright runner here, check by hand).
+3. A real pin round trip in the deployed app (the stub can't show PostgREST's error shape for the
+   trigger; the message is matched by text in `useWatchlistPin`).

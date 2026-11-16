@@ -82,8 +82,9 @@ function MediaRow({
   gridItems, gridError, page = 1, totalPages = 1, onPageChange,
   // Renders an item that isn't a title (e.g. a cast member) in place of MediaCard
   renderItem,
-  // Watchlist rows: `badgeOf(item)` is the card's bottom-left chip, `showAdded` its "Added …" line
-  badgeOf, showAdded = false,
+  // Watchlist rows: `badgeOf(item)` is the card's bottom-left chip, `showAdded` its "Added …" line,
+  // `showPin` the card menu's Pin item and the marker on titles pinned to Up next (item.pinned_at)
+  badgeOf, showAdded = false, showPin = false,
   // A "View all" link to another page, in place of the in-place expand toggle
   viewAllTo,
   // Shown as a count chip after the heading
@@ -154,6 +155,8 @@ function MediaRow({
         isFavorited={favorites.has(key)}
         showWatchlist={showWatchlist}
         isWatchlisted={watchlist.has(key)}
+        showPin={showPin}
+        isPinned={showPin && item.pinned_at != null}
       />
     )
   }

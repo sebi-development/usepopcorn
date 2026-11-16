@@ -1,6 +1,9 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { PiDotsThreeVerticalBold } from "react-icons/pi"
+import { BsPinAngle, BsPinAngleFill } from "react-icons/bs"
+import Tooltip from "@/components/ui/Tooltip"
 import InteractionButton from "@/features/interactions/components/InteractionButton"
+import useWatchlistPin from "@/features/interactions/hooks/useWatchlistPin"
 
 // Below md an invisible ::before widens each 32px control to a 44px tap area, sideways only so stacked targets don't overlap
 const TAP_AREA = "before:absolute before:-inset-x-1.5 md:before:hidden"
@@ -23,9 +26,30 @@ const CLOSED = "grid-rows-[0fr]"
 // Dots: always shown on mobile, revealed instantly on card hover on desktop (CSS only, no state)
 const DOTS_HOVER = "md:hidden md:group-hover/card:block"
 
-// Card actions pill, top-right of a MediaCard. The dots fold it open to Favorite / Watchlist;
-// an active action stays visible so it can be toggled without opening the menu.
-function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchlist, isFavorited, isWatchlisted }) {
+// Pins the title to Up next or unpins it (watchlist page cards)
+function PinButton({ media, isPinned }) {
+  const togglePin = useWatchlistPin()
+  return (
+    <Tooltip label={isPinned ? "Unpin" : "Pin to Up next"} side="left">
+      <button
+        type="button"
+        onClick={() => togglePin(media, isPinned)}
+        aria-label={isPinned ? "Unpin from Up next" : "Pin to Up next"}
+        aria-pressed={isPinned}
+        className={`relative cursor-pointer group/btn active:scale-90 ${ITEM_CLASS}`}
+      >
+        {isPinned
+          ? <BsPinAngleFill className="text-primary-light" size={15} />
+          : <BsPinAngle className="text-white/30 group-hover/btn:text-primary-light" size={15} />}
+      </button>
+    </Tooltip>
+  )
+}
+
+// Card actions pill, top-right of a MediaCard. The dots fold it open to Favorite / Watchlist (and Pin);
+// an active Favorite / Watchlist stays visible so it can be toggled without opening the menu. A pin has
+// its own marker on the card, so Pin shows only in the open menu.
+function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchlist, showPin, isFavorited, isWatchlisted, isPinned }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const media = useMemo(() => ({ id, type, title, poster_path: posterPath }), [id, type, title, posterPath])
@@ -95,6 +119,11 @@ function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchl
             tooltipLabel="Watchlist"
             className={ITEM_CLASS}
           />
+        </Fold>
+      )}
+      {showPin && (
+        <Fold rows={open ? OPEN : CLOSED} inert={!open} onClickCapture={close}>
+          <PinButton media={media} isPinned={isPinned} />
         </Fold>
       )}
     </div>

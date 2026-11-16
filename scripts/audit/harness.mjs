@@ -55,9 +55,13 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
     [1399, 'Game of Thrones', '/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg', 'tv'], [13, 'Forrest Gump', '/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg', 'movie'],
     [680, 'Pulp Fiction', '/vQWk5YBFWF4bZaofAbv0tShwBvQ.jpg', 'movie'], [603, 'The Matrix', '/p96dm7sCMn4VYAStA6siNz30G1r.jpg', 'movie'],
   ]
+  // A check can save a bigger watchlist for its next page load (localStorage 'audit:watchlist', ids)
+  const savedWatchlist = JSON.parse(localStorage.getItem('audit:watchlist') || 'null')
   const state = {
     favorites: [550, 27205, 1396],
-    watchlist: [157336, 1399, 13],
+    watchlist: savedWatchlist ?? [157336, 1399, 13],
+    // Watchlist id -> pinned_at (Up next)
+    pins: {},
     ratings: Object.fromEntries(titles.map(([id], i) => [id, 6 + (i % 5)])),
     following: [FRIEND],
   }
@@ -79,6 +83,7 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
     return {
       tmdb_id: id, media_type: t[3], title: t[1], poster_path: t[2], genre_ids, release_date,
       runtime: t[3] === 'movie' ? length : null, seasons: t[3] === 'tv' ? length : null, created_at: iso(i * 40),
+      pinned_at: type === 'watchlist' ? state.pins[id] ?? null : null,
     }
   })
   const feedRows = Array.from({ length: 21 }, (_, i) => {
@@ -111,6 +116,8 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
         case 'get_extended_streak': return json(14)
         case 'get_best_rated_since': return json({ movie: { type: 'movie', tmdb_id: 550, title: 'Fight Club', rating: 9 }, tv: { type: 'tv', tmdb_id: 1396, title: 'Breaking Bad', rating: 10 } })
         case 'get_average_rating': return json(7.8)
+        // maybeSingle reads an array: the first saved title
+        case 'get_watchlist_pick': { const t = titles.find((x) => x[0] === state.watchlist[0]); return json(t ? [{ tmdb_id: t[0], media_type: t[3], title: t[1] }] : []) }
         case 'get_user_feed': return json(args.p_cursor_id ? [] : feedRows)
         case 'get_friends_ratings': return json([{ rating_id: 'fr-1', score: 8, created_at: iso(2), user_id: FRIEND, username: 'a_friend_with_a_long_username', avatar_url: null, total_count: 1 }])
         case 'get_suggested_users': return json([{ id: '33333333-3333-4333-8333-333333333333', username: 'suggested_user', avatar_url: null, recent_activity_count: 4, mutual_friend_count: 1, suggestion_score: 14 }])
@@ -145,7 +152,18 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
         const id = Number(q.get('tmdb_id').replace('eq.', ''))
         const had = state[field].includes(id)
         state[field] = state[field].filter((x) => x !== id)
+        if (field === 'watchlist') delete state.pins[id]
         return json(had ? [{ id: 'x' }] : [])
+      }
+      // A pin (the only update): the stored pinned_at, or no row when the title isn't saved
+      if (method === 'PATCH') {
+        const id = Number(q.get('tmdb_id').replace('eq.', ''))
+        if (!state.watchlist.includes(id)) return json([])
+        const { pinned_at } = JSON.parse(body)
+        if (pinned_at && !state.pins[id] && Object.keys(state.pins).length >= 3) return json({ message: 'Up next holds 3 titles. Unpin one first.' }, 400)
+        if (pinned_at) state.pins[id] = pinned_at
+        else delete state.pins[id]
+        return json([{ pinned_at }])
       }
       // An add is an upsert that returns the stored row (select=…)
       if (method === 'POST') { const r = JSON.parse(body); const f = r.interaction_type === 'favorite' ? 'favorites' : 'watchlist'; state[f] = [...state[f], r.tmdb_id]; return json([{ ...r, created_at: new Date().toISOString() }], 201) }

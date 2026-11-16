@@ -1,4 +1,4 @@
-import { isReleased } from "@/utils/tmdbItem"
+import { isReleased, titleKey } from "@/utils/tmdbItem"
 import { timeSince } from "@/utils/timeAgo"
 import { MOODS } from "@/features/watchlist/constants/filters"
 
@@ -64,13 +64,28 @@ export function toShelves(items) {
   ].filter((shelf) => shelf.items.length > 0)
 }
 
-const count = (n, one, many = `${one}s`) => n && `${n} ${n === 1 ? one : many}`
+// Up next: the pinned titles, first pinned first
+export const toUpNext = (items) => items.filter((item) => item.pinned_at).sort((a, b) => a.pinned_at.localeCompare(b.pinned_at))
 
-// "56 movies · 3 series · 4 not out yet"
-export function summarize(items) {
-  const series = items.filter((item) => item.media_type === 'tv').length
-  const upcoming = items.filter((item) => !isReleased(item)).length
-  return [count(items.length - series, 'movie'), count(series, 'series', 'series'), upcoming && `${upcoming} not out yet`]
-    .filter(Boolean)
-    .join(' · ')
+// FNV-1a plus a final mix (murmur3's): a cheap string hash that ranks titles the same way on every render
+function hash(text) {
+  let h = 2166136261
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619)
+  h = Math.imul(h ^ (h >>> 16), 0x85ebca6b)
+  h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35)
+  return (h ^ (h >>> 16)) >>> 0
+}
+
+// Tonight's three: titles ranked by a hash of title + seed, so one seed always draws the same titles and
+// narrowing the filters keeps the drawn ones that still fit. `lead` (today's pick) goes first while it fits.
+export function drawTitles(items, seed, lead) {
+  const leadKey = lead && titleKey(lead.media_type, lead.tmdb_id)
+  return items
+    .map((item) => {
+      const key = titleKey(item.media_type, item.tmdb_id)
+      return { item, rank: key === leadKey ? -1 : hash(seed + key) }
+    })
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, 3)
+    .map(({ item }) => item)
 }
