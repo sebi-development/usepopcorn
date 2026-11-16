@@ -1,5 +1,5 @@
 import { toGenreOptions, TYPE_FILTER } from "@/utils/filters"
-import { isReleased } from "@/utils/tmdbItem"
+import { isReleased, titleKey } from "@/utils/tmdbItem"
 import { isMajorRole, ROLE_LABELS } from "@/features/people/hooks/usePerson"
 
 const KNOWN_FOR_LIMIT = 10
@@ -65,10 +65,11 @@ export function pickKnownFor(person, primary) {
 // The credits the filters leave, newest first unless sorted otherwise. `ratings` (the user's own)
 // is read only while a filter uses it.
 export function filterCredits(credits, { type, genre, year, rated, sort }, ratings) {
+  const isRated = (c) => ratings.has(titleKey(c.media_type, c.id))
   return credits
     .filter((c) => (!type || c.media_type === type)
       && (!genre || genre.some((g) => c.genre_ids?.includes(Number(g))))
       && (!year || c.release_date?.startsWith(year))
-      && (!rated || (rated === 'yes' ? ratings.has(c.id) : isReleased(c) && !ratings.has(c.id))))
+      && (!rated || (rated === 'yes' ? isRated(c) : isReleased(c) && !isRated(c))))
     .sort(SORTS[sort ?? 'newest'])
 }

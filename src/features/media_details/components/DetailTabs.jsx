@@ -89,7 +89,7 @@ function DetailTabs({ media, tmdbId, type }) {
         </TabPanel>
 
         <TabPanel id="social" activeTab={activeTab} animate={tabSwitched}>
-          <FriendActivityTab tmdbId={tmdbId} />
+          <FriendActivityTab tmdbId={tmdbId} type={type} />
         </TabPanel>
 
         {hasSimilar && (

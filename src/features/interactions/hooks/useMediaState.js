@@ -7,6 +7,7 @@ import { CACHE } from "@/lib/queryClient"
 // The signed-in user's relationship to titles (favorited, watchlisted, own rating) in one cache entry.
 // The cache holds the plain RPC payload so identical refetches keep their reference; the lookups below
 // are derived once per payload by `select`. Mutations patch it with patchMediaState.
+// Every lookup takes titleKey(type, id) (src/utils/tmdbItem.js): movie and TV ids overlap.
 export const mediaStateQuery = (userId) => ({
   queryKey: queryKeys.mediaState(userId),
   queryFn: getMediaState,
@@ -26,7 +27,7 @@ function toLookups(raw) {
     lastLookups = {
       favorites: new Set(raw.favorites),
       watchlist: new Set(raw.watchlist),
-      ratings: new Map(Object.entries(raw.ratings).map(([id, score]) => [Number(id), score])),
+      ratings: new Map(Object.entries(raw.ratings)),
     }
   }
   return lastLookups

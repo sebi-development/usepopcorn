@@ -10,6 +10,7 @@ import useScrollArrows from "@/hooks/useScrollArrows"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import AlertBanner from "@/components/ui/AlertBanner"
 import Chip from "@/components/ui/Chip"
+import { titleKey } from "@/utils/tmdbItem"
 
 // Shared by the skeleton and the loaded row, so the row keeps its box when the data lands
 const SCROLLER_CLASS = "flex gap-3 overflow-x-auto overscroll-x-contain -mx-4 px-4 md:mx-0 md:px-6 pb-2 scrollbar-hide"
@@ -114,23 +115,26 @@ function MediaRow({
   function renderCard(item, rankValue) {
     if (renderItem) return renderItem(item)
     const cardId = item.tmdb_id || item.id
+    // MediaCard's own default, so the lookups use the type the card opens
+    const cardType = item.media_type || item.type || mediaType || 'movie'
+    const key = titleKey(cardType, cardId)
     return (
       <MediaCard
         id={cardId}
-        type={item.media_type || item.type || mediaType}
+        type={cardType}
         title={item.title || item.name}
         posterPath={item.poster_path}
         releaseDate={item.release_date || item.first_air_date}
         voteAverage={item.vote_average}
         genreIds={item.genre_ids}
         isAdult={item.adult}
-        userRating={showRating ? (item.score ?? ratings.get(Number(cardId))) : undefined}
+        userRating={showRating ? (item.score ?? ratings.get(key)) : undefined}
         rank={rankValue}
         showFavorite={showFavorite}
         showInfo={showInfo}
-        isFavorited={favorites.has(Number(cardId))}
+        isFavorited={favorites.has(key)}
         showWatchlist={showWatchlist}
-        isWatchlisted={watchlist.has(Number(cardId))}
+        isWatchlisted={watchlist.has(key)}
       />
     )
   }

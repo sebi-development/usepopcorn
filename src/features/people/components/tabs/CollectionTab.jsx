@@ -10,7 +10,7 @@ import InfoNote from "@/components/ui/InfoNote"
 import StatChip from "@/components/media/StatChip"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 import usePersonShorts from "@/features/people/hooks/usePersonShorts"
-import { isReleased } from "@/utils/tmdbItem"
+import { isReleased, titleKey } from "@/utils/tmdbItem"
 import { defaultRole, isOwnTitle, REGULAR_EPISODES } from "@/features/people/hooks/usePerson"
 
 // Collector levels by the share of the person's released titles the user has rated
@@ -33,18 +33,19 @@ function useCollection(person, role, shortIds) {
     // No shortIds (the request failed): shorts count rather than the tab staying blank
     const shorts = new Set(shortIds)
     const own = person[role].filter((c) => isOwnTitle(c, role, shorts))
-    const credits = [...new Map(own.map((c) => [`${c.media_type}:${c.id}`, c])).values()]
+    const credits = [...new Map(own.map((c) => [titleKey(c.media_type, c.id), c])).values()]
+    const scoreOf = (c) => ratings.get(titleKey(c.media_type, c.id))
     // An unreleased title can't be rated yet, so only released ones count
     const released = credits.filter(isReleased)
-    const rated = released.filter((c) => ratings.has(c.id)).toSorted((a, b) => ratings.get(b.id) - ratings.get(a.id))
+    const rated = released.filter(scoreOf).toSorted((a, b) => scoreOf(b) - scoreOf(a))
     const total = released.length
 
     return {
       total,
       rated: rated.length,
-      average: rated.length ? (rated.reduce((sum, c) => sum + ratings.get(c.id), 0) / rated.length).toFixed(1) : null,
-      top: rated[0] && { ...rated[0], score: ratings.get(rated[0].id) },
-      watchlisted: credits.filter((c) => watchlist.has(c.id)).length,
+      average: rated.length ? (rated.reduce((sum, c) => sum + scoreOf(c), 0) / rated.length).toFixed(1) : null,
+      top: rated[0] && { ...rated[0], score: scoreOf(rated[0]) },
+      watchlisted: credits.filter((c) => watchlist.has(titleKey(c.media_type, c.id))).length,
       // With few titles thresholds meet; the higher level keeps the spot
       milestones: LEVELS
         .map(([label, share]) => ({ label, at: Math.max(1, Math.ceil(share * total)) }))

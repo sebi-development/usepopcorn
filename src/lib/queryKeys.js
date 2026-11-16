@@ -29,7 +29,8 @@ const queryKeys = {
   // ── Ratings ──────────────────────────────────────────────────
   ratings: {
     all: ['ratings'],
-    average: (tmdbId) => ['ratings', 'average', tmdbId],
+    // Movie and TV ids overlap, so a title is its type + id
+    average: (type, tmdbId) => ['ratings', 'average', type, tmdbId],
     // Base of a user's numbered rating pages (see gridPage)
     byUser: (userId) => ['ratings', 'user', userId],
     bestRated: (userId, period) => ['ratings', 'bestRated', userId, period],
@@ -50,7 +51,7 @@ const queryKeys = {
   friendsRatings: {
     // User first, so following / unfollowing someone can refresh every title at once
     all: (userId) => ['friendsRatings', userId],
-    byTitle: (userId, tmdbId) => ['friendsRatings', userId, tmdbId],
+    byTitle: (userId, type, tmdbId) => ['friendsRatings', userId, type, tmdbId],
   },
 
   // ── Search ───────────────────────────────────────────────────

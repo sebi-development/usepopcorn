@@ -28,6 +28,11 @@ export async function getMediaDetails(id, type = 'movie') {
   return tmdbFetch(`/${type}/${id}${append}`);
 }
 
+// The plain details (about 2 KB): genres, dates, runtime, seasons. For when the appended payload above isn't needed.
+export async function getMediaSummary(id, type = 'movie') {
+  return tmdbFetch(`/${type}/${id}`)
+}
+
 export async function getWatchProviders(id, type = 'movie') {
   return tmdbFetch(`/${type}/${id}/watch/providers`)
 }
