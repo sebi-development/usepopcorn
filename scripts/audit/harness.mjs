@@ -65,9 +65,19 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
     const [id, title, poster, type] = titles[i % titles.length]
     return { id: `r-${i}`, tmdb_id: id + (i >= titles.length ? i * 1000 : 0), title: i >= titles.length ? `${title} ${i}` : title, poster_path: poster, type, score: 6 + (i % 5), genre_ids: [18, 28] }
   })
-  const interactionRows = (type) => (type === 'favorite' ? state.favorites : state.watchlist).map((id) => {
+  // Watchlist metadata per title: [genre_ids, release_date, runtime (movie) or seasons (tv)]
+  const meta = {
+    550: [[18, 53], '1999-10-15', 139], 27205: [[28, 878], '2010-07-15', 148], 157336: [[12, 18, 878], '2014-11-05', 169],
+    1396: [[18, 80], '2008-01-20', 5], 1399: [[10765, 18], '2011-04-17', 8], 13: [[35, 18], '1994-06-23', 142],
+    680: [[53, 80], '1994-09-10', 154], 603: [[28, 878], '1999-03-30', 136],
+  }
+  const interactionRows = (type) => (type === 'favorite' ? state.favorites : state.watchlist).map((id, i) => {
     const t = titles.find((x) => x[0] === id)
-    return { tmdb_id: id, media_type: t[3] === 'tv' ? 'series' : 'movie', title: t[1], poster_path: t[2] }
+    const [genre_ids, release_date, length] = meta[id] ?? [[], null, null]
+    return {
+      tmdb_id: id, media_type: t[3], title: t[1], poster_path: t[2], genre_ids, release_date,
+      runtime: t[3] === 'movie' ? length : null, seasons: t[3] === 'tv' ? length : null, created_at: iso(i * 40),
+    }
   })
   const feedRows = Array.from({ length: 21 }, (_, i) => {
     const [id, title, poster, type] = titles[i % titles.length]

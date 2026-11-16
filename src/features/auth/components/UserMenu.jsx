@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { HiMiniUserGroup, HiOutlineUser } from "react-icons/hi2"
-import { FiUser, FiBarChart2, FiLogOut } from "react-icons/fi"
+import { FiUser, FiBookmark, FiBarChart2, FiLogOut } from "react-icons/fi"
 import { LuLoaderCircle } from "react-icons/lu"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
@@ -12,6 +12,7 @@ import { signOut } from "@/services/session"
 
 const MENU_ITEMS = [
   { to: "/profile", label: "Profile", icon: FiUser },
+  { to: "/watchlist", label: "Watchlist", icon: FiBookmark },
   { to: "/profile/stats", label: "Statistics", icon: FiBarChart2 },
   { to: "/community", label: "Friends", icon: HiMiniUserGroup },
 ]

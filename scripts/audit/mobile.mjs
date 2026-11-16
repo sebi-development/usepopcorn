@@ -33,6 +33,8 @@ const screens = [
   { name: 'person', path: '/person/525', settle: 3500 },
   { name: 'person-collection', path: '/person/525', settle: 3500, act: tabClick('Collection'), after: 800 },
   { name: 'person-awards', path: '/person/525', settle: 3500, act: tabClick('Awards'), after: 3000 },
+  { name: 'watchlist', path: '/watchlist', settle: 3500 },
+  { name: 'watchlist-filter-open', path: '/watchlist', settle: 3500, act: `${btn('/^Length$/')}.click()`, after: 600 },
   { name: 'profile', path: '/profile', settle: 3500 },
   { name: 'profile-edit-modal', path: '/profile', settle: 3500, act: `${btn('/^Edit Profile$/')}.click()`, after: 1200 },
   { name: 'profile-friend', path: '/profile/' + FRIEND, settle: 3500 },

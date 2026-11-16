@@ -3,7 +3,7 @@ import supabase from "@/lib/supabase"
 export async function getInteractions(type, userId) {
   const { data, error } = await supabase
     .from('user_media_interactions')
-    .select('tmdb_id, media_type, title, poster_path')
+    .select('tmdb_id, media_type, title, poster_path, created_at', )
     .eq('interaction_type', type)
     .eq('user_id', userId)
   if (error) throw new Error(error.message)
@@ -24,6 +24,7 @@ export async function toggleInteraction(type, mediaData, currentUserId) {
     .eq('user_id', currentUserId)
     .eq('tmdb_id', mediaData.tmdb_id)
     .eq('interaction_type', type)
+    .eq('media_type', mediaData.type)
     .select('id')
   if (error) throw new Error(error.message)
 

@@ -6,6 +6,7 @@ import InteractionMenu from "@/features/interactions/components/InteractionMenu"
 import MoviePoster from "@/components/media/MoviePoster"
 import { getGenreNames } from "@/utils/genres"
 import getTmdbImageUrl from "@/utils/tmdbImage"
+import { timeSince } from "@/utils/timeAgo"
 
 import RatingBadge from "@/components/media/RatingBadge"
 import StatChip from "@/components/media/StatChip"
@@ -22,6 +23,10 @@ function MediaCard({
   isAdult = false,
   rank,
   userRating,
+  // Bottom-left chip text (e.g. a watchlist title's length); "Upcoming" takes the slot first
+  badge,
+  // When the title was saved: an "Added 3 months ago" line in the info overlay
+  addedAt,
   showFavorite = false,
   showWatchlist = false,
   showInfo = true,
@@ -42,6 +47,8 @@ function MediaCard({
     () => (infoOpened ? getGenreNames(genreIds ?? [], type) : []),
     [infoOpened, genreIds, type]
   )
+  const age = infoOpened && addedAt ? timeSince(addedAt) : null
+  const cornerChip = isUpcoming ? 'Upcoming' : badge
 
   return (
     <div
@@ -79,16 +86,16 @@ function MediaCard({
         </div>
       )}
 
-      {/* An unreleased title can't be rated: it says so bottom-left, on the info chevron's line */}
-      {isUpcoming && (
+      {/* Bottom-left, on the info chevron's line: "Upcoming" (an unreleased title can't be rated), else the badge */}
+      {cornerChip && (
         <div className="absolute bottom-2 left-2 z-10 h-6 flex items-center">
-          <Chip variant="ghost" size="sm" className="shadow-lg font-semibold" label="Upcoming" />
+          <Chip variant="ghost" size="sm" className="shadow-lg font-semibold" label={cornerChip} />
         </div>
       )}
 
       <div className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-black/80 to-transparent pointer-events-none" />
-      {/* Gives the corner to the "Upcoming" chip */}
-      {rank && !isUpcoming && (
+      {/* Gives the corner to the chip */}
+      {rank && !cornerChip && (
         <span className="absolute bottom-2 left-3 text-5xl font-black leading-none select-none pointer-events-none text-white/20">
           {rank}
         </span>
@@ -122,6 +129,8 @@ function MediaCard({
             {genreNames.length > 0 && (
               <p className="text-xs text-text-muted line-clamp-1">{genreNames.join(', ')}</p>
             )}
+
+            {age && <p className="text-xs text-text-muted">Added {age === 'today' ? age : `${age} ago`}</p>}
 
             <div className="flex items-center justify-between gap-2">
               {isUpcoming

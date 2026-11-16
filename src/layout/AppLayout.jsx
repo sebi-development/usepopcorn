@@ -51,9 +51,10 @@ function AppLayout() {
     const startedOnHome = window.location.pathname === '/browse'
 
     whenQueriesSettle(queryClient, () => {
-      // T2: ProfilePage and DetailPage — commonly visited but not immediate.
+      // T2: ProfilePage, DetailPage and WatchlistPage — commonly visited but not immediate.
       prefetch(() => import('@/pages/app/ProfilePage'))
       prefetch(() => import('@/pages/app/DetailPage'))
+      prefetch(() => import('@/pages/app/WatchlistPage'))
 
       // T3: Community and Stats — lowest traffic, load last, and only for a session that starts on Home
       // (one that opens on a title or a person rarely goes there).

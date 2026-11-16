@@ -1,4 +1,5 @@
 import { useCallback, useMemo, memo, useRef } from "react"
+import { Link } from "react-router"
 import { HiOutlineBars3 } from "react-icons/hi2"
 import { TbGridDots } from "react-icons/tb"
 import { AutoSentinel } from "@/components/ui/LoadMoreFooter"
@@ -30,12 +31,24 @@ function RowHeader({ title, children }) {
   )
 }
 
+const TOGGLE_CLASS = "flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm text-text-muted hover:text-text hover:bg-surface-500 px-2 md:px-3 py-3 md:py-1.5 rounded-md transition-colors duration-200 cursor-pointer"
+
+// "View all" that opens another page (the toggle's look)
+function ViewAllLink({ to }) {
+  return (
+    <Link to={to} className={TOGGLE_CLASS}>
+      <TbGridDots size={16} />
+      View all
+    </Link>
+  )
+}
+
 function ExpandToggle({ isExpanded, isLoadingFirstPage, onToggle }) {
   return (
     <button
       type="button"
       onClick={onToggle}
-      className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-sm text-text-muted hover:text-text hover:bg-surface-500 px-2 md:px-3 py-3 md:py-1.5 rounded-md transition-colors duration-200 cursor-pointer"
+      className={TOGGLE_CLASS}
     >
       {isLoadingFirstPage ? (
         <span className="w-3.5 h-3.5 border-2 border-text-muted/40 border-t-text-muted rounded-full animate-spin" />
@@ -68,13 +81,17 @@ function MediaRow({
   gridItems, gridError, page = 1, totalPages = 1, onPageChange,
   // Renders an item that isn't a title (e.g. a cast member) in place of MediaCard
   renderItem,
+  // Watchlist rows: `badgeOf(item)` is the card's bottom-left chip, `showAdded` its "Added …" line
+  badgeOf, showAdded = false,
+  // A "View all" link to another page, in place of the in-place expand toggle
+  viewAllTo,
   // Shown as a count chip after the heading
   count,
   // Shown in place of the row when the loaded list is empty (e.g. no title matches the filters)
   emptyNote,
 }) {
   const title = count == null ? heading : <>{heading}<Chip variant="count" size="sm" label={count} className="ml-2 align-middle" /></>
-  const hasHeader = heading || expandable
+  const hasHeader = heading || expandable || viewAllTo
   // Movie and TV ids overlap, so a list mixing both (a person's credits) keys by type too
   const keyOf = useCallback(
     (item) => `${item.media_type || item.type || mediaType}:${item.tmdb_id || item.id}`,
@@ -125,6 +142,8 @@ function MediaRow({
         genreIds={item.genre_ids}
         isAdult={item.adult}
         userRating={showRating ? (item.score ?? ratings.get(Number(cardId))) : undefined}
+        badge={badgeOf?.(item)}
+        addedAt={showAdded ? item.created_at : undefined}
         rank={rankValue}
         showFavorite={showFavorite}
         showInfo={showInfo}
@@ -141,7 +160,7 @@ function MediaRow({
       {hasHeader && (
         <RowHeader title={title}>
           {/* Holds the toggle's room, so "View all" appearing doesn't grow the header */}
-          {expandable && <span aria-hidden="true" className="invisible shrink-0 whitespace-nowrap text-sm px-2 md:px-3 py-3 md:py-1.5">View all</span>}
+          {(expandable || viewAllTo) && <span aria-hidden="true" className="invisible shrink-0 whitespace-nowrap text-sm px-2 md:px-3 py-3 md:py-1.5">View all</span>}
         </RowHeader>
       )}
       <div className="relative group/row">
@@ -176,9 +195,9 @@ function MediaRow({
       {/* Optional: a host that titles the row itself (e.g. a detail page tab) passes no heading */}
       {hasHeader && (
         <RowHeader title={title}>
-          {expandable && (
+          {expandable ? (
             <ExpandToggle isExpanded={isExpanded} isLoadingFirstPage={isLoadingFirstPage} onToggle={onToggleExpand} />
-          )}
+          ) : viewAllTo && <ViewAllLink to={viewAllTo} />}
         </RowHeader>
       )}
 

@@ -15,6 +15,7 @@ function NearViewportRow({ heading, count, showInfo }) {
       <MediaRow
         limit={15}
         heading={heading}
+        viewAllTo="/watchlist"
         // From mediaState, so it shows in the skeleton before the list is fetched
         count={count}
         data={data}

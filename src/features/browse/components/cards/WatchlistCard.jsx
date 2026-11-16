@@ -10,7 +10,7 @@ const THEME = { gradient: 'linear-gradient(135deg, #9775fa 0%, #6741d9 100%)', I
 function linkFor(pick, count) {
   // DetailPage reads the media type from router state (defaults to 'movie')
   if (pick) return { text: pick.title, to: `/browse/${pick.tmdb_id}`, state: { type: pick.media_type } }
-  if (count > 0) return { text: 'Open your watchlist', to: '/profile' }
+  if (count > 0) return { text: 'Open your watchlist', to: '/watchlist' }
   return { text: 'Save a title to watch later', to: '/browse?type=movies&category=trending' }
 }
 

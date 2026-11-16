@@ -26,9 +26,13 @@ export default function useUrlFilters(defs) {
     )
   }, [defs, setSearchParams])
 
-  const clearFilters = useCallback(() => {
-    setSearchParams((prev) => writeFilters(prev, defs, {}), IN_PLACE)
+  // Replaces every filter at once. Two setFilter calls in one event would drop the first: React Router's
+  // setSearchParams starts from the params of the render it came from, not from the previous call.
+  const setFilters = useCallback((next) => {
+    setSearchParams((prev) => writeFilters(prev, defs, next), IN_PLACE)
   }, [defs, setSearchParams])
 
-  return { filters, activeCount: Object.keys(filters).length, setFilter, clearFilters }
+  const clearFilters = useCallback(() => setFilters({}), [setFilters])
+
+  return { filters, activeCount: Object.keys(filters).length, setFilter, setFilters, clearFilters }
 }

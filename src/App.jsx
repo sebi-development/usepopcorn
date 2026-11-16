@@ -33,6 +33,7 @@ const RegisterPage = page(() => import("@/pages/auth/RegisterPage"))
 // ─── T2: commonly visited, prefetched once the first screen's queries settle ─────────────────
 const DetailPage = page(() => import("@/pages/app/DetailPage"))
 const ProfilePage = page(() => import("@/pages/app/ProfilePage"))
+const WatchlistPage = page(() => import("@/pages/app/WatchlistPage"))
 const ForgotPasswordPage = page(() => import("@/pages/auth/ForgotPasswordPage"))
 const ResetPasswordPage = page(() => import("@/pages/auth/ResetPasswordPage"))
 
@@ -94,6 +95,7 @@ const router = createBrowserRouter([
       { path: '/browse/:id', lazy: DetailPage },
       { path: '/person/:id', lazy: PersonPage },
       { path: '/profile', lazy: ProfilePage },
+      { path: '/watchlist', lazy: WatchlistPage },
       { path: '/community', lazy: CommunityPage },
       { path: '/profile/stats', lazy: ProfileStatsPage },
       { path: '/profile/:userId', lazy: ProfilePage },
