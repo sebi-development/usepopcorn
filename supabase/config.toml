@@ -393,6 +393,9 @@ verify_jwt = true
 [functions.mdblist-scores]
 verify_jwt = true
 
+[functions.watch-providers]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327

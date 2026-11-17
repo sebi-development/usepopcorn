@@ -113,6 +113,15 @@ function initScript(SUPABASE_URL, REF, ME, FRIEND, loggedIn) {
     // Score Edge Functions: the cache rows below are always fresh, so these are a safety net
     if (p === '/functions/v1/csfd-score') return json({ csfdId: 9499, rating: 90 })
     if (p === '/functions/v1/mdblist-scores') return json({ imdb: 8.7, rtCritics: 96, rtAudience: 97, metacritic: 87, rtPath: '/tv/breaking_bad' })
+    // Streaming of the posted titles: the 1st, 4th… on Netflix, the 2nd, 5th… on Netflix and HBO Max, the rest on none
+    if (p === '/functions/v1/watch-providers') {
+      const { titles = [] } = body ? JSON.parse(body) : {}
+      const on = (i) => [['netflix'], ['netflix', 'max'], []][i % 3]
+      return json({
+        services: { netflix: 'Netflix', max: 'HBO Max' },
+        titles: Object.fromEntries(titles.map(([type, id], i) => [`${type}:${id}`, on(i)]).filter(([, keys]) => keys.length)),
+      })
+    }
     if (p.startsWith('/rest/v1/rpc/')) {
       const fn = p.split('/').pop()
       const args = body ? JSON.parse(body) : {}

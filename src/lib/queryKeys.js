@@ -15,6 +15,11 @@ const queryKeys = {
     all: (userId) => ['watchlistPick', userId],
     day: (userId, day) => ['watchlistPick', userId, day],
   },
+  // /watchlist's Streaming filter: where the saved titles stream in the profile's country
+  watchlistStreaming: {
+    all: (userId) => ['watchlistStreaming', userId],
+    region: (userId, region) => ['watchlistStreaming', userId, region],
+  },
 
   // ── Profiles ─────────────────────────────────────────────────
   profile: (userId) => ['profile', userId],

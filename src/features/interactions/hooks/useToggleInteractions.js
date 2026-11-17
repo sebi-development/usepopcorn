@@ -75,9 +75,12 @@ export default function useToggleInteractions(type) {
       toast.error(`Something went wrong: ${err.message}`)
     },
 
-    // Today's pick is ranked among the whole watchlist, so any change can move it
-    onSettled: () => {
-      if (type === 'watchlist') queryClient.invalidateQueries({ queryKey: queryKeys.watchlistPick.all(currentUser?.id) })
+    onSettled: (_row, _error, { adding }) => {
+      if (type !== 'watchlist') return
+      // Today's pick is ranked among the whole watchlist, so any change can move it
+      queryClient.invalidateQueries({ queryKey: queryKeys.watchlistPick.all(currentUser?.id) })
+      // A new title isn't in the Streaming filter's answer yet (a removed one simply drops out of the list)
+      if (adding) queryClient.invalidateQueries({ queryKey: queryKeys.watchlistStreaming.all(currentUser?.id) })
     },
   })
 

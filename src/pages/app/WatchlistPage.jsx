@@ -21,7 +21,7 @@ const NO_ITEMS = []
 export default function WatchlistPage() {
   const { data, isLoading, error } = useInteractions("watchlist")
   const items = data ?? NO_ITEMS
-  const { defs, filters, setFilter, setFilters, clearFilters, shown } = useWatchlistFilters(items)
+  const { defs, filters, setFilter, setFilters, clearFilters, shown, onOpen, isPending } = useWatchlistFilters(items)
   const shelves = useMemo(() => toShelves(items), [items])
   const upNext = useMemo(() => toUpNext(items), [items])
 
@@ -94,10 +94,11 @@ export default function WatchlistPage() {
               className="ml-2 align-middle"
             />
           </h2>
-          <FilterBar defs={defs} filters={filters} onChange={setFilter} onClear={clearFilters} className="md:px-6" />
+          <FilterBar defs={defs} filters={filters} onChange={setFilter} onClear={clearFilters} onOpen={onOpen} className="md:px-6" />
           <MediaRow
             data={pageItems}
             isExpanded
+            isPending={isPending}
             gridItems={pageItems}
             page={current}
             totalPages={totalPages}
