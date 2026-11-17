@@ -1,11 +1,12 @@
 # Watchlist command centre: structure and build plan
 
-> Saved 2026-11-15, updated 2026-11-16. **For the agent: Phases 1–3 are built and tested (sections 9–11).
-> Next: the open items in section 11, then Phase 4 (streaming).**
+> Saved 2026-11-15, updated 2026-11-17. **For the agent: Phases 1–4 are built and tested (sections 9–12).
+> Next: the user's performance audit and feedback, then the open items in section 12.**
 
-Status (2026-11-16): **Phase 1** on `feat/watchlist-page`, **Phase 2** on `feat/watchlist-tonight`
-(stacked on Phase 1), **Phase 3** on `feat/watchlist-social` (stacked on Phase 2, not committed yet). All three
-phases' migrations are applied to production. No branch is pushed yet.
+Status (2026-11-17): **Phase 1** on `feat/watchlist-page`, **Phase 2** on `feat/watchlist-tonight`
+(stacked on Phase 1), **Phase 3** on `feat/watchlist-social` (stacked on Phase 2, committed, plus the card
+config fix), **Phase 4** on `feat/watchlist-streaming` (stacked on Phase 3). Phases 1–3's migrations are
+applied to production; Phase 4's is not yet (section 12). No branch is pushed yet.
 
 Design canvas (private): https://claude.ai/artifact/RnwrMSzPdHDBYWguc1gvCU
 - Artboard **D** (`Combined.dc.html`) + **D · Phone** (`Phone.dc.html`) = the chosen base.
@@ -100,10 +101,10 @@ No preset FeatureCards on this page (dropped for weight).
   update the ProfilePage comment and requests (other profiles may now show both).
 - Watchlist on other users' profiles; Watch together (overlap with a friend's watchlist).
 
-**Phase 4: streaming on my services**
-- "My services" on the profile (the country already exists), a per-title provider cache with a
-  TTL (the `mdblist_cache` pattern), and the filter. Reuse `useWatchProviders` /
-  `streamingLinks.js`.
+**Phase 4: streaming** (narrowed 2026-11-17, see section 12)
+- A niche feature: one text-only Streaming pill in All saved's FilterBar, no saved "My services", no icons,
+  nothing loaded until the pill opens. A per-title, per-country provider cache with a TTL behind an Edge
+  Function (one call for the whole list).
 
 ## 5. Code to reuse (verify paths when starting)
 
@@ -297,3 +298,76 @@ Not done / next:
 2. Real data is thin: the people the user follows rated 0 of their watchlist titles, and only one user has a
    watchlist, so both new rows stay hidden in production until that changes.
 3. Still open from earlier: the typed-keys contract migration, the perf report, desktop Safari / WebKit.
+
+Correction (2026-11-17, commit `6dc481f` on this branch): every /watchlist card showed the active watchlist
+icon, which says nothing on a page of saved titles. Cards now take one `actions` config (`CARD_ACTIONS` in
+`components/media/cardActions.js`: `menu` = what the dots menu offers, `markers` = active states kept on the
+card) in place of `showFavorite` / `showWatchlist` / `showPin`. Presets: `browse` (favourite + save, both
+marked), `save` (another user's watchlist), `saved` (remove only, no markers: Watch together, friends-rated
+shelf), `watchlist` (remove + pin, only the pin marked: /watchlist rows, grid and Tonight).
+
+## 12. Phase 4 status (2026-11-17): DONE, deployed, tested
+
+Branch `feat/watchlist-streaming`, stacked on `feat/watchlist-social`, uncommitted. Migration
+`20261117104513_watch_providers_cache.sql` is **applied to production**, the `TMDB_API_KEY` secret is set and
+`watch-providers` is **deployed**.
+
+Decided 2026-11-17 (TMDB has no batch call; one title's `/watch/providers` is 35–78 KB raw, 2.6–6.3 KB
+gzipped, 107 regions incl. rent/buy, of which ~3 ids are used):
+- Edge Function + cache (not 59 browser requests, not a column filled on add). Loaded only when the Streaming
+  pill opens, or at load when the URL already has `?streaming=`.
+- No saved "My services": the pill lists the services that carry a saved title in the profile's country
+  (US fallback, as on a title's page), text only, e.g. "Netflix (2)", multi, in the URL like Genre.
+- The cache keeps only the region's streaming entries (`flatrate`, `free`, `ads`) as `{ id, name }`, never
+  TMDB's payload; the browser's query cache keeps only brand labels and brand keys per title.
+
+Built:
+- DB: `watch_providers_cache (region, tmdb_id, media_type, providers jsonb, expires_at)`, service_role only
+  (RLS on, no policies, no client grants). Migration `20261117104513_watch_providers_cache.sql`.
+- Function `watch-providers` (verify_jwt): `POST { region, titles: [[type, id]…] }` (≤ 500) →
+  `{ providers: { id: name }, titles: { 'movie:603': [ids] } }`. Fresh rows answer; expired rows answer and
+  refresh behind the response; titles with no row are fetched from TMDB (20 at a time) and stored in one
+  upsert. TTL 3 days. A failed TMDB lookup is logged and left uncached.
+- Client: `services/watchProviders.js`, `useWatchlistStreaming` (key `watchlistStreaming.region(id, region)`,
+  `CACHE.user`; groups providers by brand via `utils/streamingBrands.js`, now shared with the detail page's
+  `useWatchProviders`), Streaming def + `toStreamingOptions` + a `streaming` matcher (lets everything through
+  until loaded, grid dimmed meanwhile). A watchlist add invalidates `watchlistStreaming.all`. Tonight's widen
+  offers "Any service" last. Audit stub for the function.
+
+Verified (stub, headless Brave 1440 / 375): 0 calls at load, 1 on opening the pill, options grouped by brand
+("Netflix (2)" from Netflix + Netflix with ads, "HBO Max (1)"), picking writes `?streaming=max` and narrows the
+grid and Tonight, a reload with it makes 1 call at load, "Any service" clears it. `pnpm lint`, `pnpm build`
+(WatchlistPage 5.66 → 6.25 kB gzip, entry unchanged), `audit:checks` 17/17 PASS, `audit:mobile` no overflow.
+`pnpm db:dry`: only this migration.
+
+In production (the real 77-title watchlist, region SK, called with the legacy anon JWT): the first call
+filled the cache in 5.0 s (77 TMDB lookups, 20 at a time), a warm call took 0.24 s; request 1.4 KB, response
+899 B (52 titles stream somewhere, 18 providers). Stored: 77 rows, 60 B of providers per row on average
+(223 B max), table 64 kB.
+
+After the user's DevTools pass (2026-11-17), changed:
+- **Streaming allowlist**: the function answers only for 9 services (`SERVICES` in the function: Netflix,
+  HBO Max, Prime Video, Disney+, Apple TV, SkyShowtime, Voyo, Canal+, Sweet.tv; plans with ads count as the
+  service, Amazon channels don't). Response `{ services: { key: label }, titles: { 'movie:603': [keys] } }`,
+  so the client does no brand grouping (`utils/streamingBrands.js` dropped, the detail page's `BRANDS` back
+  as it was). The cache still keeps every streaming entry, so changing the list needs only a redeploy.
+  Redeployed; warm call 0.38 s, 1.6 KB raw / 688 B gzipped, 50 of 77 titles on a listed service.
+- **Moods**: Adrenaline = Action, Thriller, Crime (no Horror); new **Horror** = Horror, Mystery, Thriller (series:
+  Mystery, as TMDB has no TV Horror); new **Epic** = Adventure, Fantasy, War, Western (series: War & Politics,
+  Western). Brain food drops Mystery (now Sci-Fi, Docs, History).
+- **"Looking forward to"** replaces "Not out yet": unreleased **movies** only, next out first (new Sort option
+  "Coming soonest": unreleased by date, then released newest first); its View all sets the same preset.
+- **Tonight** draws only titles already out (the grid below still lists the rest).
+- **"Added …"** counts calendar days (`timeSince`): a title saved last night says "1 day", not "today".
+- **Metadata bug** (not a logic bug): the live site still runs `main`, whose `toggleInteraction` saves watchlist
+  rows with no metadata; `isReleased` reads a missing date as "not out yet". 4 such rows were backfilled from
+  TMDB (0 of 77 lack metadata now). **After the new client ships, rerun:** `select count(*) from
+  user_media_interactions where interaction_type = 'watchlist' and genre_ids is null` and backfill any.
+
+Not done / next:
+1. Commit, then push all four branches in order.
+2. Possible: a sliding pool instead of fixed batches of 20 would shorten the one-time cold fill (5 s, first use
+   per region only); not done, measure first.
+
+Done 2026-11-17: `get_watchlist_pick` skips titles not out by `p_day` (migration
+`20261117121026_watchlist_pick_released.sql`, **applied**; snapshot refreshed). 71 of 77 titles pickable.
