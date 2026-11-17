@@ -46,10 +46,10 @@ function PinButton({ media, isPinned }) {
   )
 }
 
-// Card actions pill, top-right of a MediaCard. The dots fold it open to Favorite / Watchlist (and Pin);
-// an active Favorite / Watchlist stays visible so it can be toggled without opening the menu. A pin has
-// its own marker on the card, so Pin shows only in the open menu.
-function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchlist, showPin, isFavorited, isWatchlisted, isPinned }) {
+// Card actions pill, top-right of a MediaCard. The dots fold it open to the items in `actions.menu`; an
+// active Favorite / Watchlist listed in `actions.markers` stays visible so it can be toggled without
+// opening the menu. A pin's marker is the card's own, so Pin shows only in the open menu.
+function InteractionMenu({ id, type, title, posterPath, actions, isFavorited, isWatchlisted, isPinned }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const media = useMemo(() => ({ id, type, title, poster_path: posterPath }), [id, type, title, posterPath])
@@ -72,9 +72,12 @@ function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchl
     }
   }, [open, close])
 
-  const showFav = showFavorite && (open || isFavorited)
-  const showWatch = showWatchlist && (open || isWatchlisted)
-  const visible = open || isFavorited || isWatchlisted
+  const offers = (name) => actions.menu.includes(name)
+  const keepsFav = isFavorited && actions.markers.includes("favorite")
+  const keepsWatch = isWatchlisted && actions.markers.includes("watchlist")
+  const showFav = open || keepsFav
+  const showWatch = open || keepsWatch
+  const visible = open || keepsFav || keepsWatch
 
   return (
     <div
@@ -97,7 +100,7 @@ function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchl
         </button>
       </div>
 
-      {showFavorite && (
+      {offers("favorite") && (
         <Fold rows={showFav ? OPEN : CLOSED} inert={!showFav} onClickCapture={close}>
           <InteractionButton
             type="favorite"
@@ -109,7 +112,7 @@ function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchl
           />
         </Fold>
       )}
-      {showWatchlist && (
+      {offers("watchlist") && (
         <Fold rows={showWatch ? OPEN : CLOSED} inert={!showWatch} onClickCapture={close}>
           <InteractionButton
             type="watchlist"
@@ -121,7 +124,7 @@ function InteractionMenu({ id, type, title, posterPath, showFavorite, showWatchl
           />
         </Fold>
       )}
-      {showPin && (
+      {offers("pin") && (
         <Fold rows={open ? OPEN : CLOSED} inert={!open} onClickCapture={close}>
           <PinButton media={media} isPinned={isPinned} />
         </Fold>

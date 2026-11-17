@@ -11,7 +11,6 @@ function Favorites({ favorites, isLoading, showInfo = false }) {
       count={favorites?.length}
       data={favorites}
       rank={false}
-      showFavorite={false}
       showInfo={showInfo}
     />
   )

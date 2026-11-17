@@ -2,6 +2,7 @@ import { memo } from "react"
 import { Link } from "react-router"
 import { BsPinAngle, BsPinAngleFill } from "react-icons/bs"
 import MediaCard from "@/components/media/MediaCard"
+import { CARD_ACTIONS } from "@/components/media/cardActions"
 import MoviePoster from "@/components/media/MoviePoster"
 import ArrowLink from "@/components/ui/ArrowLink"
 import Button from "@/components/ui/Button"
@@ -89,8 +90,7 @@ function TonightCards({ status, drawn, drawKey, isDrawn, isPick, animate, classN
           return (
             <div key={key} className={`min-w-0 ${SLOT_CLASS[i]}`}>
               <div className={`flex flex-col gap-2 ${animate ? FADE_IN : ""}`} style={animate ? { animationDelay: `${i * 70}ms` } : undefined}>
-                {/* The caption below has the details, so no info overlay; the menu only pins (on a phone the
-                    always-shown favourite and watchlist icons would cover a small card) */}
+                {/* The caption below has the details, so no info overlay */}
                 <MediaCard
                   id={item.tmdb_id}
                   type={item.media_type}
@@ -100,7 +100,8 @@ function TonightCards({ status, drawn, drawKey, isDrawn, isPick, animate, classN
                   genreIds={item.genre_ids}
                   badge={lengthLabel(item)}
                   showInfo={false}
-                  showPin
+                  actions={CARD_ACTIONS.watchlist}
+                  isWatchlisted
                   isPinned={item.pinned_at != null}
                   className={i === 0 ? LEAD_RING : ""}
                 />

@@ -1,5 +1,6 @@
 import { memo, useMemo, useState } from "react"
 import MediaRow from "@/components/media/MediaRow/MediaRow"
+import { CARD_ACTIONS } from "@/components/media/cardActions"
 import useInteractions from "@/features/interactions/hooks/useInteractions"
 import useMediaState from "@/features/interactions/hooks/useMediaState"
 import useIntersectionObserver from "@/hooks/useIntersectionObserver"
@@ -45,7 +46,7 @@ function UserWatchlist({ userId }) {
           data={together}
           limit={ROW_LIMIT}
           rank={false}
-          showWatchlist
+          actions={CARD_ACTIONS.saved}
           showInfo={false}
         />
       )}
@@ -57,7 +58,7 @@ function UserWatchlist({ userId }) {
           isError={Boolean(error)}
           limit={ROW_LIMIT}
           rank={false}
-          showWatchlist
+          actions={CARD_ACTIONS.save}
           showInfo={false}
           expandable={items.length > ROW_LIMIT}
           isExpanded={isExpanded}

@@ -1,5 +1,6 @@
 import { memo, useMemo } from "react"
 import MediaRow from "@/components/media/MediaRow/MediaRow"
+import { CARD_ACTIONS } from "@/components/media/cardActions"
 import FilterBar from "@/components/filters/FilterBar"
 import Chip from "@/components/ui/Chip"
 import { useUrlPage } from "@/hooks/useUrlGrid"
@@ -18,7 +19,7 @@ function Filmography({ person }) {
 
   return (
     <div className="flex flex-col gap-6 md:gap-10">
-      <MediaRow heading="Known for" data={knownFor} rank={false} showRating showFavorite showWatchlist />
+      <MediaRow heading="Known for" data={knownFor} rank={false} showRating actions={CARD_ACTIONS.browse} />
 
       <div className="flex flex-col gap-4">
         <h2 className="text-text font-semibold text-xl md:px-6">
@@ -33,8 +34,7 @@ function Filmography({ person }) {
           totalPages={Math.ceil(shown.length / PAGE_SIZE)}
           onPageChange={setPage}
           showRating
-          showFavorite
-          showWatchlist
+          actions={CARD_ACTIONS.browse}
           emptyNote={NO_MATCHES}
         />
       </div>

@@ -1,5 +1,6 @@
 import useCategoryMedia, { useCategoryMediaGrid, SECTION_TO_TYPE } from '@/features/browse/hooks/useCategoryMedia'
 import MediaRow from '@/components/media/MediaRow/MediaRow'
+import { CARD_ACTIONS } from '@/components/media/cardActions'
 import useUrlGrid from '@/hooks/useUrlGrid'
 import { isEmptyFilters, NO_MATCHES } from '@/utils/filters'
 
@@ -29,8 +30,7 @@ export default function CategoryMediaRow({ section, categoryId, title, filters }
       isError={list.isError}
       onLoadMore={list.fetchMore}
       hasMore={list.phase === 'auto'}
-      showFavorite
-      showWatchlist
+      actions={CARD_ACTIONS.browse}
       showRating
       expandable
       isExpanded={isExpanded}

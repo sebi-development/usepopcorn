@@ -1,6 +1,7 @@
 import { memo, useMemo } from 'react'
 import useRecommendations, { useRecommendationsGrid } from '@/features/browse/hooks/useRecommendations'
 import MediaRow from '@/components/media/MediaRow/MediaRow'
+import { CARD_ACTIONS } from '@/components/media/cardActions'
 import useUrlGrid from '@/hooks/useUrlGrid'
 
 const PLACEHOLDER_HEADINGS = { movie: 'Recommended movies', tv: 'Recommended series' }
@@ -40,8 +41,7 @@ function RecommendationRow({ seed, type, isLoadingSeed, expandable = true, headi
       showInfo={true}
       rank={false}
       showRating
-      showFavorite
-      showWatchlist
+      actions={CARD_ACTIONS.browse}
       expandable={expandable}
       isExpanded={isExpanded}
       isPending={grid.isPlaceholderData || (grid.isFetching && isExpanded)}

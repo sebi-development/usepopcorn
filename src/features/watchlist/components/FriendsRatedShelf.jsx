@@ -1,5 +1,6 @@
 import { memo, useMemo, useState } from "react"
 import MediaRow from "@/components/media/MediaRow/MediaRow"
+import { CARD_ACTIONS } from "@/components/media/cardActions"
 import useIntersectionObserver from "@/hooks/useIntersectionObserver"
 import useWatchlistFriendsRatings from "@/features/watchlist/hooks/useWatchlistFriendsRatings"
 import { friendsLabel, toFriendsRated } from "@/features/watchlist/utils/watchlistItems"
@@ -24,12 +25,11 @@ function FriendsRatedShelf({ items }) {
           data={rated}
           limit={15}
           rank={false}
-          // Top-left star: the friends' average (the pin marker's corner, so no Pin on this shelf)
+          // Top-left star: the friends' average. A pin marker beside it crowds a phone card, so no Pin here.
           showRating
           badgeOf={friendsLabel}
           showAdded
-          showFavorite
-          showWatchlist
+          actions={CARD_ACTIONS.saved}
         />
       )}
     </div>

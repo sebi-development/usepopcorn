@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react"
 import MediaRow from "@/components/media/MediaRow/MediaRow"
+import { CARD_ACTIONS } from "@/components/media/cardActions"
 import FilterBar from "@/components/filters/FilterBar"
 import Chip from "@/components/ui/Chip"
 import { useUrlPage } from "@/hooks/useUrlGrid"
@@ -59,9 +60,7 @@ export default function WatchlistPage() {
           rank={false}
           badgeOf={lengthLabel}
           showAdded
-          showFavorite
-          showWatchlist
-          showPin
+          actions={CARD_ACTIONS.watchlist}
         />
       )}
 
@@ -75,9 +74,7 @@ export default function WatchlistPage() {
           rank={false}
           badgeOf={shelf.badgeOf}
           showAdded
-          showFavorite
-          showWatchlist
-          showPin
+          actions={CARD_ACTIONS.watchlist}
           expandable
           onToggleExpand={() => showShelf(shelf.preset)}
         />
@@ -107,9 +104,7 @@ export default function WatchlistPage() {
             onPageChange={setPage}
             badgeOf={lengthLabel}
             showAdded
-            showFavorite
-            showWatchlist
-            showPin
+            actions={CARD_ACTIONS.watchlist}
             emptyNote={NO_MATCHES}
           />
         </section>

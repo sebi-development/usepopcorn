@@ -5,6 +5,7 @@ import { TbRating18Plus } from "react-icons/tb"
 import { BsPinAngleFill } from "react-icons/bs"
 import InteractionMenu from "@/features/interactions/components/InteractionMenu"
 import MoviePoster from "@/components/media/MoviePoster"
+import { CARD_ACTIONS } from "@/components/media/cardActions"
 import { getGenreNames } from "@/utils/genres"
 import getTmdbImageUrl from "@/utils/tmdbImage"
 import { timeSince } from "@/utils/timeAgo"
@@ -28,14 +29,12 @@ function MediaCard({
   badge,
   // When the title was saved: an "Added 3 months ago" line in the info overlay
   addedAt,
-  showFavorite = false,
-  showWatchlist = false,
-  // Watchlist page: a Pin item in the card menu, and a marker on a title pinned to Up next
-  showPin = false,
-  isPinned = false,
-  showInfo = true,
+  // What the card menu offers and which active states stay marked (CARD_ACTIONS)
+  actions = CARD_ACTIONS.none,
   isFavorited = false,
   isWatchlisted = false,
+  isPinned = false,
+  showInfo = true,
   // Extra classes on the card itself (e.g. a ring that scales with it on hover)
   className = '',
 }) {
@@ -55,6 +54,7 @@ function MediaCard({
   )
   const age = infoOpened && addedAt ? timeSince(addedAt) : null
   const cornerChip = isUpcoming ? 'Upcoming' : badge
+  const showPinMarker = isPinned && actions.markers.includes('pin')
 
   return (
     <div
@@ -71,35 +71,30 @@ function MediaCard({
         fallbackLabel={title}
       />
 
-      {(showFavorite || showWatchlist || showPin) && (
+      {actions.menu.length > 0 && (
         <InteractionMenu
           id={id}
           type={type}
           title={title}
           posterPath={posterPath}
-          showFavorite={showFavorite}
-          showWatchlist={showWatchlist}
-          showPin={showPin}
+          actions={actions}
           isFavorited={isFavorited}
           isWatchlisted={isWatchlisted}
           isPinned={isPinned}
         />
       )}
 
-      {/* Pinned to Up next: top-left, on the card menu's line (same box as the rating chip below) */}
-      {isPinned && (
-        <div className="absolute top-2 left-2 z-10 h-8.5 md:h-6.5 flex items-center">
-          <span role="img" aria-label="Pinned to Up next" className="w-6.5 h-6.5 rounded-full bg-primary/85 text-white shadow-sm flex items-center justify-center">
-            <BsPinAngleFill size={12} />
-          </span>
-        </div>
-      )}
-
-      {/* The user's rating (in "Recently rated", that row's score), top-left on the card menu's line:
-          the box matches the menu's dots (32px, 24px on md, plus its 1px border) so their centres meet */}
-      {userRating && (
-        <div className="absolute top-2 left-2 z-10 h-8.5 md:h-6.5 flex items-center">
-          <StatChip text={userRating} />
+      {/* Top-left on the card menu's line: the pin marker (Up next) and the user's rating (in "Recently
+          rated", that row's score). The box matches the menu's dots (32px, 24px on md, plus its 1px border)
+          so their centres meet. */}
+      {(showPinMarker || userRating) && (
+        <div className="absolute top-2 left-2 z-10 h-8.5 md:h-6.5 flex items-center gap-1">
+          {showPinMarker && (
+            <span role="img" aria-label="Pinned to Up next" className="w-6.5 h-6.5 rounded-full bg-primary/85 text-white shadow-sm flex items-center justify-center">
+              <BsPinAngleFill size={12} />
+            </span>
+          )}
+          {userRating && <StatChip text={userRating} />}
         </div>
       )}
 

@@ -1,5 +1,6 @@
 import { memo } from "react"
 import MediaRow from "@/components/media/MediaRow/MediaRow"
+import { CARD_ACTIONS } from "@/components/media/cardActions"
 
 function SimilarTab({ items, type }) {
   return (
@@ -8,8 +9,7 @@ function SimilarTab({ items, type }) {
       mediaType={type}
       rank={false}
       showRating
-      showFavorite
-      showWatchlist
+      actions={CARD_ACTIONS.browse}
     />
   )
 }

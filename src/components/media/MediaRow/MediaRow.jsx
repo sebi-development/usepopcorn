@@ -69,10 +69,11 @@ function MediaRow({
   delaySkeleton = false,
   // Row infinite scroll: `hasMore` mounts the sentinel that calls `onLoadMore`
   onLoadMore, hasMore = false,
-  rank = true, showFavorite = false,
+  rank = true,
+  // The cards' menu items and markers (CARD_ACTIONS in components/media/cardActions.js)
+  actions,
   // Star chip with the title's score: the row's own `score` (ratings rows) or the signed-in user's rating
   showRating = false,
-  showWatchlist = false,
   showInfo = true,
   // Fallback media type for items that don't carry their own media_type/type
   // (e.g. TMDB category endpoints like /tv/popular omit media_type on items).
@@ -82,9 +83,8 @@ function MediaRow({
   gridItems, gridError, page = 1, totalPages = 1, onPageChange,
   // Renders an item that isn't a title (e.g. a cast member) in place of MediaCard
   renderItem,
-  // Watchlist rows: `badgeOf(item)` is the card's bottom-left chip, `showAdded` its "Added …" line,
-  // `showPin` the card menu's Pin item and the marker on titles pinned to Up next (item.pinned_at)
-  badgeOf, showAdded = false, showPin = false,
+  // Watchlist rows: `badgeOf(item)` is the card's bottom-left chip, `showAdded` its "Added …" line
+  badgeOf, showAdded = false,
   // A "View all" link to another page, in place of the in-place expand toggle
   viewAllTo,
   // Shown as a count chip after the heading
@@ -150,13 +150,12 @@ function MediaRow({
         badge={badgeOf?.(item)}
         addedAt={showAdded ? item.created_at : undefined}
         rank={rankValue}
-        showFavorite={showFavorite}
         showInfo={showInfo}
+        actions={actions}
         isFavorited={favorites.has(key)}
-        showWatchlist={showWatchlist}
         isWatchlisted={watchlist.has(key)}
-        showPin={showPin}
-        isPinned={showPin && item.pinned_at != null}
+        // Watchlist rows carry pinned_at; the card marks it only where `actions` asks for a pin marker
+        isPinned={item.pinned_at != null}
       />
     )
   }

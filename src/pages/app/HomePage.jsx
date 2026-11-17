@@ -7,6 +7,7 @@ import useProfileStats from '@/features/profile/hooks/useProfileStats'
 import useCurrentUser from '@/features/auth/hooks/useCurrentUser'
 import useCategoryMedia from '@/features/browse/hooks/useCategoryMedia'
 import MediaRow from '@/components/media/MediaRow/MediaRow'
+import { CARD_ACTIONS } from '@/components/media/cardActions'
 import StreakCard from '@/features/browse/components/cards/StreakCard'
 import { useMemo } from 'react'
 import { getGenreNames } from '@/utils/genres'
@@ -91,8 +92,7 @@ export default function HomePage() {
           showInfo={true}
           rank={false}
           showRating
-          showFavorite
-          showWatchlist
+          actions={CARD_ACTIONS.browse}
         />
       )}
 

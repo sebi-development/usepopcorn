@@ -24,7 +24,6 @@ function NearViewportRow({ heading, count, showInfo }) {
         isError={Boolean(error)}
         delaySkeleton
         rank={false}
-        showWatchlist={false}
         showInfo={showInfo}
       />
     </div>
