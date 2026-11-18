@@ -78,9 +78,10 @@ export function toShelves(items) {
   const waiting = items.length > SHELF_LIMIT ? items.toSorted(SORTS.oldest).slice(0, SHELF_LIMIT) : []
   const ahead = filterItems(items, LOOKING_FORWARD)
   return [
-    { id: 'quick', heading: 'Under 90 minutes', items: quick, preset: { type: 'movie', length: 'short' }, badgeOf: lengthLabel },
-    { id: 'waiting', heading: 'Waiting longest', items: waiting, preset: { sort: 'oldest' }, badgeOf: ageLabel },
-    { id: 'ahead', heading: 'Looking forward to', items: ahead, preset: LOOKING_FORWARD },
+    { id: 'quick', heading: 'Under 90 minutes', items: quick, preset: { type: 'movie', length: 'short' }, badgeOf: lengthLabel, showAdded: true },
+    // Its badge is already the age, so no "Added …" line
+    { id: 'waiting', heading: 'Waiting longest', items: waiting, preset: { sort: 'oldest' }, badgeOf: ageLabel, showAdded: false },
+    { id: 'ahead', heading: 'Looking forward to', items: ahead, preset: LOOKING_FORWARD, showAdded: true },
   ].filter((shelf) => shelf.items.length > 0)
 }
 

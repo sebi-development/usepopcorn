@@ -73,7 +73,7 @@ export default function WatchlistPage() {
           limit={15}
           rank={false}
           badgeOf={shelf.badgeOf}
-          showAdded
+          showAdded={shelf.showAdded}
           actions={CARD_ACTIONS.watchlist}
           expandable
           onToggleExpand={() => showShelf(shelf.preset)}
