@@ -71,6 +71,7 @@ const CategoryRail = memo(function CategoryRail({ active, activeLabel, onSelect,
     <>
       <RailItem
         icon={HOME_ITEM.icon}
+        filledIcon={HOME_ITEM.filledIcon}
         label={HOME_ITEM.label}
         // A bare /browse URL defaults the section to movies, so Home goes by its category alone
         isActive={active.categoryId === HOME_ITEM.id}

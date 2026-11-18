@@ -1,4 +1,4 @@
-import { HiOutlineTag } from "react-icons/hi2"
+import { HiOutlineTag, HiTag } from "react-icons/hi2"
 import { INSPIRE_ITEM } from "@/features/browse/constants/categories"
 import { SECTION_TO_TYPE } from "@/features/browse/hooks/useCategoryMedia"
 import InspireSearch from "@/features/browse/components/CategoryRail/InspireSearch"
@@ -37,6 +37,7 @@ export default function RailSection({ section, active, showLabels, genresOpen, i
         <RailItem
           key={category.id}
           icon={category.icon}
+          filledIcon={category.filledIcon}
           label={category.label}
           isActive={isActive(category.id)}
           onClick={() => onSelect(key, category.id)}
@@ -45,6 +46,7 @@ export default function RailSection({ section, active, showLabels, genresOpen, i
 
       <RailItem
         icon={INSPIRE_ITEM.icon}
+        filledIcon={INSPIRE_ITEM.filledIcon}
         label={INSPIRE_ITEM.label}
         isActive={isActive(INSPIRE_ITEM.id)}
         isOpen={inspireOpen}
@@ -54,7 +56,7 @@ export default function RailSection({ section, active, showLabels, genresOpen, i
         <InspireSearch type={SECTION_TO_TYPE[key]} isOpen={inspireOpen} onSelect={onPickSeed} />
       </Fold>
 
-      <RailItem icon={HiOutlineTag} label="Genres" isOpen={genresOpen} onClick={() => onToggleGenres(key)} />
+      <RailItem icon={HiOutlineTag} filledIcon={HiTag} label="Genres" isOpen={genresOpen} onClick={() => onToggleGenres(key)} />
       <Fold isVisible={showLabels && genresOpen}>
         <div className="ml-4 mt-1 pl-3 border-l border-surface-100 flex flex-col gap-0.5">
           {genres.map((genre) => (
