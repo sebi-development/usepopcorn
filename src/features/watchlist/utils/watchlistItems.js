@@ -1,4 +1,4 @@
-import { isReleased, titleKey } from "@/utils/tmdbItem"
+import { titleKey } from "@/utils/tmdbItem"
 import { timeSince } from "@/utils/timeAgo"
 import { MOODS } from "@/features/watchlist/constants/filters"
 
@@ -30,24 +30,16 @@ const MATCHES = {
   length: (item, length) => lengthBucket(item) === length,
   mood: (item, mood) => MOODS[mood][item.media_type].some((id) => item.genre_ids?.includes(id)),
   genre: (item, ids) => ids.some((id) => item.genre_ids?.includes(Number(id))),
-  release: (item, release) => (release === 'upcoming'
-    ? !isReleased(item)
-    : isReleased(item) && item.release_date.startsWith(release.slice(0, 3))),
+  release: (item, release) => item.release_date.startsWith(release.slice(0, 3)),
 }
 
 const size = (item) => (item.media_type === 'tv' ? item.seasons : item.runtime) ?? Infinity
-// No date yet sorts as the latest
-const dateOf = (item) => item.release_date ?? '9999'
 
 // Sorted here, not by the query: an optimistic add lands at the end of the cached list
 const SORTS = {
   added: (a, b) => b.created_at.localeCompare(a.created_at),
   oldest: (a, b) => a.created_at.localeCompare(b.created_at),
-  // Newest release first; titles with no date yet lead
-  release: (a, b) => dateOf(b).localeCompare(dateOf(a)),
-  // What comes out next first, then what's already out, newest first
-  soonest: (a, b) => isReleased(a) - isReleased(b)
-    || (isReleased(a) ? SORTS.release(a, b) : dateOf(a).localeCompare(dateOf(b))),
+  release: (a, b) => b.release_date.localeCompare(a.release_date),
   // Movies by running time, then series by seasons; unknown lengths last within each
   length: (a, b) => (a.media_type === 'tv') - (b.media_type === 'tv') || size(a) - size(b),
 }
@@ -68,20 +60,19 @@ export function toStreamingOptions(items, { services, titles }) {
     .map(([value, count]) => ({ value, label: `${services[value]} (${count})` }))
 }
 
-// Unreleased movies, next out first (a series' date is its first episode, so a new season never shows)
-const LOOKING_FORWARD = { type: 'movie', release: 'upcoming', sort: 'soonest' }
-
-// The fixed shelves over the whole list (filters don't narrow them); empty ones are left out. `preset` is
-// what "View all" sets on the All saved grid, so a shelf and its grid always list the same titles.
-export function toShelves(items) {
+// The fixed shelves (filters don't narrow them); empty ones are left out. `items` are the titles already out,
+// `upcoming` the rest (All saved never lists those). `preset` is what "View all" sets on the All saved grid,
+// so a shelf and its grid list the same titles; a shelf without one has no View all.
+export function toShelves(items, upcoming) {
   const quick = filterItems(items, { type: 'movie', length: 'short' })
   const waiting = items.length > SHELF_LIMIT ? items.toSorted(SORTS.oldest).slice(0, SHELF_LIMIT) : []
-  const ahead = filterItems(items, LOOKING_FORWARD)
+  // Next out first; no date yet last
+  const ahead = upcoming.toSorted((a, b) => (a.release_date ?? '9999').localeCompare(b.release_date ?? '9999'))
   return [
     { id: 'quick', heading: 'Under 90 minutes', items: quick, preset: { type: 'movie', length: 'short' }, badgeOf: lengthLabel, showAdded: true },
     // Its badge is already the age, so no "Added …" line
     { id: 'waiting', heading: 'Waiting longest', items: waiting, preset: { sort: 'oldest' }, badgeOf: ageLabel, showAdded: false },
-    { id: 'ahead', heading: 'Looking forward to', items: ahead, preset: LOOKING_FORWARD, showAdded: true },
+    { id: 'ahead', heading: 'Looking forward to', items: ahead, showAdded: true },
   ].filter((shelf) => shelf.items.length > 0)
 }
 

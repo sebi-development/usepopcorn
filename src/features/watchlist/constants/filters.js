@@ -1,5 +1,4 @@
 import { toGenreOptions, TYPE_FILTER } from "@/utils/filters"
-import { isReleased } from "@/utils/tmdbItem"
 
 // Moods are genre presets per media type (TMDB's movie and TV genre ids differ). A title fits a mood when
 // it has any of its genres. No mood = any title ("Surprise me"). `hint` is the Tonight panel's second line.
@@ -36,7 +35,7 @@ const MOOD = { key: 'mood', label: 'Mood', kind: 'select', options: Object.entri
 // The services that carry a saved title, loaded when the pill first opens, so a URL value is checked by its shape
 export const STREAMING_FILTER = { key: 'streaming', label: 'Streaming', kind: 'multi', validate: (value) => /^[a-z0-9-]+$/.test(value) }
 // Recently added is the default order, so it stays out of the URL
-const SORT = { key: 'sort', label: 'Sort', kind: 'select', options: [{ value: 'oldest', label: 'Oldest added' }, { value: 'release', label: 'Release date' }, { value: 'soonest', label: 'Coming soonest' }, { value: 'length', label: 'Shortest first' }] }
+const SORT = { key: 'sort', label: 'Sort', kind: 'select', options: [{ value: 'oldest', label: 'Oldest added' }, { value: 'release', label: 'Release date' }, { value: 'length', label: 'Shortest first' }] }
 
 // The one media type in the list, or undefined when both are saved
 export const onlyType = (items) => {
@@ -45,21 +44,20 @@ export const onlyType = (items) => {
 }
 
 // Filter defs for the saved titles. Genre and Release offer only what the list has (decades with a title
-// out, "Not out yet" when something isn't); Type shows once both types are saved, and Length is labelled
+// out); Type shows once both types are saved, and Length is labelled
 // for the one type a single-type list holds. `streamingOptions` stay undefined until the pill first opens.
 export function getDefs(type, items, streamingOptions) {
   const genres = toGenreOptions([...new Set(items.flatMap((item) => item.genre_ids ?? []))])
-  const decades = [...new Set(items.filter(isReleased).map((item) => `${item.release_date.slice(0, 3)}0`))]
+  const decades = [...new Set(items.map((item) => `${item.release_date.slice(0, 3)}0`))]
     .sort((a, b) => b.localeCompare(a))
     .map((decade) => ({ value: decade, label: `${decade}s` }))
-  const release = [items.some((item) => !isReleased(item)) && { value: 'upcoming', label: 'Not out yet' }, ...decades].filter(Boolean)
   const single = onlyType(items)
   return [
     !single && items.length > 0 && TYPE_FILTER,
     LENGTH_DEFS[type ?? single ?? ''],
     MOOD,
     genres.length > 1 && { key: 'genre', label: 'Genre', kind: 'multi', options: genres },
-    release.length > 1 && { key: 'release', label: 'Release', kind: 'select', options: release },
+    decades.length > 1 && { key: 'release', label: 'Release', kind: 'select', options: decades },
     items.length > 0 && { ...STREAMING_FILTER, options: streamingOptions },
     SORT,
   ].filter(Boolean)

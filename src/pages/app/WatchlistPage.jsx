@@ -11,6 +11,7 @@ import FriendsRatedShelf from "@/features/watchlist/components/FriendsRatedShelf
 import useWatchlistFilters from "@/features/watchlist/hooks/useWatchlistFilters"
 import { lengthLabel, toShelves, toUpNext } from "@/features/watchlist/utils/watchlistItems"
 import { isEmptyFilters, NO_MATCHES } from "@/utils/filters"
+import { isReleased } from "@/utils/tmdbItem"
 import { PAGE_SIZE } from "@/utils/pagination"
 
 const ALL_SAVED_ID = "all-saved"
@@ -20,10 +21,15 @@ const NO_ITEMS = []
 // (pinned titles) and the shelves are fixed, over the full list (friends' ratings load on approach)
 export default function WatchlistPage() {
   const { data, isLoading, error } = useInteractions("watchlist")
-  const items = data ?? NO_ITEMS
+  const saved = data ?? NO_ITEMS
+  // Tonight and All saved list what's already out; the rest waits in "Looking forward to"
+  const { items, upcoming } = useMemo(
+    () => ({ items: saved.filter(isReleased), upcoming: saved.filter((item) => !isReleased(item)) }),
+    [saved]
+  )
   const { defs, filters, setFilter, setFilters, clearFilters, shown, onOpen, isPending } = useWatchlistFilters(items)
-  const shelves = useMemo(() => toShelves(items), [items])
-  const upNext = useMemo(() => toUpNext(items), [items])
+  const shelves = useMemo(() => toShelves(items, upcoming), [items, upcoming])
+  const upNext = useMemo(() => toUpNext(saved), [saved])
 
   // In the URL, so Back from a title lands on the same page; a filter change drops it (page 1)
   const { page, setPage } = useUrlPage()
@@ -70,12 +76,12 @@ export default function WatchlistPage() {
           heading={shelf.heading}
           count={shelf.items.length}
           data={shelf.items}
-          limit={15}
+          limit={shelf.preset ? 15 : undefined}
           rank={false}
           badgeOf={shelf.badgeOf}
           showAdded={shelf.showAdded}
           actions={CARD_ACTIONS.watchlist}
-          expandable
+          expandable={Boolean(shelf.preset)}
           onToggleExpand={() => showShelf(shelf.preset)}
         />
       ))}

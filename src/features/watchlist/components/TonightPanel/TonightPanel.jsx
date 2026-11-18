@@ -10,7 +10,6 @@ import { LENGTH_LABELS, MOODS, onlyType } from "@/features/watchlist/constants/f
 import { drawTitles } from "@/features/watchlist/utils/watchlistItems"
 import { IN_PLACE } from "@/hooks/useUrlFilters"
 import { toDay } from "@/utils/dates"
-import { isReleased } from "@/utils/tmdbItem"
 
 // The draw's seed, in the URL so Back from a title shows the same three. Without one: today's pick and
 // two titles that stay the same all day.
@@ -44,11 +43,9 @@ function TonightPanel({ items, shown, filters, setFilter, setFilters, isLoading,
   // Set by a Draw click, so a draw fades in but a remount (Back from a title) shows the cards at once
   const [animate, setAnimate] = useState(false)
 
-  // Tonight means something already out; the grid below still lists the rest
-  const pool = useMemo(() => shown.filter(isReleased), [shown])
   const day = toDay(new Date())
   // Until the first draw the lead is today's pick, while the filters leave it in
-  const drawn = useMemo(() => drawTitles(pool, seed ?? day, seed ? null : pick), [pool, seed, day, pick])
+  const drawn = useMemo(() => drawTitles(shown, seed ?? day, seed ? null : pick), [shown, seed, day, pick])
   const isPick = !seed && Boolean(pick) && drawn.length > 0 && sameTitle(drawn[0], pick)
 
   const total = items.length
@@ -72,7 +69,7 @@ function TonightPanel({ items, shown, filters, setFilter, setFilters, isLoading,
   const toggle = (key, value) => setFilter(key, !value || filters[key] === value ? undefined : value)
 
   // Fewer than three left: one tap widens the search, length first (Streaming is set in All saved's filters)
-  const widen = isLoading || pool.length >= 3 ? null
+  const widen = isLoading || shown.length >= 3 ? null
     : filters.length ? { key: "length", label: "Any length" }
     : filters.mood ? { key: "mood", label: "Surprise me" }
     : filters.streaming ? { key: "streaming", label: "Any service" }
@@ -81,7 +78,7 @@ function TonightPanel({ items, shown, filters, setFilter, setFilters, isLoading,
   const status = isError ? "error"
     : isLoading || isPickLoading ? "loading"
     : total === 0 ? "empty"
-    : pool.length === 0 ? "none"
+    : shown.length === 0 ? "none"
     : "ready"
 
   return (
@@ -154,14 +151,14 @@ function TonightPanel({ items, shown, filters, setFilter, setFilters, isLoading,
         </div>
 
         <div className="max-md:order-last flex flex-wrap items-center gap-x-3 gap-y-2">
-          <Button size="lg" onClick={draw} disabled={isLoading || pool.length < 2} className="max-md:w-full max-md:min-h-12">
+          <Button size="lg" onClick={draw} disabled={isLoading || shown.length < 2} className="max-md:w-full max-md:min-h-12">
             <span className="inline-flex items-center gap-2">
               <BsShuffle />
               {seed ? "Draw again" : "Draw 3"}
             </span>
           </Button>
           {!isLoading && (
-            <span className="text-sm text-text-muted">{pool.length} {pool.length === 1 ? "title matches" : "titles match"}</span>
+            <span className="text-sm text-text-muted">{shown.length} {shown.length === 1 ? "title matches" : "titles match"}</span>
           )}
           {widen && (
             <Chip variant="tint" size="sm" onClick={() => setFilter(widen.key, undefined)} label={widen.label} className="max-md:min-h-11" />
