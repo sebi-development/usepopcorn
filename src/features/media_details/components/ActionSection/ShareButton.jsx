@@ -19,14 +19,14 @@ export default function ShareButton({className = ''}) {
     <Tooltip label='Share' side='bottom' >
       <button
         onClick={handleShare}
-        className={`${copied ? 'bg-success/10 border-success/30' : 'hover:bg-white/10 hover:border-white/20'} ${className}`}
+        className={`group/share ${copied ? 'bg-success/10 border-success/30' : 'hover:bg-white/10 hover:border-white/20'} ${className}`}
         aria-label="Share movie"
         title="Copy link to clipboard"
       >
         {copied ? (
           <HiCheck className="text-xl text-success" />
         ) : (
-          <IoIosShareAlt className="text-xl text-text-muted group-hover:text-white transition-colors duration-200" />
+          <IoIosShareAlt className="text-xl text-text-muted group-hover/share:text-white transition-colors duration-200" />
         )}
       </button>
     </Tooltip>

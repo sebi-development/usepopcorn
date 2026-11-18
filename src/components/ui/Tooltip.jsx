@@ -13,17 +13,18 @@ const arrows = {
 }
 
 const enterAnimation = {
-  top: 'translate-y-1 group-hover:translate-y-0',
-  bottom: 'translate-y-1 group-hover:translate-y-0',
-  left: 'translate-x-1 group-hover:translate-x-0',
-  right: '-translate-x-1 group-hover:translate-x-0',
+  top: 'translate-y-1 group-hover/tooltip:translate-y-0',
+  bottom: 'translate-y-1 group-hover/tooltip:translate-y-0',
+  left: 'translate-x-1 group-hover/tooltip:translate-x-0',
+  right: '-translate-x-1 group-hover/tooltip:translate-x-0',
 }
 
 function Tooltip({ label, children, side = 'top', disabled = false }) {
   if (disabled) return children
 
+  // Named group: an unnamed one would also open on a hovered ancestor `group` (e.g. a card), showing every tooltip in it
   return (
-    <div className="relative group">
+    <div className="relative group/tooltip">
       {children}
       {/* Hover-only: on touch the invisible bubble would still widen the page */}
       <div
@@ -31,7 +32,7 @@ function Tooltip({ label, children, side = 'top', disabled = false }) {
           pointer-events-none absolute ${positions[side]} z-50 pointer-coarse:hidden
           px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap
           bg-surface-100 text-text-muted border border-white/10
-          opacity-0 group-hover:opacity-100
+          opacity-0 group-hover/tooltip:opacity-100
           ${enterAnimation[side]}
           transition-all duration-150 ease-out
         `}
