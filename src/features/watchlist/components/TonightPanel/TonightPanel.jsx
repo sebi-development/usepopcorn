@@ -89,7 +89,6 @@ function TonightPanel({ items, shown, filters, setFilter, setFilters, isLoading,
       {/* On a phone its parts join the panel's column, so Draw can sit under the cards */}
       <div className="contents md:flex md:flex-col md:gap-6 md:flex-[1_1_340px] md:min-w-0">
         <div className="flex flex-col items-start gap-1.5">
-          <Chip variant="tint" size="sm" label={`From your ${total} saved title${total === 1 ? "" : "s"}`} className={isLoading ? "invisible" : ""} />
           <h1 id="tonight-heading" className="text-2xl md:text-4xl font-black tracking-tight text-text">What's on tonight?</h1>
           <p className="max-md:hidden text-sm text-text-muted">Pick what you're in for, then draw three. The list below follows along.</p>
         </div>
