@@ -40,7 +40,12 @@ function PinButton({ media, isPinned }) {
       >
         {isPinned
           ? <BsPinAngleFill className="text-primary-light" size={15} />
-          : <BsPinAngle className="text-white/30 group-hover/btn:text-primary-light" size={15} />}
+          : (
+            <>
+              <BsPinAngle className="text-white/30 group-hover/btn:opacity-0 transition-opacity duration-300" size={15} />
+              <BsPinAngleFill className="absolute opacity-0 group-hover/btn:opacity-100 text-primary-light transition-opacity duration-300" size={15} />
+            </>
+          )}
       </button>
     </Tooltip>
   )

@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react"
 import { Link, useNavigate } from "react-router"
 import { HiOutlineUser } from "react-icons/hi2"
-import {
-  RiUserLine, RiUserFill, RiBookmarkLine, RiBookmarkFill, RiBarChart2Line, RiBarChart2Fill,
-  RiGroupLine, RiGroupFill, RiLogoutBoxRLine, RiLogoutBoxRFill,
-} from "react-icons/ri"
+import { FiLogOut } from "react-icons/fi"
+import { BsBookmark, BsBookmarkFill } from "react-icons/bs"
+import { RiUserLine, RiUserFill, RiBarChart2Line, RiBarChart2Fill, RiGroupLine, RiGroupFill } from "react-icons/ri"
 import { LuLoaderCircle } from "react-icons/lu"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
@@ -16,15 +15,13 @@ import { signOut } from "@/services/session"
 // Each icon is outlined at rest and filled on hover (a pair, swapped by CSS)
 const MENU_ITEMS = [
   { to: "/profile", label: "Profile", icon: [RiUserLine, RiUserFill] },
-  { to: "/watchlist", label: "Watchlist", icon: [RiBookmarkLine, RiBookmarkFill] },
+  { to: "/watchlist", label: "Watchlist", icon: [BsBookmark, BsBookmarkFill] },
   { to: "/profile/stats", label: "Statistics", icon: [RiBarChart2Line, RiBarChart2Fill] },
   { to: "/community", label: "Friends", icon: [RiGroupLine, RiGroupFill] },
 ]
-const LOGOUT_ICON = [RiLogoutBoxRLine, RiLogoutBoxRFill]
-const ITEM_CLASS = "group/item flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm hover:bg-surface-100 transition-colors"
+const ITEM_CLASS = "group/item flex items-center gap-3 px-3 h-11 md:h-8 mx-2 rounded-md text-sm transition-colors"
 // Hover moves the icon one step toward white, still readable on the hovered row
 const ICON_CLASS = "flex shrink-0 text-text-muted group-hover/item:text-text"
-const DANGER_ICON_CLASS = "flex shrink-0 group-hover/item:text-[color-mix(in_oklab,var(--color-danger),white_30%)]"
 
 function MenuIcon({ icon: [Line, Fill], className }) {
   return (
@@ -81,7 +78,7 @@ function UserMenu() {
 
           <div className="flex flex-col gap-1 py-2">
             {MENU_ITEMS.map(({ to, label, icon }) => (
-              <Link key={to} to={to} onClick={closeMenu} className={`${ITEM_CLASS} text-text`}>
+              <Link key={to} to={to} onClick={closeMenu} className={`${ITEM_CLASS} text-text hover:bg-surface-100`}>
                 <MenuIcon icon={icon} className={ICON_CLASS} />
                 {label}
               </Link>
@@ -93,11 +90,11 @@ function UserMenu() {
             <button
               onClick={() => logout()}
               disabled={isLoggingOut}
-              className={`${ITEM_CLASS} text-danger cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed`}
+              className={`${ITEM_CLASS} text-danger hover:bg-danger/10 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed`}
             >
               {isLoggingOut
                 ? <LuLoaderCircle size={15} className="animate-spin shrink-0" />
-                : <MenuIcon icon={LOGOUT_ICON} className={DANGER_ICON_CLASS} />
+                : <FiLogOut size={15} className="shrink-0" />
               }
               Sign out
             </button>
