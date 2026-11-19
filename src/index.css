@@ -346,6 +346,46 @@ body {
   animation: reveal 0s 150ms both;
 }
 
+/* ── Type scale (px): 11 / 12 / 14 / 16 base / 18 group / 20 section / 32-40 page. Headings are
+   heavier and brighter, their text below lighter and softer; colour comes from the element. ── */
+@utility heading-page {
+  font-size: 2rem;
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+
+  @media (min-width: 768px) {
+    font-size: 2.5rem;
+    line-height: 1.1;
+  }
+}
+
+@utility heading-section {
+  font-size: 1.25rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@utility heading-group {
+  font-size: 1.125rem;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* White-to-grey fill for a large title (pair with heading-page); not for small text.
+   The padding keeps descenders (g, y) inside the clipped background; the margin takes it back. */
+@utility text-shine {
+  padding-bottom: 0.15em;
+  margin-bottom: -0.15em;
+  background-image: linear-gradient(180deg, #fff 10%, #98a0a8 115%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
 /* ── Background Mesh & Noise ── */
 @layer utilities {
   .bg-noise {

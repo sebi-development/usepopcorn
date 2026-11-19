@@ -22,7 +22,7 @@ function Filmography({ person }) {
       <MediaRow heading="Known for" data={knownFor} rank={false} showRating actions={CARD_ACTIONS.browse} />
 
       <div className="flex flex-col gap-4">
-        <h2 className="text-text font-semibold text-xl md:px-6">
+        <h2 className="heading-section md:px-6">
           Filmography <Chip variant="count" size="sm" label={shown.length} className="ml-2 align-middle" />
         </h2>
         <FilterBar defs={defs} filters={filters} onChange={onFilter} onClear={clearFilters} className="md:px-6" />

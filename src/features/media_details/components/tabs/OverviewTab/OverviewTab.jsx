@@ -1,6 +1,6 @@
 import { HiArrowDown, HiArrowUp } from 'react-icons/hi2'
 import Tooltip from '@/components/ui/Tooltip'
-import Collapsible, { SECTION_HEADER_CLASS } from '@/features/media_details/components/tabs/OverviewTab/Collapsible'
+import Collapsible from '@/features/media_details/components/tabs/OverviewTab/Collapsible'
 import StreamingProviders from '@/features/media_details/components/tabs/OverviewTab/StreamingProviders'
 import { BREAK_EVEN_MULTIPLE, toOverviewFacts } from '@/features/media_details/components/tabs/OverviewTab/overviewFacts'
 
@@ -43,7 +43,7 @@ export default function OverviewTab({ data }) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className={`${SECTION_HEADER_CLASS} mb-3 text-text-muted`}>About</h2>
+        <h2 className="heading-group mb-3">About</h2>
         <p className="text-text text-sm leading-relaxed">
           {data.overview || "No overview available."}
         </p>

@@ -34,7 +34,7 @@ export default function ProfileStats({ stats, isLoading, isError }) {
 
   return (
     <section className="w-full">
-      <h2 className="text-text font-semibold text-xl mb-6">Your Cinematic Stats</h2>
+      <h2 className="heading-section mb-6">Your Cinematic Stats</h2>
 
       <div className="bento-grid bento-grid--stats">
         {STAT_CARDS.map(({ key, label, icon: Icon, unit }) => (

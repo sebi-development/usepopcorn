@@ -26,7 +26,7 @@ const SCROLL_STEP = 400
 function RowHeader({ title, children }) {
   return (
     <div className="flex items-center justify-between gap-2 mb-4 md:px-6">
-      <h2 className="text-text font-semibold text-xl">{title}</h2>
+      <h2 className="heading-section">{title}</h2>
       {children}
     </div>
   )

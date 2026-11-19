@@ -29,7 +29,6 @@ const LENGTH_HEADINGS = { movie: "How much time?", tv: "How long a binge?" }
 // '' = no mood
 const MOOD_CARDS = [{ id: "", label: "Surprise me", hint: "Anything goes" }, ...Object.entries(MOODS).map(([id, { label, hint }]) => ({ id, label, hint }))]
 
-const LABEL_CLASS = "text-xs font-semibold uppercase tracking-wider text-text-muted"
 const PHONE_CHIP = "flex-none min-h-11 whitespace-nowrap"
 
 const sameTitle = (a, b) => a.tmdb_id === b.tmdb_id && a.media_type === b.media_type
@@ -84,10 +83,10 @@ function TonightPanel({ items, shown, filters, setFilter, setFilters, isLoading,
   return (
     <section aria-labelledby="tonight-heading" className="flex flex-col md:flex-row md:flex-wrap gap-4 md:gap-8 p-4 md:p-7 rounded-3xl md:rounded-[28px] bg-surface-500 border border-white/5 md:mx-6">
       {/* On a phone its parts join the panel's column, so Draw can sit under the cards */}
-      <div className="contents md:flex md:flex-col md:gap-6 md:flex-[1_1_340px] md:min-w-0">
-        <div className="flex flex-col items-start gap-1.5">
-          <h1 id="tonight-heading" className="text-2xl md:text-4xl font-black tracking-tight text-text">What's on tonight?</h1>
-          <p className="max-md:hidden text-sm text-text-muted">Pick what you're in for, then draw three. The list below follows along.</p>
+      <div className="contents md:flex md:flex-col md:gap-7 md:flex-[1_1_340px] md:min-w-0">
+        <div className="flex flex-col items-start gap-2">
+          <h1 id="tonight-heading" className="heading-page text-shine">What's on tonight?</h1>
+          <p className="max-md:hidden text-base text-text-muted">Pick what you're in for, then draw three. The list below follows along.</p>
         </div>
 
         {showType && (
@@ -127,14 +126,14 @@ function TonightPanel({ items, shown, filters, setFilter, setFilters, isLoading,
         </div>
 
         {/* Desktop: length tabs (or how to get them), then two-line mood cards */}
-        <div className="max-md:hidden flex flex-col items-start gap-2.5">
-          <span className={LABEL_CLASS}>{LENGTH_HEADINGS[lengthType] ?? "How much time?"}</span>
+        <div className="max-md:hidden flex flex-col items-start gap-3">
+          <h2 className="heading-group">{LENGTH_HEADINGS[lengthType] ?? "How much time?"}</h2>
           {lengthType
             ? <SlidingTabs tabs={LENGTH_TABS[lengthType]} activeTab={filters.length ?? ""} onChange={setLength} />
-            : <p className="text-sm text-text-muted">Pick Movie night for running time, or Binge a series for number of seasons.</p>}
+            : <p className="-mt-2 text-sm text-text-muted">Pick Movie night for running time, or Binge a series for number of seasons.</p>}
         </div>
-        <div className="max-md:hidden flex flex-col gap-2.5">
-          <span className={LABEL_CLASS}>What mood?</span>
+        <div className="max-md:hidden flex flex-col gap-3">
+          <h2 className="heading-group">What mood?</h2>
           <div className="flex flex-wrap gap-2">
             {MOOD_CARDS.map(({ id, label, hint }) => {
               const active = (filters.mood ?? "") === id

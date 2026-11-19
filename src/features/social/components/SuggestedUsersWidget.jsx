@@ -40,7 +40,7 @@ export default function SuggestedUsersWidget() {
 
   return (
     <div className="bg-surface-500 border border-surface-100 rounded-card p-5 flex flex-col gap-2 shadow-sm">
-      <h3 className="font-bold text-sm text-text uppercase tracking-wider mb-2">
+      <h3 className="heading-group mb-2">
         Who to Follow
       </h3>
 

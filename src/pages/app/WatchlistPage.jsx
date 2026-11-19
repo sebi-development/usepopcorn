@@ -91,7 +91,7 @@ export default function WatchlistPage() {
       {/* Loading, error and an empty list are Tonight's notes */}
       {total > 0 && (
         <section id={ALL_SAVED_ID} className="flex flex-col gap-4 scroll-mt-4 md:scroll-mt-28">
-          <h2 className="text-text font-semibold text-xl md:px-6">
+          <h2 className="heading-section md:px-6">
             All saved
             <Chip
               variant="count"

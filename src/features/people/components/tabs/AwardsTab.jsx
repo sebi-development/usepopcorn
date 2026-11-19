@@ -9,7 +9,6 @@ import AlertBanner from "@/components/ui/AlertBanner"
 import InfoNote from "@/components/ui/InfoNote"
 import SkeletonBox from "@/components/ui/SkeletonBox"
 
-const SECTION_HEADER_CLASS = "text-xs font-semibold text-text-muted uppercase tracking-widest"
 // amber-300, the colour of the app's stars
 const HONOUR_RGB = "252, 211, 77"
 // The film links are 20px tall: an invisible ::before pads each tap area vertically
@@ -59,7 +58,7 @@ function AwardsTab({ personId }) {
 
       {wins.length > 0 && (
         <div>
-          <h3 className={`${SECTION_HEADER_CLASS} mb-1`}>Wins</h3>
+          <h3 className="heading-group mb-1">Wins</h3>
           <ul>
             {wins.map((w) => (
               <li key={w.key} className="flex gap-3 py-2.5 border-b border-surface-100/30 last:border-0 text-sm">
@@ -82,7 +81,7 @@ function AwardsTab({ personId }) {
 
       {honours.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className={`${SECTION_HEADER_CLASS} mr-1`}>Honours</h3>
+          <h3 className="heading-group mr-1">Honours</h3>
           {honours.map((h) => (
             <Chip key={h.label} variant="glow" size="sm" colorRgb={HONOUR_RGB} label={h.year ? `${h.label} · ${h.year}` : h.label} />
           ))}

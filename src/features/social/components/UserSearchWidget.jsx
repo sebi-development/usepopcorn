@@ -13,7 +13,7 @@ export default function UserSearchWidget() {
   return (
     <div className="bg-surface-500 border border-surface-100 rounded-card p-5 flex flex-col">
 
-      <h3 className="font-bold text-sm text-text uppercase tracking-wider mb-3">
+      <h3 className="heading-group mb-3">
         Find Friends
       </h3>
 

@@ -51,7 +51,7 @@ export default function CommunityPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] lg:grid-rows-[auto_1fr] gap-x-8 gap-y-8 md:gap-y-10 items-start">
 
         <header className="flex flex-col gap-1 lg:col-start-1 lg:row-start-1">
-          <h1 className="text-2xl font-black text-text tracking-tight sm:text-3xl">
+          <h1 className="heading-page text-shine">
             Friends Activity
           </h1>
           <p className="text-xs sm:text-sm text-text-muted">
