@@ -5,8 +5,9 @@ import useIntersectionObserver from "@/hooks/useIntersectionObserver"
 import useWatchlistFriendsRatings from "@/features/watchlist/hooks/useWatchlistFriendsRatings"
 import { friendsLabel, toFriendsRated } from "@/features/watchlist/utils/watchlistItems"
 
-// The last shelf: its RPC waits until it is within 600px of the viewport, so the row lands out of view and
-// pushes nothing the user is looking at. No skeleton: an optional shelf only shows once it has titles.
+// The last row of the page, below All saved: its RPC waits until it is within 600px of the viewport, so the
+// row lands under everything the user is looking at and pushes nothing. No skeleton: an optional shelf only
+// shows once it has titles.
 function FriendsRatedShelf({ items }) {
   const [isNear, setIsNear] = useState(false)
   const ref = useIntersectionObserver(() => setIsNear(true), { rootMargin: '600px' })

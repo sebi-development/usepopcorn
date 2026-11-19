@@ -156,9 +156,10 @@ function TonightPanel({ items, shown, filters, setFilter, setFilters, isLoading,
               {seed ? "Draw again" : "Draw 3"}
             </span>
           </Button>
-          {!isLoading && (
-            <span className="text-sm text-text-muted">{shown.length} {shown.length === 1 ? "title matches" : "titles match"}</span>
-          )}
+          {/* Holds its line while loading: on a phone it wraps under the full-width button */}
+          <span className={`text-sm text-text-muted ${isLoading ? "invisible" : ""}`}>
+            {isLoading ? "titles match" : `${shown.length} ${shown.length === 1 ? "title matches" : "titles match"}`}
+          </span>
           {widen && (
             <Chip variant="tint" size="sm" onClick={() => setFilter(widen.key, undefined)} label={widen.label} className="max-md:min-h-11" />
           )}

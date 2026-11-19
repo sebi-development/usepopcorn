@@ -50,7 +50,7 @@ function TonightCards({ status, drawn, drawKey, isDrawn, isPick, animate, classN
 
   if (status === "loading") return (
     <div className={`delayed-reveal flex flex-col justify-center ${className}`}>
-      {!isDrawn && <SkeletonBox className="md:hidden h-31 rounded-2xl" />}
+      {!isDrawn && <SkeletonBox className="md:hidden h-31.5 rounded-2xl" />}
       <div className={rowClass}>
         {SLOT_CLASS.map((slot) => <SkeletonBox key={slot} className={`aspect-2/3 rounded-card ${slot}`} />)}
       </div>

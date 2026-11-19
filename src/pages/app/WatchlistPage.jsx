@@ -18,7 +18,7 @@ const ALL_SAVED_ID = "all-saved"
 const NO_ITEMS = []
 
 // The signed-in user's whole watchlist: Tonight's draw and the All saved grid share the URL filters; Up next
-// (pinned titles) and the shelves are fixed, over the full list (friends' ratings load on approach)
+// (pinned titles) and the shelves are fixed, over the full list (friends' ratings come last and load on approach)
 export default function WatchlistPage() {
   const { data, isLoading, error } = useInteractions("watchlist")
   const saved = data ?? NO_ITEMS
@@ -86,8 +86,6 @@ export default function WatchlistPage() {
         />
       ))}
 
-      {total > 0 && <FriendsRatedShelf items={items} />}
-
       {/* Loading, error and an empty list are Tonight's notes */}
       {total > 0 && (
         <section id={ALL_SAVED_ID} className="flex flex-col gap-4 scroll-mt-4 md:scroll-mt-28">
@@ -116,6 +114,9 @@ export default function WatchlistPage() {
           />
         </section>
       )}
+
+      {/* Last, below All saved: it loads on approach and lands under everything the user is looking at */}
+      {total > 0 && <FriendsRatedShelf items={items} />}
     </div>
   )
 }
