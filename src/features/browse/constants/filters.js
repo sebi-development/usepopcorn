@@ -16,12 +16,12 @@ const languageNames = new Intl.DisplayNames(['en'], { type: 'language' })
 const LANGUAGE_OPTIONS = LANGUAGE_CODES
   .map((code) => ({ value: code, label: languageNames.of(code) }))
   .sort((a, b) => a.label.localeCompare(b.label))
-
 const COUNTRY_OPTIONS = getCountryOptions().map(({ code, name }) => ({ value: code, label: name }))
 
 export const YEAR = { key: 'year', label: 'Year', kind: 'select', options: YEAR_OPTIONS }
 const COUNTRY = { key: 'country', label: 'Country', kind: 'multi', options: COUNTRY_OPTIONS }
 export const LANGUAGE = { key: 'language', label: 'Language', kind: 'multi', options: LANGUAGE_OPTIONS }
+
 const genre = (map) => ({ key: 'genre', label: 'Genre', kind: 'multi', options: toGenreOptions(Object.keys(map)) })
 
 const MOVIE_FILTERS = [genre(MOVIE_GENRES), YEAR, COUNTRY, LANGUAGE]
