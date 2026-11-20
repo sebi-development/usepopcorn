@@ -14,7 +14,7 @@ function assertEnv(env) {
 }
 
 // Modules the guest pages (landing, sign-in forms, 404) use, kept out of the "app" chunk below
-const GUEST_MODULES = /[\\/]src[\\/](App\.jsx|main\.jsx|layout[\\/](PublicLayout|Navbar|AppSpinner|prefetch)|pages[\\/](public|auth)[\\/]|lib[\\/](sessionStore|queryClient|supabase)|services[\\/](auth|session|location)|features[\\/]auth[\\/]hooks[\\/](useAuth|usePasswordRecovery)|components[\\/]ui[\\/](InfoCard|Button|BentoGrid|Logo|BackgroundMesh|Form|AlertBanner|ArrowLink))/
+const GUEST_MODULES = /[\\/]src[\\/](App\.jsx|main\.jsx|layout[\\/](PublicLayout|Navbar|AppSpinner|prefetch)|pages[\\/](public|auth)[\\/]|lib[\\/](sessionStore|queryClient|supabase)|services[\\/](auth|session|location)|features[\\/]auth[\\/](hooks[\\/](useAuth|usePasswordRecovery)|components[\\/]PasswordChecklist)|utils[\\/]passwordRules|components[\\/]ui[\\/](InfoCard|Button|BentoGrid|Logo|BackgroundMesh|Form|AlertBanner|ArrowLink))/
 
 // The signed-in shell (AppLayout, Supabase) and Home's loader are lazy chunks, so guest pages don't load
 // them; the router only asks for them once the entry has run. This build-time script in index.html asks

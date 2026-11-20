@@ -5,9 +5,11 @@ import InfoCard from '@/components/ui/InfoCard'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import ArrowLink from '@/components/ui/ArrowLink'
 import { getCountry } from '@/services/location'
+import PasswordChecklist from '@/features/auth/components/PasswordChecklist'
+import { PASSWORD_RULES } from '@/utils/passwordRules'
 
 export default function RegisterPage() {
-  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm()  
+  const { register, handleSubmit, control, setError, formState: { errors, isSubmitting } } = useForm()  
   const { register: registerUser } = useAuth()
 
   async function onSubmit(data) {
@@ -37,14 +39,12 @@ export default function RegisterPage() {
           error={errors.username}
         />
         <Form.Input
-          {...register('password', {
-            required: 'Password is required',
-            minLength: { value: 6, message: 'Minimum 6 characters' }
-          })}
+          {...register('password', PASSWORD_RULES)}
           type="password"
           label="Password"
           error={errors.password}
         />
+        <PasswordChecklist control={control} />
         <Form.Input
           {...register('passwordConfirm', {
             required: 'Please confirm your password',

@@ -1,51 +1,13 @@
-import { useForm, useWatch } from 'react-hook-form'
-import { HiOutlineLockClosed, HiCheck, HiXMark } from 'react-icons/hi2'
+import { useForm } from 'react-hook-form'
+import { HiOutlineLockClosed } from 'react-icons/hi2'
 import Form from '@/components/ui/Form'
 import InfoCard from '@/components/ui/InfoCard'
 import ArrowLink from '@/components/ui/ArrowLink'
 import usePasswordRecovery from '@/features/auth/hooks/usePasswordRecovery'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import AlertBanner from '@/components/ui/AlertBanner'
-
-// Helper component for the animated checklist items
-function Requirement({ met, text }) {
-  return (
-    <li
-      className={`
-        flex items-center gap-2 text-sm transition-all duration-300
-        ${met ? 'text-primary-light' : 'text-text-muted opacity-50'}
-      `}
-    >
-      {met ? (
-        <HiCheck className="w-4 h-4 shrink-0" />
-      ) : (
-        <HiXMark className="w-4 h-4 shrink-0" />
-      )}
-      <span>{text}</span>
-    </li>
-  )
-}
-
-// Helper component for isolating the 'useWatch' hook (optimalization) 
-function PasswordChecklist({ control }) {
-  const passwordValue = useWatch({ control, name: 'password', defaultValue: '' })
-
-  const reqs = {
-    length: passwordValue.length >= 8,
-    lower: /[a-z]/.test(passwordValue),
-    upper: /[A-Z]/.test(passwordValue),
-    number: /[0-9]/.test(passwordValue)
-  }
-
-  return (
-    <ul className="flex flex-col gap-1.5 px-1 py-2">
-      <Requirement met={reqs.lower} text="At least one lowercase letter" />
-      <Requirement met={reqs.upper} text="At least one uppercase letter" />
-      <Requirement met={reqs.number} text="At least one number" />
-      <Requirement met={reqs.length} text="Minimum 8 characters" />
-    </ul>
-  )
-}
+import PasswordChecklist from '@/features/auth/components/PasswordChecklist'
+import { PASSWORD_RULES } from '@/utils/passwordRules'
 
 export default function ResetPasswordPage() {
   const { register, handleSubmit, control, setError, formState: { errors, isSubmitting } } = useForm()
@@ -80,15 +42,7 @@ export default function ResetPasswordPage() {
       {errors.root && <AlertBanner message={errors.root.message} />}
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Form.Input
-          {...register('password', {
-            required: 'Password is required',
-            validate: {
-              length: v => v.length >= 8 || 'Minimum 8 characters',
-              lower: v => /[a-z]/.test(v) || 'Needs a lowercase letter',
-              upper: v => /[A-Z]/.test(v) || 'Needs an uppercase letter',
-              number: v => /[0-9]/.test(v) || 'Needs a number',
-            }
-          })}
+          {...register('password', PASSWORD_RULES)}
           type="password"
           label="New Password"
           icon={HiOutlineLockClosed}
