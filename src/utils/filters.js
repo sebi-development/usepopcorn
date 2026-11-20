@@ -14,7 +14,6 @@ import { PAGE_PARAM } from "@/utils/pagination"
 // Parsed filters hold only active keys, in def order, so the same selection always produces the
 // same object: they go straight into query keys.
 
-// What a filtered list says (MediaRow `emptyNote`) when nothing matches
 export const NO_MATCHES = 'No titles match these filters.'
 
 // Movies or series: the same pill on the feed and a person's filmography
