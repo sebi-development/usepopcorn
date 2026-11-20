@@ -10,9 +10,9 @@ export async function getSession() {
   return data.session
 }
 
-// Calls `callback(session)` on every sign-in, sign-out and token refresh; returns the unsubscribe
+// Calls `callback(session, event)` on every sign-in, sign-out and token refresh; returns the unsubscribe
 export function onSessionChange(callback) {
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => callback(session))
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => callback(session, event))
   return () => subscription.unsubscribe()
 }
 

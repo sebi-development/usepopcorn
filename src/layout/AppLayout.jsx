@@ -29,7 +29,9 @@ function AppLayout() {
     })
 
     // Keep the cache in sync on auth changes; returns the unsubscribe
-    return onSessionChange((session) => {
+    return onSessionChange((session, event) => {
+      // The same user signing in again (a password check, a refocused tab) changes nothing the app reads
+      if (event === 'SIGNED_IN' && session?.user?.id === queryClient.getQueryData(queryKeys.currentUser)?.id) return
       setSession(session)
       queryClient.setQueryData(queryKeys.currentUser, session?.user ?? null)
     })
