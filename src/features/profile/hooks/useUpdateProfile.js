@@ -9,7 +9,7 @@ export default function useUpdateProfile() {
   const currentUser = useCurrentUser()
 
   const { mutate: updateUserProfile, isPending: isUpdating } = useMutation({
-    mutationFn: (updateData) => updateProfile(updateData, currentUser?.id),
+    mutationFn: (updateData) => updateProfile(updateData, currentUser?.id, currentUser?.email),
     onSuccess: (updatedUser) => {
       toast.success("Profile updated successfully")
       queryClient.invalidateQueries({ queryKey: queryKeys.profile(currentUser?.id) })

@@ -17,6 +17,7 @@
   --color-primary-lighter: #9775fa;
   --color-text: #dee2e6;
   --color-text-muted: #adb5bd;
+  --color-text-subtle: #868e96;
   --color-surface-900: #07090b;
   --color-surface-500: #14171a;
   --color-surface-300: #272c31;
@@ -40,6 +41,7 @@ body {
 html,
 body {
   overflow-x: clip;
+  scrollbar-gutter: stable;
 }
 
 /* Base layer so the touch-* utilities still win where a component sets one */
@@ -421,10 +423,21 @@ body {
 }
 
 @keyframes blob {
-  0%   { transform: translate(0px, 0px) scale(1); }
-  33%  { transform: translate(30px, -50px) scale(1.08); }
-  66%  { transform: translate(-20px, 20px) scale(0.93); }
-  100% { transform: translate(0px, 0px) scale(1); }
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+
+  33% {
+    transform: translate(30px, -50px) scale(1.08);
+  }
+
+  66% {
+    transform: translate(-20px, 20px) scale(0.93);
+  }
+
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
 }
 
 .animate-blob {

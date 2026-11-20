@@ -13,7 +13,7 @@ const Input = React.forwardRef(function Input({ name, type = 'text', label, erro
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label className="text-sm font-medium text-text-muted">
+        <label htmlFor={name} className="text-xs font-medium text-text">
           {label}
         </label>
       )}
@@ -22,19 +22,20 @@ const Input = React.forwardRef(function Input({ name, type = 'text', label, erro
           <Icon className="absolute left-3.5 text-text-muted w-4 h-4 pointer-events-none" />
         )}
         <input
+          id={name}
           name={name}
           type={type}
           ref={ref}
           {...props}
           // text-base below md: iOS zooms the page when a focused input is under 16px
           className={`
-            w-full py-2.5 md:py-2 rounded-lg text-base md:text-sm
+            w-full py-2.5 md:py-2 rounded-lg text-base md:text-xs
             bg-surface-100 text-text 
             border border-white/5
             outline-none ring-0
             transition-all duration-200
             focus:border-primary focus:bg-surface-900/40 focus:shadow-inner
-            placeholder:text-text-muted
+            placeholder:text-text-subtle
             ${Icon ? 'pl-10 pr-4' : 'px-4'} 
           `}
         />
@@ -87,9 +88,9 @@ const Checkbox = React.forwardRef(function Checkbox({ label, ...props }, ref) {
   )
 })
 
-function FormButton({ children, ...props }) {
+function FormButton({ children, className = "", ...props }) {
   return (
-    <Button type='submit' className="w-full mt-2 h-[52px] md:h-auto py-2.5 text-sm font-semibold" {...props}>
+    <Button type='submit' className={`w-full mt-2 h-13 md:h-auto py-3 text-sm font-semibold ${className}`} {...props}>
       {children}
     </Button>
   )

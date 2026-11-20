@@ -4,8 +4,12 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router"
 import toast from "react-hot-toast"
 import Button from "@/components/ui/Button"
+import InfoNote from "@/components/ui/InfoNote"
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 import { deleteAccount } from "@/services/account"
+
+const CARD_CLASS = "rounded-xl border border-red-500/15 bg-red-500/4 p-4"
+const TITLE_CLASS = "text-sm font-semibold leading-snug tracking-tight text-white"
 
 export default function DeleteAccountButton() {
   const [isDeleting, setIsDeleting] = useState(false)
@@ -33,7 +37,7 @@ export default function DeleteAccountButton() {
     return (
       <div className="flex flex-col items-center justify-center p-12 space-y-4">
         <LuLoaderCircle className="w-8 h-8 text-red-500 animate-spin" />
-        <p className="text-sm font-medium text-text-muted">
+        <p className="text-xs font-medium text-text-muted">
           Securely erasing account data...
         </p>
       </div>
@@ -42,23 +46,25 @@ export default function DeleteAccountButton() {
 
   if (isConfirming) {
     return (
-      <div className="w-full mt-6 rounded-xl border border-red-500/10 bg-red-500/5 p-4 flex flex-col items-center gap-3">
-        <div className="text-sm text-center">
-          <h4 className="text-red-400 font-medium mb-1">Are you absolutely sure?</h4>
-          <p className="text-text-muted text-xs">This action cannot be undone.</p>
+      <div className={`${CARD_CLASS} flex flex-col gap-4`}>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <h3 className={TITLE_CLASS}>Delete your account?</h3>
+          <InfoNote>This action cannot be undone.</InfoNote>
         </div>
-        <div className="flex gap-3 w-full">
+        <div className="flex gap-3">
           <Button
             variant="secondary"
-            className="flex-1 py-2 text-xs font-semibold"
+            size="sm"
+            className="flex-1 min-h-11 sm:min-h-0 font-semibold"
             onClick={() => setIsConfirming(false)}
             type="button"
           >
-            No, cancel
+            Keep account
           </Button>
           <Button
             variant="danger"
-            className="flex-1 py-2 text-xs font-semibold"
+            size="sm"
+            className="flex-1 min-h-11 sm:min-h-0 font-semibold"
             onClick={handleDelete}
             type="button"
           >
@@ -70,14 +76,19 @@ export default function DeleteAccountButton() {
   }
 
   return (
-    <div className="w-full mt-6 pt-6 border-t border-white/10">
+    <div className={`${CARD_CLASS} flex items-center justify-between gap-3 sm:gap-4`}>
+      <div className="flex min-w-0 flex-col gap-1">
+        <h3 className={TITLE_CLASS}>Delete account</h3>
+        <p className="text-xs leading-relaxed text-text-muted">Permanently remove your account.</p>
+      </div>
       <Button
         variant="danger"
-        className="w-full py-2.5 text-sm font-semibold"
+        size="sm"
+        className="shrink-0 min-h-11 sm:min-h-0"
         onClick={() => setIsConfirming(true)}
         type="button"
       >
-        Delete Account
+        Delete
       </Button>
     </div>
   )

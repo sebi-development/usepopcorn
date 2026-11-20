@@ -8,12 +8,13 @@ const CountrySelect = React.forwardRef(function CountrySelect({ ...props }, ref)
 
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-text-muted">Country</label>
+      <label htmlFor="country" className="text-xs font-medium text-text">Country</label>
       <div className="relative">
         <select
+          id="country"
           ref={ref}
           {...props}
-          className="appearance-none w-full py-2.5 md:py-2 pl-4 pr-10 rounded-lg text-base md:text-sm bg-surface-100 text-text border border-white/5 outline-none ring-0 transition-all duration-200 focus:border-primary focus:bg-surface-900/40 focus:shadow-inner cursor-pointer"
+          className="appearance-none w-full py-2.5 md:py-2 pl-4 pr-10 rounded-lg text-base md:text-xs bg-surface-100 text-text border border-white/5 outline-none ring-0 transition-all duration-200 focus:border-primary focus:bg-surface-900/40 focus:shadow-inner cursor-pointer"
         >
           <option value="" disabled>Select a country...</option>
           {options.map(({ code, name }) => (
@@ -27,6 +28,7 @@ const CountrySelect = React.forwardRef(function CountrySelect({ ...props }, ref)
           className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
         />
       </div>
+      <p className="text-xs leading-relaxed text-text-muted">Sets which streaming services we show you.</p>
     </div>
   );
 });

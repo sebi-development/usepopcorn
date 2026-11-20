@@ -2,7 +2,7 @@ import { LuLoaderCircle } from "react-icons/lu"
 
 const variants = {
   solid: 'bg-primary text-white hover:bg-primary-light btn-glow',
-  secondary: 'bg-surface-100 text-text hover:bg-surface-500',
+  secondary: 'bg-surface-900 text-text border border-white/15 hover:bg-surface-100',
   outline: 'bg-transparent border border-primary text-primary-light hover:bg-primary/10',
   ghost: 'bg-transparent text-text-muted hover:text-text hover:bg-surface-100/50',
   danger: 'bg-red-600/20 text-red-400 border border-red-500/30 hover:opacity-75',

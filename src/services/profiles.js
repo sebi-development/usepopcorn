@@ -10,12 +10,21 @@ export async function getProfile(userId) {
   return data
 }
 
-export async function updateProfile(updateData, currentUserId) {
+// Supabase has no "check this password" call, so signing in again is the check
+async function verifyPassword(email, password) {
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  if (error) throw new Error('Current password is incorrect')
+}
+
+// `currentEmail` is only needed with a new password, which must come with `currentPassword`
+export async function updateProfile(updateData, currentUserId, currentEmail) {
   if (Object.keys(updateData).length === 0) {
     throw new Error('At least one field must be provided')
   }
 
-  const { email, password, username, avatar_url, country } = updateData
+  const { email, password, currentPassword, username, avatar_url, country } = updateData
+
+  if (password !== undefined) await verifyPassword(currentEmail, currentPassword)
 
   if (email !== undefined || password !== undefined) {
     const authUpdates = {}
