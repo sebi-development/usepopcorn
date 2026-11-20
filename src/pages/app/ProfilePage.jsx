@@ -15,7 +15,6 @@ import useCurrentUser from "@/features/auth/hooks/useCurrentUser"
 
 const EditProfileModal = lazy(() => import("@/features/profile/components/EditProfileModal"))
 
-// The hero's one action: a 44px tap target on phones, the compact button from md up
 const HERO_ACTION_CLASS = "min-h-11 min-w-36 md:min-h-0 md:min-w-0"
 
 function ProfilePage() {
@@ -25,8 +24,6 @@ function ProfilePage() {
   const targetUserId = userId ?? currentUser?.id
 
   const { profileData, recentRatings, ratingsCount, isLoadingProfile, isLoadingRatings } = useProfileData(targetUserId)
-  // Watchlists and favorites are readable by every signed-in user, like ratings. Both watchlist rows
-  // fetch their own list: the own one under the hero, someone else's last, on approach.
   const { data: favorites, isLoading: isFavoritesLoading } = useInteractions("favorite", targetUserId)
   const { followingSet, isLoading: isLoadingFollowing } = useFollowingIds({ enabled: !isOwnProfile })
   const isFollowing = followingSet.has(targetUserId)
